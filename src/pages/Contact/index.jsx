@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "@/hooks/useSession";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useParams } from "react-router-dom";
 import { Table, Button, Popconfirm, message } from "antd";
 import {
@@ -137,7 +136,7 @@ export function ContactPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <div className="space-y-6">
       <div className="w-full h-[92vh] grid grid-rows-[10%_1fr] md:px-12 px-5 py-3">
         <div className="w-full h-[8%] flex justify-between md:gap-0 gap-4 mt-1">
           <div>
@@ -210,6 +209,6 @@ export function ContactPage() {
         designatedBy={designatedBy}
         institutionId={id}
       />
-    </DashboardLayout>
+    </div>
   );
 }

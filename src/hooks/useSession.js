@@ -1,28 +1,18 @@
 import { useState, useEffect } from "react";
 import { getSession, setSession, clearSession } from "../utils/session";
-import { useNavigate } from "react-router-dom"; // Assuming you use react-router-dom
+import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export function useSession() {
   const [session, setSessionState] = useState(getSession());
-  const navigate = useNavigate(); // For programmatic navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to login if session is empty
     if (!session) {
       localStorage.setItem("message", "Please login");
-      navigate("/login"); // Redirect to login page
-      return;
+      navigate("/login");
     }
-
-    // Set a timeout to automatically log out after 1 hour
-    const sessionTimeout = setTimeout(() => {
-      localStorage.setItem("message", "Session timed out due to inactivity.");
-      logout(); // Clear session and redirect
-    }, 3600000); // 1-hour session timeout
-
-    return () => clearTimeout(sessionTimeout);
   }, [session, navigate]);
 
   const login = async (email, password) => {
@@ -38,13 +28,12 @@ export function useSession() {
       }
 
       const data = await response.json();
-      const userSession = { ...data, email }; // Assuming response contains user data
-      // console.log("userSession", userSession);
+      const userSession = { ...data, email };
+
       // Save session in storage and update state
       setSession(userSession);
       setSessionState(userSession);
 
-      // Return the user data with role and other details for redirection
       return { success: true, data: userSession.user };
     } catch (error) {
       console.error("Login error:", error);
@@ -56,9 +45,9 @@ export function useSession() {
   };
 
   const logout = () => {
-    clearSession(); // Clear session from storage
-    setSessionState(null); // Clear state
-    window.location.href = "/login"; // Redirect to login
+    clearSession();
+    setSessionState(null);
+    window.location.href = "/login";
   };
 
   return {

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react/display-name */
-import { useState, useEffect, forwardRef } from "react";
+import { forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
 import logoImage from "@/assets/images/logo-white.png";
@@ -17,21 +17,9 @@ import {
   X,
 } from "lucide-react";
 
-const SideNav = forwardRef(({ isOpen, onClose }, ref) => {
+const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
   const location = useLocation();
   const { session } = useSession();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const routes = [
     {
@@ -90,7 +78,7 @@ const SideNav = forwardRef(({ isOpen, onClose }, ref) => {
       <aside
         ref={ref}
         className={`fixed top-0 left-0 h-screen w-64 bg-[#1A1A1A] text-white transition-transform duration-300 ease-in-out z-50 ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         <div className="flex flex-col h-full">
@@ -107,8 +95,7 @@ const SideNav = forwardRef(({ isOpen, onClose }, ref) => {
           {/* Logo */}
           <div className="p-4">
             <Link to="/dashboard" className="flex items-center space-x-2">
-              <img src={logoImage} alt="Logo" className="h-10 " />
-              {/* <span className="text-xl font-bold">BetaDay</span> */}
+              <img src={logoImage} alt="Logo" className="h-10" />
             </Link>
           </div>
 

@@ -1,135 +1,93 @@
-/* eslint-disable react/prop-types */
-import { useEffect } from "react";
-import { Modal, Button, Input, Form, message } from "antd";
+import { Modal, Form, Input, Select, Button } from "antd";
 
-const ContactPersonModal = ({
-  visible,
-  mode, // "create" or "edit"
-  contact,
-  onClose,
-  onSave,
-  designatedBy,
-  institutionId,
-}) => {
-  const [form] = Form.useForm();
-
-  // Set or reset form values based on the mode
-  useEffect(() => {
-    if (visible) {
-      if (mode === "edit" && contact) {
-        form.setFieldsValue({
-          fullName: contact.fullName,
-          email: contact.email,
-          phone: contact.phone,
-          designation: contact.designation,
-        });
-      } else if (mode === "create") {
-        form.resetFields();
-      }
-    }
-  }, [visible, mode, contact, form]);
-
-  const handleSubmit = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const contactData = {
-          ...values,
-          createdBy: designatedBy,
-          institutionId,
-        };
-
-        onSave(contactData)
-          .then(() => {
-            message.success(
-              mode === "edit"
-                ? "Contact updated successfully"
-                : "Contact added successfully"
-            );
-            onClose();
-          })
-          .catch((error) => {
-            console.error("Failed to save contact:", error);
-            message.error("Failed to save contact");
-          });
-      })
-      .catch((info) => {
-        console.log("Validation Failed:", info);
-      });
-  };
-
+export default function ContactPersonModal({
+  isVisible,
+  onCancel,
+  onFinish,
+  contactPerson,
+  form,
+}) {
   return (
     <Modal
-      open={visible}
-      onCancel={onClose}
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          className="bg-appGreen hover:bg-appGreenLight"
-          onClick={handleSubmit}
-        >
-          {mode === "edit" ? "Save Changes" : "Add Contact"}
-        </Button>,
-      ]}
+      title={contactPerson ? "Edit Contact Person" : "Add New Contact Person"}
+      open={isVisible}
+      onCancel={onCancel}
+      footer={null}
       width={600}
-      title={
-        mode === "edit"
-          ? `Edit Contact: ${contact?.fullName}`
-          : "Add New Contact"
-      }
     >
       <Form
         form={form}
         layout="vertical"
-        name="contactForm"
-        initialValues={{
-          fullName: contact?.fullName || "",
-          email: contact?.email || "",
-          phone: contact?.phone || "",
-          designation: contact?.designation || "",
-        }}
+        onFinish={onFinish}
+        initialValues={contactPerson}
       >
         <Form.Item
-          label="Full Name"
           name="fullName"
-          rules={[{ required: true, message: "Please enter the name!" }]}
+          label="Full Name"
+          rules={[{ required: true, message: "Please enter full name" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label="Email"
           name="email"
+          label="Email"
           rules={[
-            { required: true, message: "Please enter an email address!" },
-            { type: "email", message: "Please enter a valid email!" },
+            { required: true, message: "Please enter email" },
+            { type: "email", message: "Please enter a valid email" },
           ]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label="Phone"
-          name="phone"
-          rules={[{ required: true, message: "Please enter a phone number!" }]}
+          name="phoneNumber"
+          label="Phone Number"
+          rules={[{ required: true, message: "Please enter phone number" }]}
         >
           <Input />
         </Form.Item>
 
         <Form.Item
-          label="Designation"
-          name="designation"
-          rules={[{ required: true, message: "Please enter designation!" }]}
+          name="position"
+          label="Position"
+          rules={[{ required: true, message: "Please enter position" }]}
         >
           <Input />
         </Form.Item>
+
+        <Form.Item
+          name="department"
+          label="Department"
+          rules={[{ required: true, message: "Please select department" }]}
+        >
+          <Select
+            placeholder="Select department"
+            options={[
+              { label: "Sales", value: "sales" },
+              { label: "Marketing", value: "marketing" },
+              { label: "Operations", value: "operations" },
+              { label: "Finance", value: "finance" },
+              { label: "HR", value: "hr" },
+            ]}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="notes"
+          label="Notes"
+          rules={[{ required: true, message: "Please enter notes" }]}
+        >
+          <Input.TextArea rows={4} />
+        </Form.Item>
+
+        <div className="flex justify-end space-x-4 mt-6">
+          <Button onClick={onCancel}>Cancel</Button>
+          <Button type="primary" htmlType="submit">
+            {contactPerson ? "Update Contact" : "Create Contact"}
+          </Button>
+        </div>
       </Form>
     </Modal>
   );
-};
-
-export default ContactPersonModal;
+}

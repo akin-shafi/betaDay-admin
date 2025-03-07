@@ -1,25 +1,40 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "@/hooks/useSession";
-import { useNavigate } from "react-router-dom"; // For programmatic navigation
+import { useNavigate } from "react-router-dom";
 import TopNav from "./TopNav";
 import SideNav from "./SideNav";
 
 const DashboardLayout = ({ children }) => {
-  const { session } = useSession(); // Auth state: { user, token }
-  const navigate = useNavigate(); // For programmatic navigation
+  const { session } = useSession();
+  const navigate = useNavigate();
   const userRole = session?.user?.role;
-  // const isAssessor = userRole === "assessor";
   const isAssessorOrDataEntry =
     userRole === "assessor" || userRole === "data-entry";
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const sidebarRef = useRef(null);
+
+  // Handle screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 1024);
+      if (width < 1024) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Redirect to login if session is null
   useEffect(() => {
     if (!session) {
-      navigate("/login"); // Redirect to login page if session is null
+      navigate("/login");
     }
   }, [session, navigate]);
 
@@ -29,7 +44,7 @@ const DashboardLayout = ({ children }) => {
       if (
         sidebarRef.current &&
         !sidebarRef.current.contains(event.target) &&
-        window.innerWidth < 768
+        isMobile
       ) {
         setIsSidebarOpen(false);
       }
@@ -37,12 +52,7 @@ const DashboardLayout = ({ children }) => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Show loading state until session is loaded
-  if (session === undefined) {
-    return <div>Loading...</div>; // Customize your loading spinner or component
-  }
+  }, [isMobile]);
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
@@ -60,13 +70,20 @@ const DashboardLayout = ({ children }) => {
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           isAssessor={isAssessorOrDataEntry}
+          isMobile={isMobile}
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto ml-64 p-6">
-          <div className="container mx-auto px-4 py-4">
-            <div className=" mt-10 bg-white rounded-[10px] border border-[#E4E7EC]  p-4 ">
-              {children}
+        <main
+          className={`flex-1 transition-all duration-300 ${
+            isSidebarOpen && !isMobile ? "lg:ml-64" : "ml-0"
+          }`}
+        >
+          <div className="h-full p-6">
+            <div className="container mx-auto">
+              <div className="border mt-20 bg-white rounded-[10px] border border-[#E4E7EC] p-6">
+                {children}
+              </div>
             </div>
           </div>
         </main>

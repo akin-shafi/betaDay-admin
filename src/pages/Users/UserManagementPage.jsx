@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Table, Input, Button, Pagination, Popconfirm, message } from "antd";
 import { useSession } from "../../hooks/useSession";
 import {
@@ -23,6 +22,8 @@ export function UserManagementPage() {
   const [pageSize, setPageSize] = useState(10); // For items per page
   const [isModalVisible, setIsModalVisible] = useState(false); // For modal visibility
   const [selectedUser, setSelectedUser] = useState(null); // For editing user
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const tagsOptions = [
     "Federal Institute of Forest reserve",
     "Nigerian Institute for Oceanography and Marine Research",
@@ -30,16 +31,17 @@ export function UserManagementPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setIsLoading(true);
       try {
         const result = await fetchUsers(token); // Fetch users data from API
         setUsers(result);
         setFilteredUsers(result); // Initialize filtered users to all users
       } catch (error) {
         console.error("Failed to fetch users:", error);
+        setError(error);
         message.error("Failed to load users");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -169,8 +171,24 @@ export function UserManagementPage() {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-red-500">Error loading users: {error.message}</div>
+      </div>
+    );
+  }
+
   return (
-    <DashboardLayout>
+    <div className="space-y-6">
       <div className="p-4">
         <div className="flex justify-between mb-10">
           <h2>All Users</h2>
@@ -217,6 +235,6 @@ export function UserManagementPage() {
         user={selectedUser}
         tagsOptions={tagsOptions}
       />
-    </DashboardLayout>
+    </div>
   );
 }

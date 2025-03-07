@@ -1,9 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from "react";
 import { useSession } from "@/hooks/useSession";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import StatisticsCard from "@/components/dashboard/StatisticCard";
-import { useNavigate } from "react-router-dom";
 import { UserModal } from "@/components/modals/UserModal"; // Import the modal component
 
 export function AdminPage() {
@@ -13,7 +10,6 @@ export function AdminPage() {
   // const onboardingStep = session?.user?.onboardingStep;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   // Open the modal
   const openModal = () => setIsModalOpen(true);
@@ -25,11 +21,6 @@ export function AdminPage() {
   const handleInviteSubmit = (values) => {
     console.log("Inviting member with values: ", values);
     // Perform the invite member logic here (e.g., API call)
-  };
-
-  // Dynamically navigate based on path
-  const handleNavigate = (path) => {
-    navigate(path);
   };
 
   const stats = [
@@ -46,63 +37,61 @@ export function AdminPage() {
   // }, [role, onboardingStep]); // Dependencies to check role and onboardingStep changes
 
   return (
-    <DashboardLayout>
-      <div className="">
-        <div className="w-full h-[8%] flex justify-between md:gap-0 gap-4 mt-1">
-          <div>
-            <h5 className="md:text-[20px] text-[16px] font-medium text-black">
-              Dashboard
-            </h5>
-            <p className="text-[#667085] md:text-[14px] text-[12px] font-normal">
-              Welcome {fullname}
-            </p>
-          </div>
-        </div>
-
-        <div className="w-full h-[170px] rounded-[12px] bg-olive flex items-center justify-between p-4">
-          <div className="md:basis-[50%] basis-full text-secondary h-full flex flex-col justify-center gap-2">
-            <h6 className="text-[10px] font-bold">OVERVIEW</h6>
-            <h2 className="md:text-[20px] text-[16px] font-bold">
-              Welcome to your Dashboard!
-            </h2>
-            <p className="md:text-[14px] text-[12px] font-light">
-              Click on any metrics below to get started or update your profile
-            </p>
-          </div>
-          <div className="md:basis-[30%] basis-0 md:flex w-full h-full items-center justify-center">
-            <button
-              onClick={openModal}
-              className="py-[10px] px-[20px] bg-appGreen rounded-[100px] text-white"
-            >
-              Invite Member
-            </button>
-          </div>
-        </div>
-
+    <div className="">
+      <div className="w-full h-[8%] flex justify-between md:gap-0 gap-4 mt-1">
         <div>
-          <h5 className="md:text-[24px] text-[18px] text-black font-medium">
-            Statistics
+          <h5 className="md:text-[20px] text-[16px] font-medium text-black">
+            Dashboard
           </h5>
-
-          <div className="w-full grid md:grid-cols-4 grid-cols-2 gap-4">
-            {stats.map((stat, index) => (
-              <StatisticsCard
-                key={index}
-                onClick={() => handleNavigate(stat.path)} // Dynamic path based on stats array
-                detail={stat.detail}
-                title={stat.title}
-              />
-            ))}
-          </div>
-
-          {/* Invite Member Button */}
-          {/* <button
-              onClick={openModal}
-              className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md"
-            >
-              Invite Member
-            </button> */}
+          <p className="text-[#667085] md:text-[14px] text-[12px] font-normal">
+            Welcome {fullname}
+          </p>
         </div>
+      </div>
+
+      <div className="w-full h-[170px] rounded-[12px] bg-olive flex items-center justify-between p-4">
+        <div className="md:basis-[50%] basis-full text-secondary h-full flex flex-col justify-center gap-2">
+          <h6 className="text-[10px] font-bold">OVERVIEW</h6>
+          <h2 className="md:text-[20px] text-[16px] font-bold">
+            Welcome to your Dashboard!
+          </h2>
+          <p className="md:text-[14px] text-[12px] font-light">
+            Click on any metrics below to get started or update your profile
+          </p>
+        </div>
+        <div className="md:basis-[30%] basis-0 md:flex w-full h-full items-center justify-center">
+          <button
+            onClick={openModal}
+            className="py-[10px] px-[20px] bg-appGreen rounded-[100px] text-white"
+          >
+            Invite Member
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h5 className="md:text-[24px] text-[18px] text-black font-medium">
+          Statistics
+        </h5>
+
+        <div className="w-full grid md:grid-cols-4 grid-cols-2 gap-4">
+          {stats.map((stat, index) => (
+            <StatisticsCard
+              key={index}
+              onClick={() => handleNavigate(stat.path)} // Dynamic path based on stats array
+              detail={stat.detail}
+              title={stat.title}
+            />
+          ))}
+        </div>
+
+        {/* Invite Member Button */}
+        {/* <button
+            onClick={openModal}
+            className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md"
+          >
+            Invite Member
+          </button> */}
       </div>
 
       {/* Invite Member Modal */}
@@ -112,6 +101,6 @@ export function AdminPage() {
         onSubmit={handleInviteSubmit}
         showCloseIcon={false} // Disable the close icon
       />
-    </DashboardLayout>
+    </div>
   );
 }

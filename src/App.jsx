@@ -8,6 +8,7 @@ import UserDetails from "./pages/Users/UserDetails"; // Import UserDetails compo
 
 import { ContactPage } from "./pages/Contact";
 import ForgotPassword from "./pages/auth/forgot-password";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Import Business Pages
 import BusinessesPage from "./pages/businesses/index";
@@ -33,38 +34,129 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/sign-up" element={<SignupPage />} />
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/users" element={<UserManagementPage />} />
-        <Route path="/user/:id" element={<UserDetails />} />
-
-        <Route path="/contact/:id" element={<ContactPage />} />
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <UserManagementPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/:id"
+          element={
+            <ProtectedRoute>
+              <UserDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/contact/:id"
+          element={
+            <ProtectedRoute>
+              <ContactPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Business Routes */}
-        <Route path="/businesses" element={<BusinessesPage />} />
-        <Route path="/businesses/add" element={<BusinessAddPage />} />
-        <Route path="/businesses/:id" element={<BusinessViewPage />} />
+        <Route
+          path="/businesses"
+          element={
+            <ProtectedRoute>
+              <BusinessesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/businesses/add"
+          element={
+            <ProtectedRoute>
+              <BusinessAddPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/businesses/:id"
+          element={
+            <ProtectedRoute>
+              <BusinessViewPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Orders Routes */}
-        <Route path="/orders" element={<OrdersPage />} />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Riders Routes */}
-        <Route path="/riders" element={<RidersPage />} />
+        <Route
+          path="/riders"
+          element={
+            <ProtectedRoute>
+              <RidersPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Reports Routes */}
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Analytics Routes */}
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Settings Routes */}
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

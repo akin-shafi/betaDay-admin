@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Table, Input, Button, Pagination, Tag, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useSession } from "@/hooks/useSession";
@@ -11,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const { Option } = Select;
 
-export function ListEquipmentPage() {
+export default function ListEquipmentPage() {
   const { session } = useSession();
   const token = session?.token;
 
@@ -162,7 +161,7 @@ export function ListEquipmentPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <div className="space-y-6">
       <div className="p-4">
         <div className="flex justify-between mb-10">
           <h2>List of Equipment</h2>
@@ -212,6 +211,6 @@ export function ListEquipmentPage() {
           style={{ marginTop: 20 }}
         />
       </div>
-    </DashboardLayout>
+    </div>
   );
 }
