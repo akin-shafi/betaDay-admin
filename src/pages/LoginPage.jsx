@@ -61,7 +61,7 @@ export function LoginPage() {
                 <WhiteLogo />
               </div>
             </div>
-            <h1 className="text-1xl font-bold text-appGreen">Login</h1>
+            <h1 className="text-1xl font-bold text-grag-900">Login</h1>
           </div>
           {message && (
             <div className="mb-4 text-red-500 text-sm font-medium text-center">
@@ -119,7 +119,7 @@ export function LoginPage() {
         <div className="text-center mt-4">
           <Link
             to="/forgot-password"
-            className="  cursor-pointer transition-all duration-500 text-teal-600 hover:text-secondary text-[12px] md:text-[14px]"
+            className="  cursor-pointer transition-all duration-500 text-[#ff6600] hover:text-secondary text-[12px] md:text-[14px]"
           >
             Forgot Password ?
           </Link>

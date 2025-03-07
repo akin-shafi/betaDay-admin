@@ -96,7 +96,7 @@ export function BulkUploadPage({ institutionId, applicationNo }) {
           />
         ) : (
           <div
-            className="w-full md:h-[75px] h-[60px] border-dashed border border-[#D0D5DD] rounded-[10px] px-5 mt-3 flex items-center justify-between gap-3 transition-all duration-500 hover:border-appGreen cursor-pointer"
+            className="w-full md:h-[75px] h-[60px] border-dashed border border-[#D0D5DD] rounded-[10px] px-5 mt-3 flex items-center justify-between gap-3 transition-all duration-500 hover:border-[#ff6600] cursor-pointer"
             onClick={() => fileInputRef.current.click()}
           >
             <UploadIcon />
@@ -165,7 +165,7 @@ export function BulkUploadPage({ institutionId, applicationNo }) {
               Click{" "}
               <b
                 onClick={handleDownloadTemplate}
-                className="text-appGreen cursor-pointer hover:text-black hover:underline"
+                className="text-[#ff6600] cursor-pointer hover:text-black hover:underline"
               >
                 {`"Download Template"`}
               </b>{" "}
@@ -179,11 +179,11 @@ export function BulkUploadPage({ institutionId, applicationNo }) {
             </h3>
             <li>Replace the sample data in the sheet with your own data.</li>
             <li>
-              Ensure the <b className="text-appGreen">{`"Serial No"`}</b> column
-              starts from 100 and follows the sequence.
+              Ensure the <b className="text-[#ff6600]">{`"Serial No"`}</b>{" "}
+              column starts from 100 and follows the sequence.
             </li>
             <li>
-              For the <b className="text-appGreen">{`"Image"`}</b> column,
+              For the <b className="text-[#ff6600]">{`"Image"`}</b> column,
               upload images of your equipment to Google Drive and include the
               link to each image in the corresponding row.
             </li>
@@ -197,12 +197,12 @@ export function BulkUploadPage({ institutionId, applicationNo }) {
               Step 3: Upload Pre-filled Sheet
             </h3>
             <li>
-              Click the <b className="text-appGreen">{`"Upload"`}</b> button
+              Click the <b className="text-[#ff6600]">{`"Upload"`}</b> button
               below to select the sheet from your device.
             </li>
             <li>
               Finally, click{" "}
-              <b className="text-appGreen">{`"Upload Excel Sheet"`}</b> to
+              <b className="text-[#ff6600]">{`"Upload Excel Sheet"`}</b> to
               complete the process.
             </li>
           </ol>
@@ -262,7 +262,7 @@ export function BulkUploadPage({ institutionId, applicationNo }) {
             className={`w-full mt-4 text-white px-4 py-2 rounded-md ${
               isUploading
                 ? "bg-gray-500 cursor-not-allowed"
-                : "bg-appGreen hover:bg-appGreenLight"
+                : "bg-[#ff6600] hover:bg-[#ff6600] "
             }`}
             disabled={isUploading}
           >

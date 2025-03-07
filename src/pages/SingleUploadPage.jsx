@@ -85,9 +85,6 @@ export function SingleUploadPage() {
     setCameraActive(false);
   };
 
-
-
-
   return (
     <>
       {/* Equipment Registration Form */}
@@ -229,7 +226,7 @@ export function SingleUploadPage() {
 
         <button
           type="submit"
-          className="w-full bg-appGreen  hover:bg-appGreenLight text-white px-4 py-2 rounded-md"
+          className="w-full bg-appGreen  hover:bg-[#ff6600] text-white px-4 py-2 rounded-md"
         >
           Submit
         </button>

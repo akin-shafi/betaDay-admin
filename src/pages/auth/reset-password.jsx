@@ -71,7 +71,6 @@ const ResetPassword = () => {
         <h4 className="text-xl font-bold mb-4 text-center uppercase">
           <div className="text-center mb-6">
             <WhiteLogo />
-            <h1 className="text-1xl font-bold text-appGreen">Baseline Study</h1>
           </div>
         </h4>
         <div className="mb-4 text-2xl font-bold text-gray-600 text-center">
@@ -117,7 +116,7 @@ const ResetPassword = () => {
         <div className="mt-4 text-center">
           <p>
             Remembered your password?{" "}
-            <Link to="/login" className="text-appGreen hover:text-teal-600">
+            <Link to="/login" className="text-grap-900 hover:text-teal-600">
               Login
             </Link>
           </p>
@@ -125,7 +124,7 @@ const ResetPassword = () => {
           <span>
             <Link
               to="/auth/forgot-password"
-              className="text-appGreen hover:text-teal-600"
+              className="text-[#ff6600] hover:text-teal-600"
             >
               Forgot Password
             </Link>

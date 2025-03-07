@@ -307,7 +307,7 @@ const TeamDetails = ({ onChange }) => {
       ))}
 
       <div
-        className="w-full flex items-center justify-end gap-2 text-appGreen cursor-pointer text-[14px]"
+        className="w-full flex items-center justify-end gap-2 text-orange-900 cursor-pointer text-[14px]"
         onClick={addTeamRecord}
       >
         <FaPlusCircle />

@@ -64,11 +64,14 @@ export function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-primary text-white p-4">
+    <div className="flex items-center justify-center min-h-screen bg-whitesmoke text-white p-4">
       <div className="bg-white text-black rounded-lg shadow-lg p-8 max-w-lg w-full">
-        <div className="text-center mb-6">
-          <WhiteLogo />
-          <h1 className="text-1xl font-bold text-appGreen">Baseline Study</h1>
+        <div className="flex justify-center items-center">
+          <div className="mb-4 w-32 bg-gray-900 py-4 px-4 text-center rounded-md">
+            <div className="text-center ">
+              <WhiteLogo />
+            </div>
+          </div>
         </div>
         <div className="mb-4 text-1xl font-bold text-gray-600 text-center">
           Create an Account
@@ -201,7 +204,7 @@ export function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-appGreen text-white py-2 rounded-md hover:bg-appGreenLight mt-4 ${
+            className={`w-full bg-gray-900 text-white py-2 rounded-md hover:bg-[#ff6600] mt-4 ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -212,7 +215,7 @@ export function SignupPage() {
         <div className="mt-4 text-center">
           <p>
             Already have an account?{" "}
-            <Link to="/login" className="text-secondary">
+            <Link to="/login" className="text-[#ff6600] hover:underline">
               Login
             </Link>
           </p>

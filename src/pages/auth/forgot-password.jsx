@@ -48,7 +48,6 @@ const ForgotPassword = () => {
         <h4 className="text-xl font-bold mb-4 text-center">
           <div className="text-center mb-6">
             <WhiteLogo />
-            <h1 className="text-1xl font-bold text-appGreen">Baseline Study</h1>
           </div>
         </h4>
 
@@ -82,7 +81,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full p-2 rounded bg-teal-700 text-white hover:bg-secondary transition ${
+            className={`w-full p-2 rounded bg-gray-900 text-white hover:bg-[#ff6600] transition ${
               loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -93,7 +92,7 @@ const ForgotPassword = () => {
         <div className="mt-4 text-center">
           <p>
             Back to{" "}
-            <Link to="/login" className="text-teal-700">
+            <Link to="/login" className="text-[#ff6600]">
               Login
             </Link>
             <span className="px-2">or</span>

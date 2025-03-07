@@ -180,7 +180,7 @@ const EditAssetModal = ({ visible, onClose, asset, onUpdate }) => {
             <Button
               type="primary"
               onClick={handleSubmit}
-              className="bg-appGreen hover:bg-appGreenLight"
+              className="bg-appGreen hover:bg-[#ff6600]"
             >
               Update Asset
             </Button>

@@ -82,7 +82,7 @@ const TopNav = ({ onMenuClick }) => {
           </div>
           <button
             onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white py-1.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-300"
+            className="bg-[#ff6600] hover:bg-red-600 text-white py-1.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 transition-all duration-300"
           >
             Logout
           </button>
