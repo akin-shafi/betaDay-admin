@@ -55,8 +55,12 @@ export function LoginPage() {
           className="p-8 bg-white shadow-lg rounded-md w-full sm:w-96"
         >
           {/* Logo Section */}
-          <div className="text-center mb-6">
-            <WhiteLogo />
+          <div className="text-center mb-6 ">
+            <div className="flex items-center justify-center">
+              <div className="mb-4 w-32 bg-gray-900 p-4 text-center rounded-md ">
+                <WhiteLogo />
+              </div>
+            </div>
             <h1 className="text-1xl font-bold text-appGreen">Login</h1>
           </div>
           {message && (
@@ -106,7 +110,7 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-appGreen text-white py-2 rounded-md hover:bg-appGreenLight mt-4"
+            className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-appGreenLight mt-4"
             disabled={isProcessing} // Disable button during processing
           >
             {isProcessing ? "Processing" : "Login"}
