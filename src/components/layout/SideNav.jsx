@@ -3,6 +3,8 @@
 import { useState, useEffect, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
+import logoImage from "@/assets/images/logo-white.png";
+
 import {
   LayoutDashboard,
   Users,
@@ -105,8 +107,8 @@ const SideNav = forwardRef(({ isOpen, onClose }, ref) => {
           {/* Logo */}
           <div className="p-4">
             <Link to="/dashboard" className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Logo" className="h-8 w-8" />
-              <span className="text-xl font-bold">Admin Panel</span>
+              <img src={logoImage} alt="Logo" className="h-10 " />
+              {/* <span className="text-xl font-bold">BetaDay</span> */}
             </Link>
           </div>
 

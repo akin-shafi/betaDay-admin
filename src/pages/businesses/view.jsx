@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -11,6 +12,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "@/hooks/useProduct";
+import { updateBusinessImage } from "@/hooks/useBusinessImage";
 import { useSession } from "@/hooks/useSession";
 import {
   Button,
@@ -182,31 +184,29 @@ export default function BusinessViewPage() {
 
   const handleImageUpdate = async (values) => {
     try {
-      // If we have a file, we need to handle the upload first
-      if (values.image instanceof File) {
-        const formData = new FormData();
-        formData.append("image", values.image);
+      console.log("Starting image update in component...");
+      console.log("Form values:", values);
 
-        // Here you would typically make an API call to upload the image
-        // For now, we'll use a mock URL
-        const imageUrl = URL.createObjectURL(values.image);
-        await updateBusiness(id, { image: imageUrl }, session?.token);
-      } else {
-        // If it's just a URL, update directly
-        await updateBusiness(id, { image: values.image }, session?.token);
-      }
-
-      message.success("Business image updated successfully");
+      await updateBusinessImage(id, values.image, session?.token);
       setIsImageEditModalVisible(false);
+      setImagePreview(null);
       // Refresh business data
       const response = await fetchBusinessById(id, session?.token);
       setBusiness(response.business);
     } catch (err) {
+      console.error("Error in handleImageUpdate:", err);
       message.error(err.message || "Failed to update business image");
     }
   };
 
   const beforeImageUpload = (file) => {
+    console.log("Validating image file...");
+    console.log("File details:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
       message.error("You can only upload image files!");
@@ -217,13 +217,20 @@ export default function BusinessViewPage() {
       message.error("Image must be smaller than 2MB!");
       return false;
     }
-    return true;
+    return false; // Prevent default upload behavior
   };
 
   const handleImageChange = (info) => {
+    console.log("Image change event:", info);
     if (info.file) {
-      setImagePreview(URL.createObjectURL(info.file.originFileObj));
-      imageForm.setFieldsValue({ image: info.file.originFileObj });
+      const file = info.file;
+      console.log("Selected file:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+      setImagePreview(URL.createObjectURL(file));
+      imageForm.setFieldsValue({ image: file });
     }
   };
 
@@ -903,6 +910,10 @@ export default function BusinessViewPage() {
                     beforeUpload={beforeImageUpload}
                     onChange={handleImageChange}
                     maxCount={1}
+                    customRequest={({ file, onSuccess }) => {
+                      // This prevents the default upload behavior
+                      onSuccess();
+                    }}
                   >
                     <Button icon={<UploadIcon size={16} />}>
                       Select Image
