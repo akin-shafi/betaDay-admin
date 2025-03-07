@@ -1,0 +1,307 @@
+/* styles/globals.css */
+/* @import "~@fortawesome/fontawesome-free/css/all.min.css"; */
+
+/* Tailwind's preflight CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: AzoSans_Light;
+  src: url("/src/assets/fonts/AzoSans-Light.ttf");
+}
+
+@font-face {
+  font-family: AzoSans_Medium;
+  src: url("/src/assets/fonts/AzoSans-Medium.ttf");
+}
+
+@font-face {
+  font-family: AzoSans_Regular;
+  src: url("/src/assets/fonts/AzoSans-Regular.ttf");
+}
+
+@font-face {
+  font-family: AzoSans_Bold;
+  src: url("/src/assets/fonts/AzoSans-Bold.ttf");
+}
+
+@font-face {
+  font-family: AzoSans_Italic;
+  src: url("/src/assets/fonts/AzoSans-BlackItalic.ttf");
+}
+
+*,
+*::after,
+*::before {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Custom colors */
+:root {
+  --font-light: AzoSans_Light;
+  --font-medium: AzoSans_Medium;
+  --font-regular: AzoSans_Regular;
+  --font-bold: AzoSans_Bold;
+  --font-italic: AzoSans_Italic;
+  /* --background: #fcfcfc; */
+  --background: rgb(245, 250, 253);
+  --foreground: #171717;
+}
+
+body {
+  font-family: var(--font-medium);
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  body {
+    @apply antialiased w-screen h-screen bg-gradient-to-r from-[#F6FEFD] to-[#FFF6F1];
+    overflow-x: hidden; /* Disable horizontal scroll */
+    overflow-y: auto; /* Allow vertical scrolling */
+  }
+
+  /* Scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 4px;
+    background-color: rgb(214, 214, 214);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    width: 4px;
+    background-color: rgb(167, 167, 167);
+  }
+
+  .scroller-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroller::-webkit-scrollbar {
+    width: 4px;
+    background-color: rgb(214, 214, 214);
+  }
+
+  .scroller::-webkit-scrollbar-thumb {
+    width: 4px;
+    background-color: rgb(167, 167, 167);
+  }
+
+  .click_btn:active {
+    transform: scale(0.9);
+    background-color: #2980b9;
+    transition: all 0.4s;
+  }
+
+  .click_btn.clicked {
+    animation: clickEffect 0.4s ease-out;
+  }
+
+  .form-control {
+    color: #292828 !important;
+    font-weight: 500 !important;
+    width: 100% !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    font-size: small;
+    /* color: #667085 !important; */
+    border: 1px solid #d0d5dd !important;
+  }
+
+  .accent-appGreen {
+    accent-color: #045529 !important;
+  }
+  .accent-appOrange {
+    accent-color: #ea580c !important;
+  }
+  .custom-card .ant-card-head-title {
+    color: white; /* Make the title text white */
+  }
+
+
+  .gold-outline-btn {
+    background: transparent;
+    border: 2px solid gold;
+    color: gold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px; /* Add some space above the button */
+  }
+  
+  .gold-outline-btn:hover {
+    background: gold;
+    color: white;
+  }
+  .teal-outline-btn {
+    background: transparent;
+    border: 2px solid teal;
+    color: teal;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px; /* Add some space above the button */
+  }
+  
+  .teal-outline-btn:hover {
+    background: teal;
+    color: white;
+  }
+  
+  .bg-olive {
+    background-color: #ecf7f5 !important;
+  }
+  .bg-appOrange {
+    background-color: #ea580c !important;
+  }
+
+  .bg-appOrangeLight {
+    background-color: #fa7a35 !important;
+  }
+
+  .bg-appBlue {
+    background-color: #002b4d !important;
+    color: #fff;
+  }
+  .bg-appBlueLight,
+  .bg-primary {
+    background-color: #035fa5 !important;
+  }
+
+  .bg-appGreen {
+    background-color: #16565d !important;
+  }
+
+  .bg-appGreenLight {
+    background-color: #247a84 !important;
+  }
+  .bg-gold {
+    background-color: #c8951a !important;
+  }
+  .bg-gold-light {
+    background-color: #fab91f !important;
+  }
+
+  .text-appOrange {
+    color: #ea580c !important;
+  }
+
+  .scheduler-header {
+    margin-bottom: 20px;
+    text-align: right;
+  }
+
+  .filter-btn {
+    padding: 10px;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .custom-table .ant-table-thead > tr > th {
+    background-color: #f3f8ff;
+    color: #667085;
+    font-weight: bold;
+    font-size: 12px;
+  }
+
+  .custom-tabs .ant-tabs-tab-active {
+    background-color: #f0f9ff; /* Light blue background */
+    border-radius: 6px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    color: #1d4ed8 !important; /* Dark blue text */
+  }
+
+  .custom-tabs .ant-tabs-tab:hover {
+    background-color: #e0f2fe; /* Lighter blue on hover */
+  }
+
+  .custom-tabs .ant-tabs-tab {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .filter-btn.active {
+    background-color: #005fa3;
+  }
+
+  .filter-btn:hover {
+    background-color: #007bff;
+  }
+
+  @keyframes clickEffect {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Add media query for mobile screens */
+  @media (max-width: 768px) {
+    body {
+      overflow-y: auto; /* Ensure scrolling is enabled on mobile screens */
+    }
+  }
+}
+
+@keyframes saved_slide {
+  0% {
+    opacity: 0;
+    right: -400px;
+  }
+
+  55% {
+    opacity: 1;
+    right: 0px;
+  }
+
+  100% {
+    opacity: 0;
+    right: 400px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .applicant_side {
+    width: 100%;
+  }
+}
+
+.custom-tabs .ant-tabs-tab {
+  flex: 1;
+  text-align: left;
+  background-color: transparent !important;
+  height: 30px !important;
+  color: #667085;
+  border-bottom: 1px solid #e4e7ec;
+}
+
+.custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #002b4d !important;
+}
+
+.custom-tabs .ant-tabs-ink-bar {
+  background-color: #002b4d;
+}
+
+.default {
+  background-color: gray;
+}

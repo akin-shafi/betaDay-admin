@@ -1,0 +1,26 @@
+{
+    "business": {
+        "id": "53169170-be11-4326-b119-ef21f1974afe",
+        "name": "Tasty Haven",
+        "image": "https://tastyhaven.com/logo.jpg",
+        "description": "A cozy restaurant with a variety of local dishes",
+        "categories": [
+            "Restaurant",
+            "Local Cuisine"
+        ],
+        "address": "12 Marine Rd, Apapa",
+        "city": "Apapa",
+        "state": "Lagos",
+        "openingTime": "08:00:00",
+        "closingTime": "22:00:00",
+        "deliveryOptions": "In-house,Pickup",
+        "contactNumber": "+2348012345678",
+        "website": "https://tastyhaven.com",
+        "priceRange": null,
+        "deliveryTimeRange": null,
+        "isActive": true,
+        "avgRating": "4.33",
+        "ratingCount": 3
+    },
+    "message": "Business retrieved successfully"
+}
