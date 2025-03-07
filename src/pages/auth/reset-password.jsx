@@ -107,7 +107,7 @@ const ResetPassword = () => {
           <Button
             type="primary"
             htmlType="submit"
-            className="w-full"
+            className="w-full bg-gray-900 hover:bg-[#ff6600]"
             loading={loading}
             disabled={loading}
           >

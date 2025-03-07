@@ -143,7 +143,7 @@ export function InstitutionManagementPage() {
           <div className="flex">
             <Button
               type="primary"
-              className="bg-appGreen hover:bg-appGreenLight rounded-full"
+              className="bg-gray-900 hover:bg-[#ff6600] rounded-full"
               style={{ marginLeft: "auto" }}
               onClick={() => {
                 setSelectedInstitution(null);

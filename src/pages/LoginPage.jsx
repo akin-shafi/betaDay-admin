@@ -110,7 +110,7 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-appGreenLight mt-4"
+            className="w-full bg-gray-900 text-white py-2 rounded-md hover:bg-[#ff6600] mt-4"
             disabled={isProcessing} // Disable button during processing
           >
             {isProcessing ? "Processing" : "Login"}

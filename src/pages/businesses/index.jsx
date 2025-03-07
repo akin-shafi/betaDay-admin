@@ -195,6 +195,7 @@ export default function BusinessesPage() {
           type="primary"
           icon={<Plus size={16} />}
           onClick={() => setIsAddModalVisible(true)}
+          className="bg-gray-900 hover:bg-[#ff6600]"
         >
           Add Business
         </Button>

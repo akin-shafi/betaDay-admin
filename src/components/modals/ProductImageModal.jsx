@@ -9,6 +9,7 @@ export const ProductImageModal = ({
   form,
   imagePreview,
   setImagePreview,
+  mode,
 }) => {
   const beforeImageUpload = (file) => {
     const isImage = file.type.startsWith("image/");
@@ -116,8 +117,12 @@ export const ProductImageModal = ({
           >
             Cancel
           </Button>
-          <Button type="primary" htmlType="submit">
-            Update Image
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="bg-gray-900 hover:bg-[#ff6600]"
+          >
+            {mode === "edit" ? "Update Image" : "Add Image"}
           </Button>
         </div>
       </Form>

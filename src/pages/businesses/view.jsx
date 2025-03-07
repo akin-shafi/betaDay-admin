@@ -601,7 +601,7 @@ export default function BusinessViewPage() {
           <Button
             type="primary"
             onClick={() => setIsEditModalVisible(true)}
-            className="text-sm"
+            className="text-sm bg-gray-900 hover:bg-[#ff6600]"
           >
             Edit Business
           </Button>
@@ -782,7 +782,7 @@ export default function BusinessViewPage() {
               type="primary"
               icon={<Plus size={16} />}
               onClick={() => setIsAddProductModalVisible(true)}
-              className="text-sm"
+              className="text-sm bg-gray-900 hover:bg-[#ff6600]"
             >
               Add Product
             </Button>

@@ -63,7 +63,11 @@ export const UserModal = ({ isVisible, onCancel, onFinish, user, form }) => {
 
         <div className="flex justify-end space-x-4 mt-6">
           <Button onClick={onCancel}>Cancel</Button>
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="bg-gray-900 hover:bg-[#ff6600]"
+          >
             {user ? "Update User" : "Create User"}
           </Button>
         </div>

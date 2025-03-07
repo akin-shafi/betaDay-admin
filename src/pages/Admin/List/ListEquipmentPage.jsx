@@ -167,7 +167,7 @@ export default function ListEquipmentPage() {
           <h2>List of Equipment</h2>
           <Button
             type="primary"
-            className="bg-appGreen hover:bg-appGreenLight"
+            className="bg-gray-900 hover:bg-[#ff6600]"
             onClick={() => navigate("/equipment")}
           >
             Add Equipment

@@ -2,9 +2,12 @@
 import { useState } from "react";
 import { useSession } from "@/hooks/useSession";
 import { UserModal } from "@/components/modals/UserModal"; // Import the modal component
+import StatisticsCard from "@/components/dashboard/StatisticCard"; // Import StatisticsCard component
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export function AdminPage() {
   const { session } = useSession();
+  const navigate = useNavigate(); // Add useNavigate hook
   const fullname = session?.user?.fullname;
   // const role = session?.user?.role;
   // const onboardingStep = session?.user?.onboardingStep;
@@ -16,6 +19,11 @@ export function AdminPage() {
 
   // Close the modal
   const closeModal = () => setIsModalOpen(false);
+
+  // Handle navigation
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
 
   // Handle the form submission from the modal
   const handleInviteSubmit = (values) => {

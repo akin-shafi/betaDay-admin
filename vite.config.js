@@ -3,15 +3,22 @@ import { defineConfig } from "vite";
 import svgr from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { fileURLToPath } from "url";
 
-// Fix for __dirname in ESM
-// const __filename = fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react(), svgr()],
   build: {
     chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+        },
+      },
+    },
   },
   resolve: {
     alias: {
@@ -23,11 +30,20 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["lucide-react"],
+    include: ["lucide-react", "react", "react-dom", "react-router-dom"],
     esbuildOptions: {
       loader: {
         ".js": "jsx",
       },
     },
+  },
+  server: {
+    port: 3000,
+    strictPort: true,
+  },
+  esbuild: {
+    loader: "jsx",
+    include: /src\/.*\.[tj]sx?$/,
+    jsx: "automatic",
   },
 });
