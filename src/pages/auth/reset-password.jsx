@@ -49,7 +49,7 @@ const ResetPassword = () => {
           "Password has been reset successfully. Redirecting to login page..."
         );
         setTimeout(() => {
-          window.location.href = "/login";
+          window.location.href = "/auth/login";
         }, 5000);
       } else {
         setError("Failed to reset password. Please try again.");
@@ -66,7 +66,7 @@ const ResetPassword = () => {
   //   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-primary text-white p-4">
+    <div className="flex items-center justify-center min-h-screen bg-whitesmoke text-white p-4">
       <div className="bg-white text-black rounded-lg shadow-lg p-8 max-w-md w-full">
         <h4 className="text-xl font-bold mb-4 text-center uppercase">
           <div className="text-center mb-6">
@@ -106,7 +106,7 @@ const ResetPassword = () => {
           <Button
             type="primary"
             htmlType="submit"
-            className="w-full bg-gray-900 hover:bg-[#ff6600]"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#ff6600] hover:bg-[#ff8533] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6600] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             loading={loading}
             disabled={loading}
           >
@@ -116,7 +116,7 @@ const ResetPassword = () => {
         <div className="mt-4 text-center">
           <p>
             Remembered your password?{" "}
-            <Link to="/login" className="text-grap-900 hover:text-teal-600">
+            <Link to="/auth/login" className="text-grap-900 hover:text-teal-600">
               Login
             </Link>
           </p>

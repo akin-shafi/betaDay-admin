@@ -14,14 +14,14 @@ export default function UserDetails() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+  const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       if (id) {
         try {
           const response = await fetch(
-            `${API_BASE_URL}/auth/users/${id}`, // Update the API URL as necessary
+            `${API_URL}/auth/users/${id}`, // Update the API URL as necessary
             {
               headers: {
                 Authorization: `Bearer ${token}`,

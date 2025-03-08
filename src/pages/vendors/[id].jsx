@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   fetchBusinessById,
   updateBusiness,
@@ -65,7 +66,7 @@ const CURRENCY_OPTIONS = [
   { label: "Pound (£)", value: "Pound" },
 ];
 
-export default function BusinessViewPage() {
+export default function VendorDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { session } = useSession();
@@ -105,7 +106,15 @@ export default function BusinessViewPage() {
         setError(null);
         const response = await fetchBusinessById(id, session?.token);
         setBusiness(response.business);
-        form.setFieldsValue(response.business);
+        form.setFieldsValue({
+          ...response.business,
+          deliveryOptions: response.business.deliveryOptions || [],
+          categories: response.business.categories || [],
+          priceRange: response.business.priceRange || "",
+          deliveryTimeRange: response.business.deliveryTimeRange || "",
+          rating: response.business.rating || "0.0",
+          totalRatings: response.business.totalRatings || 0,
+        });
       } catch (err) {
         setError(err);
         console.error("Error fetching business:", err);
@@ -189,6 +198,7 @@ export default function BusinessViewPage() {
 
   const openEditProductModal = (product) => {
     setSelectedProduct(product);
+    // Set the selected currency when opening the modal
     setSelectedCurrency(product.currency || "Naira");
     productForm.setFieldsValue(product);
     setIsProductEditModalVisible(true);
@@ -201,20 +211,61 @@ export default function BusinessViewPage() {
 
   const handleImageUpdate = async (values) => {
     try {
+      console.log("Starting image update in component...");
+      console.log("Form values:", values);
+
       await updateBusinessImage(id, values.image, session?.token);
       setIsImageEditModalVisible(false);
       setImagePreview(null);
       // Refresh business data
       const response = await fetchBusinessById(id, session?.token);
       setBusiness(response.business);
-      message.success("Business image updated successfully");
     } catch (err) {
+      console.error("Error in handleImageUpdate:", err);
       message.error(err.message || "Failed to update business image");
+    }
+  };
+
+  const beforeImageUpload = (file) => {
+    console.log("Validating image file...");
+    console.log("File details:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      message.error("You can only upload image files!");
+      return false;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Image must be smaller than 2MB!");
+      return false;
+    }
+    return false; // Prevent default upload behavior
+  };
+
+  const handleImageChange = (info) => {
+    console.log("Image change event:", info);
+    if (info.file) {
+      const file = info.file;
+      console.log("Selected file:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+      setImagePreview(URL.createObjectURL(file));
+      imageForm.setFieldsValue({ image: file });
     }
   };
 
   const handleProductImageUpdate = async (values) => {
     try {
+      console.log("Starting product image update in component...");
+      console.log("Form values:", values);
+
       await updateProductImage(
         selectedProduct.id,
         values.image,
@@ -225,9 +276,44 @@ export default function BusinessViewPage() {
       // Refresh products list
       const data = await fetchProducts(session.token, id);
       setProducts(data);
-      message.success("Product image updated successfully");
     } catch (err) {
+      console.error("Error in handleProductImageUpdate:", err);
       message.error(err.message || "Failed to update product image");
+    }
+  };
+
+  const beforeProductImageUpload = (file) => {
+    console.log("Validating product image file...");
+    console.log("File details:", {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    });
+
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      message.error("You can only upload image files!");
+      return false;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Image must be smaller than 2MB!");
+      return false;
+    }
+    return false; // Prevent default upload behavior
+  };
+
+  const handleProductImageChange = (info) => {
+    console.log("Product image change event:", info);
+    if (info.file) {
+      const file = info.file;
+      console.log("Selected file:", {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+      setProductImagePreview(URL.createObjectURL(file));
+      productImageForm.setFieldsValue({ image: file });
     }
   };
 
@@ -244,15 +330,19 @@ export default function BusinessViewPage() {
         .toLowerCase()
         .includes(searchText.toLowerCase());
       const matchesCategory =
-        !selectedCategory || product.category === selectedCategory;
+        !selectedCategory || product.categories?.includes(selectedCategory);
       const matchesPrice =
-        product.price >= priceRange.min && product.price <= priceRange.max;
+        parseFloat(product.price) >= priceRange.min &&
+        parseFloat(product.price) <= priceRange.max;
       return matchesSearch && matchesCategory && matchesPrice;
     });
   };
 
   const getUniqueCategories = () => {
-    return [...new Set(products.map((product) => product.category))];
+    const allCategories = products.flatMap(
+      (product) => product.categories || []
+    );
+    return [...new Set(allCategories)];
   };
 
   const handleAddProduct = async (values) => {
@@ -306,13 +396,17 @@ export default function BusinessViewPage() {
       render: (text) => <span className="text-sm">{text}</span>,
     },
     {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-      render: (category) => (
-        <Tag color="blue" className="text-xs">
-          {category}
-        </Tag>
+      title: "Categories",
+      dataIndex: "categories",
+      key: "categories",
+      render: (categories) => (
+        <Space wrap>
+          {categories?.map((category, index) => (
+            <Tag key={index} color="blue" className="text-xs">
+              {category}
+            </Tag>
+          ))}
+        </Space>
       ),
       responsive: ["sm", "md", "lg", "xl"],
     },
@@ -320,29 +414,18 @@ export default function BusinessViewPage() {
       title: "Price",
       dataIndex: "price",
       key: "price",
-      render: (price, record) => {
-        const currencySymbol =
-          CURRENCY_OPTIONS.find(
-            (c) => c.value === record.currency
-          )?.label.split(" ")[0] || "₦";
-        return (
-          <span className="text-sm">{`${currencySymbol}${price.toFixed(
-            2
-          )}`}</span>
-        );
-      },
-      sorter: (a, b) => a.price - b.price,
+      render: (price) => (
+        <span className="text-sm">₦{parseFloat(price).toFixed(2)}</span>
+      ),
+      sorter: (a, b) => parseFloat(a.price) - parseFloat(b.price),
     },
     {
-      title: "Stock",
-      dataIndex: "stock",
-      key: "stock",
-      render: (stock) => (
-        <Tag
-          color={stock > 10 ? "success" : stock > 0 ? "warning" : "error"}
-          className="text-xs"
-        >
-          {stock}
+      title: "Availability",
+      dataIndex: "isAvailable",
+      key: "isAvailable",
+      render: (isAvailable) => (
+        <Tag color={isAvailable ? "success" : "error"} className="text-xs">
+          {isAvailable ? "In Stock" : "Out of Stock"}
         </Tag>
       ),
       responsive: ["sm", "md", "lg", "xl"],
@@ -388,8 +471,97 @@ export default function BusinessViewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Spin size="large" />
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
+            <div>
+              <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Business Details Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4"></div>
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="flex-1">
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1"></div>
+                    <div className="h-4 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4"></div>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="flex-1">
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1"></div>
+                    <div className="h-4 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-6">
+              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Products Table Skeleton */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <th key={i} className="px-6 py-3">
+                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {[1, 2, 3, 4, 5].map((row) => (
+                    <tr key={row}>
+                      {[1, 2, 3, 4, 5, 6].map((cell) => (
+                        <td key={cell} className="px-6 py-4">
+                          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -412,15 +584,12 @@ export default function BusinessViewPage() {
     );
   }
 
-  // Convert delivery options string to array
-  const deliveryOptions = business.deliveryOptions?.split(",") || [];
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <Link to="/businesses">
+          <Link to="/vendors">
             <Button icon={<ArrowLeft size={16} />} className="text-sm">
               Back to Businesses
             </Button>
@@ -485,8 +654,10 @@ export default function BusinessViewPage() {
                 </Tag>
                 <div className="flex items-center text-gray-500 text-sm">
                   <span className="mr-1">★</span>
-                  <span>{business.avgRating}</span>
-                  <span className="ml-1">({business.ratingCount} ratings)</span>
+                  <span>{business.rating}</span>
+                  <span className="ml-1">
+                    ({business.totalRatings} ratings)
+                  </span>
                 </div>
               </div>
               <p className="text-gray-600 mb-4 text-sm">
@@ -512,19 +683,21 @@ export default function BusinessViewPage() {
                 {business.contactNumber}
               </div>
             </Descriptions.Item>
-            <Descriptions.Item label="Website">
-              <div className="flex items-center">
-                <Globe size={16} className="mr-2" />
-                <a
-                  href={business.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  {business.website}
-                </a>
-              </div>
-            </Descriptions.Item>
+            {business.website && (
+              <Descriptions.Item label="Website">
+                <div className="flex items-center">
+                  <Globe size={16} className="mr-2" />
+                  <a
+                    href={business.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {business.website}
+                  </a>
+                </div>
+              </Descriptions.Item>
+            )}
             <Descriptions.Item label="Operating Hours">
               <div className="flex items-center">
                 <Clock size={16} className="mr-2" />
@@ -551,7 +724,7 @@ export default function BusinessViewPage() {
         {/* Delivery Options Card */}
         <Card title="Delivery Options" className="lg:col-span-2">
           <Space wrap>
-            {deliveryOptions.map((option, index) => (
+            {business.deliveryOptions?.map((option, index) => (
               <Tag key={index} color="blue">
                 {option}
               </Tag>
@@ -568,8 +741,8 @@ export default function BusinessViewPage() {
             <Descriptions.Item label="Delivery Time Range">
               {business.deliveryTimeRange || "Not specified"}
             </Descriptions.Item>
-            <Descriptions.Item label="Average Rating">
-              {business.avgRating} ({business.ratingCount} ratings)
+            <Descriptions.Item label="Rating">
+              {business.rating} ({business.totalRatings} ratings)
             </Descriptions.Item>
           </Descriptions>
         </Card>
@@ -580,13 +753,13 @@ export default function BusinessViewPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
             <div className="text-3xl font-semibold text-primary">
-              {business.ratingCount || 0}
+              {business.totalRatings || 0}
             </div>
             <div className="text-gray-500">Total Ratings</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-semibold text-primary">
-              {deliveryOptions.length}
+              {business.deliveryOptions?.length || 0}
             </div>
             <div className="text-gray-500">Delivery Options</div>
           </div>

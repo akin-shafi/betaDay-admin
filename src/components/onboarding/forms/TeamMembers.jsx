@@ -17,7 +17,7 @@ const TeamDetails = ({ onChange }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [referenceRecords, setTeamRecords] = useState([]);
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+  const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
   useEffect(() => {
     setIsMounted(true);
@@ -25,15 +25,13 @@ const TeamDetails = ({ onChange }) => {
       if (hasFetchedData) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/teams/${applicationNo}`, {
+        const response = await fetch(`${API_URL}/teams/${applicationNo}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(
-            errorData.message || "Failed to fetch team data."
-          );
+          throw new Error(errorData.message || "Failed to fetch team data.");
         }
 
         const data = await response.json();
@@ -99,7 +97,7 @@ const TeamDetails = ({ onChange }) => {
       if (recordToDelete.id) {
         try {
           const response = await fetch(
-            `${API_BASE_URL}/team/${applicationNo}/${recordToDelete.id}`,
+            `${API_URL}/team/${applicationNo}/${recordToDelete.id}`,
             {
               method: "DELETE",
               headers: { Authorization: `Bearer ${token}` },
@@ -242,9 +240,7 @@ const TeamDetails = ({ onChange }) => {
               placeholder="Enter email (e.g., example@mail.com)"
               name={`email`}
               value={record.email}
-              onChange={(e) =>
-                handleTeamChange(index, "email", e.target.value)
-              }
+              onChange={(e) => handleTeamChange(index, "email", e.target.value)}
             />
           </div>
 

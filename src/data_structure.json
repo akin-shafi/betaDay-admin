@@ -23,4 +23,52 @@
         "ratingCount": 3
     },
     "message": "Business retrieved successfully"
-}
+},
+
+{
+"products": [
+        {
+            "id": "e1df287a-c340-4fd7-bbbb-69558ee8b3cc",
+            "name": "Chicken Pepper Soup",
+            "description": "Spicy Nigerian pepper soup with chicken",
+            "price": "2800.00",
+            "image": "https://example.com/chicken-pepper-soup.jpg",
+            "categories": [
+                "Soups",
+                "Local Food"
+            ],
+            "isAvailable": true,
+            "isActive": true,
+            "businessId": "84fe4ff5-210e-4770-a8dc-3df22a7c364d",
+            "createdAt": "2025-03-07T23:08:16.095Z",
+            "updatedAt": "2025-03-07T23:08:16.095Z",
+            "business": {
+                "id": "84fe4ff5-210e-4770-a8dc-3df22a7c364d",
+                "name": "Mama's Kitchen Ajeromi",
+                "description": "Authentic Nigerian cuisine with a modern twist",
+                "address": "1 Boundary Road",
+                "city": "Ajeromi-Ifelodun",
+                "state": "Lagos",
+                "location": null,
+                "image": "https://example.com/mamas-kitchen.jpg",
+                "categories": [
+                    "Restaurant"
+                ],
+                "openingTime": "07:00:00",
+                "closingTime": "22:00:00",
+                "deliveryOptions": [
+                    "Pickup",
+                    "Delivery"
+                ],
+                "contactNumber": "+2348055550001",
+                "website": null,
+                "priceRange": "₦1,000 - ₦5,000",
+                "deliveryTimeRange": "30-45 mins",
+                "rating": "0.0",
+                "totalRatings": 0,
+                "isActive": true,
+                "createdAt": "2025-03-07T23:07:59.864Z",
+                "updatedAt": "2025-03-07T23:07:59.864Z"
+            }
+        },
+    }

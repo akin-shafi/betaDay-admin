@@ -7,7 +7,7 @@ export function AdminRoute({ children }) {
   const navigate = useNavigate();
 
   if (!session || session.role !== "admin") {
-    navigate("/login");
+    navigate("/auth/login");
     return null;
   }
 

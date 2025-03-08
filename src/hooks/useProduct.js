@@ -1,11 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // ================== Products =========================== //
 export const fetchProducts = async (token, businessId = null) => {
   try {
     const url = businessId
-      ? `${API_BASE_URL}/products?businessId=${businessId}`
-      : `${API_BASE_URL}/products`;
+      ? `${API_URL}/products?businessId=${businessId}`
+      : `${API_URL}/products`;
 
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -25,7 +25,7 @@ export const fetchProducts = async (token, businessId = null) => {
 
 export const fetchProductById = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetch(`${API_URL}/products/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -43,7 +43,7 @@ export const fetchProductById = async (id, token) => {
 
 export const createProduct = async (data, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    const response = await fetch(`${API_URL}/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,7 +65,7 @@ export const createProduct = async (data, token) => {
 
 export const updateProduct = async (id, data, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetch(`${API_URL}/products/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +87,7 @@ export const updateProduct = async (id, data, token) => {
 
 export const deleteProduct = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetch(`${API_URL}/products/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export const deleteProduct = async (id, token) => {
 
 export const updateProductStatus = async (id, isActive, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}/status`, {
+    const response = await fetch(`${API_URL}/products/${id}/status`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -129,7 +129,7 @@ export const updateProductStatus = async (id, isActive, token) => {
 
 export const updateProductStock = async (id, stock, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}/stock`, {
+    const response = await fetch(`${API_URL}/products/${id}/stock`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -154,7 +154,7 @@ export const uploadProductImage = async (id, imageFile, token) => {
     const formData = new FormData();
     formData.append("image", imageFile);
 
-    const response = await fetch(`${API_BASE_URL}/products/${id}/image`, {
+    const response = await fetch(`${API_URL}/products/${id}/image`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -176,8 +176,8 @@ export const uploadProductImage = async (id, imageFile, token) => {
 export const searchProducts = async (query, token, businessId = null) => {
   try {
     const url = businessId
-      ? `${API_BASE_URL}/products/search?q=${query}&businessId=${businessId}`
-      : `${API_BASE_URL}/products/search?q=${query}`;
+      ? `${API_URL}/products/search?q=${query}&businessId=${businessId}`
+      : `${API_URL}/products/search?q=${query}`;
 
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -197,7 +197,7 @@ export const searchProducts = async (query, token, businessId = null) => {
 
 export const getProductCategories = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/categories`, {
+    const response = await fetch(`${API_URL}/products/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

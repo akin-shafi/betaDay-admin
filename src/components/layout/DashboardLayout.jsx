@@ -34,7 +34,7 @@ const DashboardLayout = ({ children }) => {
   // Redirect to login if session is null
   useEffect(() => {
     if (!session) {
-      navigate("/login");
+      navigate("/auth/login");
     }
   }, [session, navigate]);
 

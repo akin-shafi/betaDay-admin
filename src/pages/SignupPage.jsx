@@ -52,7 +52,7 @@ export function SignupPage() {
       });
       if (response.statusCode === 200) {
         setError(response.message);
-        navigate("/login");
+        navigate("/auth/login");
       } else {
         setError(response.message);
       }
@@ -215,7 +215,7 @@ export function SignupPage() {
         <div className="mt-4 text-center">
           <p>
             Already have an account?{" "}
-            <Link to="/login" className="text-[#ff6600] hover:underline">
+            <Link to="/auth/login" className="text-[#ff6600] hover:underline">
               Login
             </Link>
           </p>

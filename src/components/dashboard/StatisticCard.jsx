@@ -1,25 +1,39 @@
 /* eslint-disable react/prop-types */
+import PropTypes from "prop-types";
 import StatAvatar from "@/assets/stat-avatar.svg";
 
-export default function StatisticsCard({
-  detail,
-  title,
-  color = "#F2FAFF",
-  onClick,
-}) {
+const StatisticsCard = ({ title, detail, trend, icon, bgColor, onClick }) => {
   return (
     <div
-      style={{ backgroundColor: color }}
-      className="w-full md:h-[110px] cursor-pointer h-[100px] rounded-[8px] border border-[#F9FAFB] hover:bg-appBlue p-2 flex flex-col justify-between"
-      onClick={onClick} // Attach the onClick handler here
+      onClick={onClick}
+      className={`${bgColor} p-4 rounded-xl cursor-pointer hover:shadow-lg transition-all`}
     >
-      <img
-        src={StatAvatar}
-        alt="statistics icon"
-        className="w-[32px] h-[32px] rounded-full"
-      />
-      <p className="text-[12px] text-[#667085]">{title}</p>
-      <h4>{detail}</h4>
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-gray-600 text-sm">{title}</p>
+          <h3 className="text-2xl font-bold text-gray-900 mt-1">{detail}</h3>
+          {trend && <p className="text-sm text-gray-500 mt-1">{trend}</p>}
+        </div>
+        {icon}
+      </div>
     </div>
   );
-}
+};
+
+StatisticsCard.propTypes = {
+  title: PropTypes.string.isRequired,
+  detail: PropTypes.string.isRequired,
+  trend: PropTypes.string,
+  icon: PropTypes.node,
+  bgColor: PropTypes.string,
+  onClick: PropTypes.func,
+};
+
+StatisticsCard.defaultProps = {
+  bgColor: "bg-gray-50",
+  trend: "",
+  icon: null,
+  onClick: () => {},
+};
+
+export default StatisticsCard;

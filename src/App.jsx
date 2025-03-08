@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { LoginPage } from "./pages/LoginPage";
+import { LoginPage } from "./pages/auth/login";
 import { SignupPage } from "./pages/SignupPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AdminPage } from "./pages/Admin";
@@ -8,15 +8,25 @@ import UserDetails from "./pages/Users/UserDetails"; // Import UserDetails compo
 
 import { ContactPage } from "./pages/Contact";
 import ForgotPassword from "./pages/auth/forgot-password";
+import ResetPassword from "./pages/auth/reset-password";
+
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
+// Import Vendor Pages
+// import VendorsPage from "@/pages/vendors";
+// import VendorDetailsPage from "@/pages/vendors/[id]";
+
+// import BusinessesPage from "./pages/businesses/index";
+// import BusinessViewPage from "./pages/businesses/view";
+// import BusinessAddPage from "./pages/businesses/add";
+
 // Import Business Pages
-import BusinessesPage from "./pages/businesses/index";
-import BusinessViewPage from "./pages/businesses/view";
-import BusinessAddPage from "./pages/businesses/add";
+import VendorsPage from "./pages/vendors/index";
+import VendorDetailsPage from "./pages/vendors/[id]";
 
 // Import Orders Pages
-import OrdersPage from "./pages/orders/index";
+import OrdersPage from "@/pages/orders";
+import OrderDetailsPage from "@/pages/orders/[id]";
 
 // Import Riders Pages
 import RidersPage from "./pages/riders/index";
@@ -36,9 +46,10 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/sign-up" element={<SignupPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/sign-up" element={<SignupPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
 
         {/* Protected Routes */}
         <Route
@@ -82,31 +93,67 @@ function App() {
           }
         />
 
-        {/* Business Routes */}
+        {/* Vendor Routes */}
         <Route
+          path="/vendors"
+          element={
+            <ProtectedRoute>
+              <VendorsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendors/:id"
+          element={
+            <ProtectedRoute>
+              <VendorDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Business Routes */}
+        {/* <Route
           path="/businesses"
           element={
             <ProtectedRoute>
               <BusinessesPage />
             </ProtectedRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/businesses/add"
           element={
             <ProtectedRoute>
               <BusinessAddPage />
             </ProtectedRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/businesses/:id"
           element={
             <ProtectedRoute>
               <BusinessViewPage />
             </ProtectedRoute>
           }
+        /> */}
+
+        {/* Business Routes */}
+        {/* <Route
+          path="/vendors"
+          element={
+            <ProtectedRoute>
+              <VendorsPage />
+            </ProtectedRoute>
+          }
         />
+        <Route
+          path="/vendors/:id"
+          element={
+            <ProtectedRoute>
+              <VendorDetailsPage />
+            </ProtectedRoute>
+          }
+        /> */}
 
         {/* Orders Routes */}
         <Route
@@ -114,6 +161,14 @@ function App() {
           element={
             <ProtectedRoute>
               <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailsPage />
             </ProtectedRoute>
           }
         />

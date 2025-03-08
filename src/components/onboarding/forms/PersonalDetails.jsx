@@ -16,14 +16,14 @@ const PersonalDetails = ({ onChange }) => {
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [profilePic, setProfilePic] = useState("");
   const fileRef = useRef(null);
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+  const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
   useEffect(() => {
     const fetchApplicantData = async () => {
       if (!token || !userId || hasFetchedData) return;
 
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/users/${userId}`, {
+        const response = await fetch(`${API_URL}/auth/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

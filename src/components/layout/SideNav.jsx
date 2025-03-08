@@ -8,22 +8,28 @@ import logoImage from "@/assets/images/logo-white.png";
 import {
   LayoutDashboard,
   Users,
-  Building2,
+  // Building2,
   ShoppingCart,
   Bike,
   FileText,
   BarChart3,
   Settings,
+  Store,
+  Tags,
+  AlertCircle,
+  Wallet,
   X,
 } from "lucide-react";
 
 const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
   const location = useLocation();
   const { session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+  const dashboardPath = isAdmin ? "/admin" : "/dashboard";
 
   const routes = [
     {
-      path: "/dashboard",
+      path: dashboardPath,
       icon: LayoutDashboard,
       title: "Dashboard",
     },
@@ -31,12 +37,25 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       path: "/users",
       icon: Users,
       title: "Users",
+      showFor: ["admin"],
     },
     {
-      path: "/businesses",
-      icon: Building2,
-      title: "Businesses",
+      path: "/vendors",
+      icon: Store,
+      title: "Vendors",
+      showFor: ["admin"],
     },
+    {
+      path: "/categories",
+      icon: Tags,
+      title: "Categories",
+      showFor: ["admin"],
+    },
+    // {
+    //   path: "/businesses",
+    //   icon: Building2,
+    //   title: "Businesses",
+    // },
     {
       path: "/orders",
       icon: ShoppingCart,
@@ -48,14 +67,27 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Riders",
     },
     {
+      path: "/transactions",
+      icon: Wallet,
+      title: "Transactions",
+      showFor: ["admin"],
+    },
+    {
       path: "/reports",
       icon: FileText,
       title: "Reports",
+      showFor: ["admin"],
     },
     {
       path: "/analytics",
       icon: BarChart3,
       title: "Analytics",
+      showFor: ["admin"],
+    },
+    {
+      path: "/support",
+      icon: AlertCircle,
+      title: "Support",
     },
     {
       path: "/settings",
@@ -63,6 +95,11 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Settings",
     },
   ];
+
+  // Filter routes based on user role
+  const filteredRoutes = routes.filter(
+    (route) => !route.showFor || route.showFor.includes(session?.user?.role)
+  );
 
   return (
     <>
@@ -94,14 +131,26 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
 
           {/* Logo */}
           <div className="p-4">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <img src={logoImage} alt="Logo" className="h-10" />
+            <Link to={dashboardPath} className="flex items-center space-x-2">
+              <div className="w-[120px] h-[40px] relative">
+                <img
+                  src={logoImage}
+                  alt="Logo"
+                  className="object-contain w-full h-full"
+                  style={{
+                    aspectRatio: "auto",
+                    objectFit: "contain",
+                  }}
+                  width={120}
+                  height={40}
+                />
+              </div>
             </Link>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto mt-8">
-            {routes.map((route) => {
+            {filteredRoutes.map((route) => {
               const Icon = route.icon;
               const isActive = location.pathname === route.path;
 
@@ -111,7 +160,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
                   to={route.path}
                   className={`flex items-center px-6 py-3 text-sm transition-colors duration-200 ${
                     isActive
-                      ? "bg-primary text-white"
+                      ? "bg-[#ff6600] text-white"
                       : "text-gray-300 hover:bg-gray-800 hover:text-white"
                   }`}
                   onClick={() => isMobile && onClose()}
@@ -127,9 +176,9 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
           {session?.user && (
             <div className="p-4 bg-gray-800">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 rounded-full bg-[#ff6600] flex items-center justify-center text-white font-semibold">
                   {session.user.fullName
-                    .split(" ")
+                    ?.split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </div>
@@ -139,6 +188,9 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
                   </div>
                   <div className="text-xs text-gray-400">
                     {session.user.email}
+                  </div>
+                  <div className="text-xs text-[#ff6600] capitalize">
+                    {session.user.role}
                   </div>
                 </div>
               </div>

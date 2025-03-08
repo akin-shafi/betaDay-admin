@@ -1,24 +1,19 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { sendResetPasswordEmail } from "@/hooks/useAuth"; // Adjust path as necessary
-import WhiteLogo from "../../components/whiteLogo";
+import { useState } from "react";
+import { sendResetPasswordEmail } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { AuthLayout } from "@/components/layout/AuthLayout";
+import { FiMail } from "react-icons/fi";
 
-const ForgotPassword = () => {
-  const { email: emailFromRoute } = useParams(); // Directly destructuring email from params
-
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (emailFromRoute) {
-      setEmail(emailFromRoute);
-    }
-  }, [emailFromRoute]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Handle password reset logic here
     setLoading(true);
     setError(null);
     setMessage(null);
@@ -40,70 +35,124 @@ const ForgotPassword = () => {
     } finally {
       setLoading(false);
     }
+    setSubmitted(true);
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-[#032541] text-white p-4">
-      <div className="bg-white text-black rounded-lg shadow-lg p-8 max-w-md w-full">
-        <h4 className="text-xl font-bold mb-4 text-center">
-          <div className="text-center mb-6">
-            <WhiteLogo />
+  if (submitted) {
+    return (
+      <AuthLayout
+        title="Check your email"
+        subtitle="We've sent a password reset link to your email address"
+      >
+        <div className="text-center">
+          <div className="mt-2">
+            <p className="text-sm text-gray-500">
+              {`Didn't receive the email? Check your spam folder or`}{" "}
+              <button
+                type="button"
+                onClick={() => setSubmitted(false)}
+                className="font-medium text-[#ff6600] hover:text-[#ff8533] transition-colors duration-200"
+              >
+                try again
+              </button>
+            </p>
           </div>
-        </h4>
-
-        <div className="mt-3">
-          <h5 className="md:text-[18px] text-[16px] text-primary font-bold text-center">
-            Forgot Password
-          </h5>
-          <p className="md:text-[14px] text-[12px] text-[#475467] text-center">
-            Kindly enter your email to proceed.
-          </p>
+          <div className="mt-6">
+            <Link
+              to="/auth/login"
+              className="text-sm font-medium text-[#ff6600] hover:text-[#ff8533] transition-colors duration-200"
+            >
+              Return to sign in
+            </Link>
+          </div>
         </div>
+      </AuthLayout>
+    );
+  }
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-          {message && (
-            <p className="text-green-500 text-center mb-4">{message}</p>
-          )}
-          <div className="flex flex-col">
-            <label htmlFor="email" className="mb-2 text-lg">
-              Email:
-            </label>
+  return (
+    <AuthLayout
+      title="Reset your password"
+      subtitle="Enter your email address and we'll send you a link to reset your password"
+    >
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email address
+          </label>
+          <div className="mt-1 relative rounded-md shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiMail className="h-5 w-5 text-gray-400" />
+            </div>
             <input
-              type="email"
               id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#ff6600] focus:border-[#ff6600] sm:text-sm transition-colors duration-200"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="p-2 border border-gray-300 rounded"
             />
           </div>
+        </div>
+
+        <div>
           <button
             type="submit"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#ff6600] hover:bg-[#ff8533] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6600] disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
-            className={`w-full p-2 rounded bg-gray-900 text-white hover:bg-[#ff6600] transition ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
           >
-            {loading ? "Sending..." : "Send Password Reset Email"}
+            {loading ? (
+              <span className="flex items-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Sending...
+              </span>
+            ) : (
+              "Send reset link"
+            )}
           </button>
-        </form>
-
-        <div className="mt-4 text-center">
-          <p>
-            Back to{" "}
-            <Link to="/login" className="text-[#ff6600]">
-              Login
-            </Link>
-            <span className="px-2">or</span>
-            <Link to="/sign-up" className="text-secondary">
-              Register
-            </Link>
-          </p>
         </div>
-      </div>
-    </div>
-  );
-};
 
-export default ForgotPassword;
+        {error && (
+          <div className="text-sm text-red-600 text-center">{error}</div>
+        )}
+        {message && (
+          <div className="text-sm text-green-600 text-center">{message}</div>
+        )}
+
+        <div className="text-center">
+          <Link
+            to="/auth/login"
+            className="text-sm font-medium text-[#ff6600] hover:text-[#ff8533] transition-colors duration-200"
+          >
+            Return to sign in
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
+  );
+}

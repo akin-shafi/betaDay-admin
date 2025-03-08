@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }) {
   useEffect(() => {
     if (!session) {
       localStorage.setItem("message", "Please login to access this page");
-      navigate("/login");
+      navigate("/auth/login");
     }
   }, [session, navigate]);
 

@@ -10,7 +10,7 @@ export default function InstituteNavBar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/auth/login");
   };
   return (
     <>

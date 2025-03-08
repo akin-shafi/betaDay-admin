@@ -1,9 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
 // ================== Businesses =========================== //
 export const fetchBusinesses = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/businesses`, {
+    const response = await fetch(`${API_URL}/businesses`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -23,7 +23,7 @@ export const fetchBusinesses = async (token) => {
 
 export const fetchBusinessById = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/businesses/${id}`, {
+    const response = await fetch(`${API_URL}/businesses/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -40,7 +40,7 @@ export const fetchBusinessById = async (id, token) => {
 };
 
 export const createBusiness = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}/businesses`, {
+  const response = await fetch(`${API_URL}/businesses`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -58,7 +58,7 @@ export const createBusiness = async (data, token) => {
 };
 
 export const updateBusiness = async (id, data, token) => {
-  const response = await fetch(`${API_BASE_URL}/businesses/${id}`, {
+  const response = await fetch(`${API_URL}/businesses/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -70,7 +70,7 @@ export const updateBusiness = async (id, data, token) => {
 };
 
 export const deleteBusiness = async (id, token) => {
-  const response = await fetch(`${API_BASE_URL}/businesses/${id}`, {
+  const response = await fetch(`${API_URL}/businesses/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,

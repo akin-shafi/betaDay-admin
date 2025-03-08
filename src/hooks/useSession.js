@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { getSession, setSession, clearSession } from "../utils/session";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 export function useSession() {
   const [session, setSessionState] = useState(getSession());
@@ -11,13 +11,13 @@ export function useSession() {
   useEffect(() => {
     if (!session) {
       localStorage.setItem("message", "Please login");
-      navigate("/login");
+      navigate("/auth/login");
     }
   }, [session, navigate]);
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/login`, {
+      const response = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -47,7 +47,7 @@ export function useSession() {
   const logout = () => {
     clearSession();
     setSessionState(null);
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   };
 
   return {

@@ -1,9 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
 // ================== Users =========================== //
 export const fetchUsers = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/users`, {
+    const response = await fetch(`${API_URL}/auth/users`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -22,7 +22,7 @@ export const fetchUsers = async (token) => {
 };
 
 export const createUser = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}/auth/users/register`, {
+  const response = await fetch(`${API_URL}/auth/users/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export const createUser = async (data, token) => {
 };
 
 export const updateUser = async (id, data, token) => {
-  const response = await fetch(`${API_BASE_URL}/auth/users/${id}`, {
+  const response = await fetch(`${API_URL}/auth/users/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export const updateUser = async (id, data, token) => {
 };
 
 export const deleteUser = async (id, token) => {
-  const response = await fetch(`${API_BASE_URL}/auth/users/${id}`, {
+  const response = await fetch(`${API_URL}/auth/users/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ export const deleteUser = async (id, token) => {
 
 export const fetchRoles = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/roles`, {
+    const response = await fetch(`${API_URL}/users/roles`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -78,7 +78,7 @@ export const fetchRoles = async (id, token) => {
 // ================== Institutions=========================== //
 export const fetchInstitution = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/institutions`, {
+    const response = await fetch(`${API_URL}/institutions`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -99,7 +99,7 @@ export const fetchInstitution = async (token) => {
 
 export const fetchInstitutionNames = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/institutions/names`, {
+    const response = await fetch(`${API_URL}/institutions/names`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -120,7 +120,7 @@ export const fetchInstitutionNames = async (token) => {
 
 export const fetchInstitutionById = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/institutions/${id}`, {
+    const response = await fetch(`${API_URL}/institutions/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -145,7 +145,7 @@ export const fetchInstitutionsByIds = async (ids, token) => {
       throw new Error("Invalid input: 'ids' must be a non-empty array.");
     }
 
-    const response = await fetch(`${API_BASE_URL}/institutions/findByIds`, {
+    const response = await fetch(`${API_URL}/institutions/findByIds`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +175,7 @@ export const fetchInstitutionsByIds = async (ids, token) => {
 };
 
 export const createInstitution = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}/institutions`, {
+  const response = await fetch(`${API_URL}/institutions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -187,7 +187,7 @@ export const createInstitution = async (data, token) => {
 };
 
 export const updateInstitution = async (id, data, token) => {
-  const response = await fetch(`${API_BASE_URL}/institutions/${id}`, {
+  const response = await fetch(`${API_URL}/institutions/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -199,7 +199,7 @@ export const updateInstitution = async (id, data, token) => {
 };
 
 export const deleteInstitution = async (id, token) => {
-  const response = await fetch(`${API_BASE_URL}/institutions/${id}`, {
+  const response = await fetch(`${API_URL}/institutions/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -212,7 +212,7 @@ export const deleteInstitution = async (id, token) => {
 
 export const fetchEquipment = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/equipment`, {
+    const response = await fetch(`${API_URL}/equipment`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -234,7 +234,7 @@ export const fetchEquipment = async (token) => {
 export const fetchEquipmentsByInstituteId = async (institutionId, token) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/equipment/institution/${institutionId}`,
+      `${API_URL}/equipment/institution/${institutionId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -257,7 +257,7 @@ export const fetchEquipmentsByInstituteId = async (institutionId, token) => {
 
 export const sendBulkEquipment = async (data, token, setStatus) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/equipment/bulk-upload`, {
+    const response = await fetch(`${API_URL}/equipment/bulk-upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -345,7 +345,7 @@ export const sendBulkEquipment = async (data, token, setStatus) => {
 
 // DELETE an asset by ID
 export const deleteAssetById = async (id, token) => {
-  const response = await fetch(`${API_BASE_URL}/assets/${id}`, {
+  const response = await fetch(`${API_URL}/assets/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -356,7 +356,7 @@ export const deleteAssetById = async (id, token) => {
 
 // POST a new asset
 export const createAsset = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}/assets`, {
+  const response = await fetch(`${API_URL}/assets`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -369,7 +369,7 @@ export const createAsset = async (data, token) => {
 
 // PUT update an asset by ID
 export const updateAsset = async (id, data, token) => {
-  const response = await fetch(`${API_BASE_URL}/assets/${id}`, {
+  const response = await fetch(`${API_URL}/assets/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -382,7 +382,7 @@ export const updateAsset = async (id, data, token) => {
 
 // GET all assets
 export const fetchAssets = async (token) => {
-  const response = await fetch(`${API_BASE_URL}/assets`, {
+  const response = await fetch(`${API_URL}/assets`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -394,7 +394,7 @@ export const fetchAssets = async (token) => {
 export const fetchAssetsByinstitutionId = async (institutionId, token) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/assets/by-institution/${institutionId}`,
+      `${API_URL}/assets/by-institution/${institutionId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -419,7 +419,7 @@ export const fetchAssetsByinstitutionId = async (institutionId, token) => {
 
 // DELETE a contact by ID
 export const deleteContactById = async (id, token) => {
-  const response = await fetch(`${API_BASE_URL}/contact-person/${id}`, {
+  const response = await fetch(`${API_URL}/contact-person/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -430,7 +430,7 @@ export const deleteContactById = async (id, token) => {
 
 // POST a new contact
 export const createContact = async (data, token) => {
-  const response = await fetch(`${API_BASE_URL}/contact-person`, {
+  const response = await fetch(`${API_URL}/contact-person`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -449,7 +449,7 @@ export const updateContact = async (id, data, token) => {
     throw new Error("Missing required arguments for updateContact");
   }
 
-  const response = await fetch(`${API_BASE_URL}/contact-person/${id}`, {
+  const response = await fetch(`${API_URL}/contact-person/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -468,7 +468,7 @@ export const updateContact = async (id, data, token) => {
 
 // GET all contacts
 export const fetchContacts = async (token) => {
-  const response = await fetch(`${API_BASE_URL}/contact-person`, {
+  const response = await fetch(`${API_URL}/contact-person`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -481,7 +481,7 @@ export const fetchContacts = async (token) => {
 export const fetchContactsByInstitutionId = async (institutionId, token) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/contact-person/institution/${institutionId}`,
+      `${API_URL}/contact-person/institution/${institutionId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
