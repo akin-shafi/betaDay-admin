@@ -10,7 +10,7 @@ export function LoginPage() {
   const [message, setMessage] = useState(null);
   const [formData, setFormData] = useState({
     email: "sakinropo@gmail.com",
-    password: "Admin@123",
+    password: "Password@99",
   });
 
   const { login } = useSession();
@@ -62,6 +62,15 @@ export function LoginPage() {
       title="Welcome back"
       subtitle="Sign in to your account to continue"
     >
+      {message && (
+        <div
+          className={`text-md font-medium text-center ${
+            message.includes("error") ? "text-red-600" : "text-gray-600"
+          }`}
+        >
+          {message}
+        </div>
+      )}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <label
@@ -191,16 +200,6 @@ export function LoginPage() {
             )}
           </button>
         </div>
-
-        {message && (
-          <div
-            className={`text-sm text-center ${
-              message.includes("error") ? "text-red-600" : "text-green-600"
-            }`}
-          >
-            {message}
-          </div>
-        )}
 
         <div className="text-center">
           <p className="text-sm text-gray-600">

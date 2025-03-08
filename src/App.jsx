@@ -1,27 +1,20 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { LoginPage } from "./pages/auth/login";
-import { SignupPage } from "./pages/SignupPage";
+import { SignupPage } from "./pages/auth/signup";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AdminPage } from "./pages/Admin";
-import { UserManagementPage } from "./pages/Users/UserManagementPage";
-import UserDetails from "./pages/Users/UserDetails"; // Import UserDetails component
 
-import { ContactPage } from "./pages/Contact";
+// import { ContactPage } from "./pages/Contact";
 import ForgotPassword from "./pages/auth/forgot-password";
 import ResetPassword from "./pages/auth/reset-password";
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
+import { UsersPage } from "./pages/Users";
+// import UserDetailsPage from "./pages/Users/[id]"; // Import UserDetailsPage component
+
 // Import Vendor Pages
-// import VendorsPage from "@/pages/vendors";
-// import VendorDetailsPage from "@/pages/vendors/[id]";
-
-// import BusinessesPage from "./pages/businesses/index";
-// import BusinessViewPage from "./pages/businesses/view";
-// import BusinessAddPage from "./pages/businesses/add";
-
-// Import Business Pages
-import VendorsPage from "./pages/vendors/index";
+import VendorsPage from "./pages/vendors";
 import VendorDetailsPage from "./pages/vendors/[id]";
 
 // Import Orders Pages
@@ -46,7 +39,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
-        <Route path="/auth/sign-up" element={<SignupPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
@@ -72,26 +65,19 @@ function App() {
           path="/users"
           element={
             <ProtectedRoute>
-              <UserManagementPage />
+              <UsersPage />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/user/:id"
-          element={
-            <ProtectedRoute>
-              <UserDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
+
+        {/* <Route
           path="/contact/:id"
           element={
             <ProtectedRoute>
               <ContactPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
         {/* Vendor Routes */}
         <Route

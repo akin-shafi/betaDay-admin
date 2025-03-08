@@ -808,7 +808,8 @@ export default function VendorDetailsPage() {
               value={selectedCategory}
               onChange={setSelectedCategory}
               allowClear
-              className="max-w-xs"
+              // className="max-w-md" // Increased from max-w-xs to max-w-md (approximately 256px)
+              style={{ width: "300px" }}
             >
               {getUniqueCategories().map((category) => (
                 <Select.Option key={category} value={category}>

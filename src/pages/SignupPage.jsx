@@ -1,34 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "@/hooks/useAuth"; // Adjust path as necessary
 import { Form, Select, Input, Row, Col } from "antd";
 
-import { fetchInstitution } from "@/hooks/useAction";
-import WhiteLogo from "../components/whiteLogo";
+// import { fetchInstitution } from "@/hooks/useAction";
+import WhiteLogo from "@/components/whiteLogo";
 
 export function SignupPage() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [institutions, setInstitutions] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const getInstitutions = async () => {
-      try {
-        const institutionsData = await fetchInstitution();
-        const institutionOptions = institutionsData.map((institution) => ({
-          value: institution.id,
-          label: ` (${institution.initial}- ${institution.city} - ${institution.state})`,
-        }));
-        setInstitutions(institutionOptions);
-      } catch (err) {
-        console.error("Failed to fetch institutions", err);
-      }
-    };
-
-    getInstitutions();
-  }, []);
 
   const handleFinish = async (values) => {
     setLoading(true);
@@ -178,28 +160,6 @@ export function SignupPage() {
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item
-            name="tags"
-            label="Institution Assigned"
-            rules={[
-              {
-                required: true,
-                message: "Please select at least one institution assigned",
-              },
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="Select Institution"
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              options={institutions}
-            />
-          </Form.Item>
 
           <button
             type="submit"

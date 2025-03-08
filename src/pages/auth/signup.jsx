@@ -10,7 +10,7 @@ import {
   FiPhone,
 } from "react-icons/fi";
 
-export default function SignupPage() {
+export  function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({

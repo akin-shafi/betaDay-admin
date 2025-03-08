@@ -1,5 +1,5 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
-// import { FiSearch, FiFilter, FiDownload } from "react-icons/fi";
 import { format } from "date-fns";
 import { orderService } from "@/services/orderService";
 import { useSession } from "@/hooks/useSession";
@@ -40,12 +40,24 @@ export default function OrdersPage() {
         queryParams
       );
 
-      setOrders(response.data);
+      // Transform the raw orders data to match the Table columns
+      const transformedOrders = response.data.map((order) => ({
+        id: order.id,
+        orderNumber: order.id, // Use id as orderNumber
+        customerName: order.user.fullName,
+        customerEmail: order.user.email,
+        businessName: order.business.name,
+        status: order.status,
+        total: parseFloat(order.totalAmount), // Convert string to number
+        createdAt: order.createdAt,
+      }));
+
+      setOrders(transformedOrders);
       setPagination({
         ...pagination,
-        current: params.current || pagination.current,
-        pageSize: params.pageSize || pagination.pageSize,
-        total: response.total, // Assuming the API returns total count
+        current: response.page,
+        pageSize: response.limit,
+        total: response.total,
       });
     } catch (error) {
       message.error(error.message);
@@ -60,7 +72,7 @@ export default function OrdersPage() {
     }
   }, [session?.token, filterStatus, dateRange, searchTerm]);
 
-  const handleTableChange = (newPagination, filters, sorter) => {
+  const handleTableChange = (newPagination) => {
     fetchOrders({
       current: newPagination.current,
       pageSize: newPagination.pageSize,
@@ -98,7 +110,7 @@ export default function OrdersPage() {
     {
       title: "Order ID",
       key: "orderNumber",
-      render: (text, record) => (
+      render: (_, record) => (
         <div>
           <div className="text-sm font-medium text-gray-900">
             #{record.orderNumber}
@@ -112,7 +124,7 @@ export default function OrdersPage() {
     {
       title: "Customer",
       key: "customer",
-      render: (text, record) => (
+      render: (_, record) => (
         <div>
           <div className="text-sm text-gray-900">{record.customerName}</div>
           <div className="text-sm text-gray-500">{record.customerEmail}</div>
@@ -136,13 +148,15 @@ export default function OrdersPage() {
       dataIndex: "total",
       key: "total",
       render: (total) => (
-        <div className="text-sm text-gray-900">₦{total.toLocaleString()}</div>
+        <div className="text-sm text-gray-900">
+          ₦{total.toLocaleString("en-NG", { minimumFractionDigits: 2 })}
+        </div>
       ),
     },
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
+      render: (_, record) => (
         <div className="space-x-4">
           <button
             onClick={() => handleViewDetails(record.id)}
@@ -178,14 +192,18 @@ export default function OrdersPage() {
       />
 
       <div className="bg-white rounded-lg shadow">
-        <Table
-          columns={columns}
-          dataSource={orders}
-          rowKey="id"
-          loading={loading}
-          pagination={pagination}
-          onChange={handleTableChange}
-        />
+        {loading ? (
+          <OrdersListSkeleton />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={orders}
+            rowKey="id"
+            loading={loading}
+            pagination={pagination}
+            onChange={handleTableChange}
+          />
+        )}
       </div>
     </div>
   );

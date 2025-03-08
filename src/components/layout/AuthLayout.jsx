@@ -1,11 +1,12 @@
+/* eslint-disable react/prop-types */
 import { Link } from "react-router-dom";
 import logoImage from "@/assets/images/logo-white.png";
 
 export function AuthLayout({ children, title, subtitle }) {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="w-[150px] h-[50px] relative mx-auto mb-6">
+        <div className="w-[150px] h-[50px] relative mx-auto mb-0">
           <Link to="/">
             <img
               src={logoImage}
@@ -20,7 +21,7 @@ export function AuthLayout({ children, title, subtitle }) {
             />
           </Link>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-200">
           {title}
         </h2>
         {subtitle && (
@@ -28,14 +29,16 @@ export function AuthLayout({ children, title, subtitle }) {
         )}
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-2 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {children}
         </div>
       </div>
 
       <div className="mt-8 text-center text-sm text-gray-600">
-        <p>© {new Date().getFullYear()} Your Company. All rights reserved.</p>
+        <p>
+          © {new Date().getFullYear()} BetaDay by PalaPolo. All rights reserved.
+        </p>
       </div>
     </div>
   );
