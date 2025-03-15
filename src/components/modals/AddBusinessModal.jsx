@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -10,6 +11,8 @@ import {
   message,
 } from "antd";
 import { Upload as UploadIcon } from "lucide-react";
+import { fetchBusinessTypes } from "@/hooks/useBusiness";
+import { useSession } from "@/hooks/useSession";
 
 export default function AddBusinessModal({
   isVisible,
@@ -19,6 +22,29 @@ export default function AddBusinessModal({
   imagePreview,
   setImagePreview,
 }) {
+  const [businessTypes, setBusinessTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { session } = useSession();
+
+  // Fetch business types when the modal is opened
+  useEffect(() => {
+    const loadBusinessTypes = async () => {
+      if (!isVisible || !session?.token) return;
+
+      try {
+        setLoading(true);
+        const types = await fetchBusinessTypes(session.token);
+        setBusinessTypes(types);
+      } catch (error) {
+        message.error(error.message || "Failed to fetch business types");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBusinessTypes();
+  }, [isVisible, session?.token]);
+
   const beforeImageUpload = (file) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
@@ -58,7 +84,7 @@ export default function AddBusinessModal({
         initialValues={{
           isActive: true,
           deliveryOptions: [],
-          categories: [],
+          businessType: null,
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -89,7 +115,7 @@ export default function AddBusinessModal({
           <Form.Item
             name="website"
             label="Website"
-            rules={[{ required: true, message: "Please enter website" }]}
+            rules={[{ required: false, message: "Please enter website" }]}
           >
             <Input />
           </Form.Item>
@@ -153,19 +179,19 @@ export default function AddBusinessModal({
           </Form.Item>
 
           <Form.Item
-            name="categories"
-            label="Categories"
-            rules={[{ required: true, message: "Please select categories" }]}
+            name="businessType"
+            label="Business Type"
+            rules={[
+              { required: true, message: "Please select a business type" },
+            ]}
           >
             <Select
-              mode="multiple"
-              placeholder="Select categories"
-              options={[
-                { label: "Restaurant", value: "Restaurant" },
-                { label: "Hotel", value: "Hotel" },
-                { label: "Pharmacy", value: "Pharmacy" },
-                { label: "Bakery", value: "Bakery" },
-              ]}
+              placeholder="Select business type"
+              loading={loading}
+              options={businessTypes.map((type) => ({
+                label: type.name,
+                value: type.id,
+              }))}
             />
           </Form.Item>
 

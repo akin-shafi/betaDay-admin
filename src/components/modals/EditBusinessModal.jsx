@@ -1,5 +1,8 @@
 /* eslint-disable react/prop-types */
-import { Modal, Form, Input, Select, Switch, Button } from "antd";
+import { useState, useEffect } from "react";
+import { Modal, Form, Input, Select, Switch, Button, message } from "antd";
+import { fetchBusinessTypes } from "@/hooks/useBusiness";
+import { useSession } from "@/hooks/useSession";
 
 export default function EditBusinessModal({
   isVisible,
@@ -8,6 +11,40 @@ export default function EditBusinessModal({
   business,
   form,
 }) {
+  const [businessTypes, setBusinessTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { session } = useSession();
+
+  // Fetch business types when the modal is opened
+  useEffect(() => {
+    const loadBusinessTypes = async () => {
+      if (!isVisible || !session?.token) return;
+
+      try {
+        setLoading(true);
+        const types = await fetchBusinessTypes(session.token);
+        setBusinessTypes(types);
+      } catch (error) {
+        message.error(error.message || "Failed to fetch business types");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBusinessTypes();
+  }, [isVisible, session?.token]);
+
+  // Set initial form values when business prop changes
+  useEffect(() => {
+    if (business && form) {
+      form.setFieldsValue({
+        ...business,
+        businessType: business.businessType?.id || null, // Use the businessType.id for the form
+        deliveryOptions: business.deliveryOptions || [],
+      });
+    }
+  }, [business, form]);
+
   return (
     <Modal
       title="Edit Business"
@@ -20,7 +57,11 @@ export default function EditBusinessModal({
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={business}
+        initialValues={{
+          ...business,
+          businessType: business?.businessType?.id || null,
+          deliveryOptions: business?.deliveryOptions || [],
+        }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
@@ -50,7 +91,7 @@ export default function EditBusinessModal({
           <Form.Item
             name="website"
             label="Website"
-            rules={[{ required: true, message: "Please enter website" }]}
+            rules={[{ required: false, message: "Please enter website" }]}
           >
             <Input />
           </Form.Item>
@@ -114,19 +155,19 @@ export default function EditBusinessModal({
           </Form.Item>
 
           <Form.Item
-            name="categories"
-            label="Categories"
-            rules={[{ required: true, message: "Please select categories" }]}
+            name="businessType"
+            label="Business Type"
+            rules={[
+              { required: true, message: "Please select a business type" },
+            ]}
           >
             <Select
-              mode="multiple"
-              placeholder="Select categories"
-              options={[
-                { label: "Restaurant", value: "Restaurant" },
-                { label: "Hotel", value: "Hotel" },
-                { label: "Pharmacy", value: "Pharmacy" },
-                { label: "Bakery", value: "Bakery" },
-              ]}
+              placeholder="Select business type"
+              loading={loading}
+              options={businessTypes.map((type) => ({
+                label: type.name,
+                value: type.name,
+              }))}
             />
           </Form.Item>
 

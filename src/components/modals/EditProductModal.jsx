@@ -1,4 +1,17 @@
-import { Modal, Form, Input, Select, Switch, Button, InputNumber } from "antd";
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  Switch,
+  Button,
+  InputNumber,
+  message,
+} from "antd";
+import { fetchProductCategories } from "@/hooks/useProduct";
+import { useSession } from "@/hooks/useSession";
 
 const CURRENCY_OPTIONS = [
   { label: "Naira (₦)", value: "Naira" },
@@ -16,6 +29,43 @@ export default function EditProductModal({
   selectedCurrency,
   setSelectedCurrency,
 }) {
+  const [productCategories, setProductCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { session } = useSession();
+
+  // Fetch product categories when the modal is opened
+  useEffect(() => {
+    const loadProductCategories = async () => {
+      if (!isVisible || !session?.token) return;
+
+      try {
+        setLoading(true);
+        const categories = await fetchProductCategories(session.token);
+        // Map to a list of names for the Select options
+        const categoryNames = categories.map((category) => category.name);
+        setProductCategories(categoryNames);
+      } catch (error) {
+        message.error(error.message || "Failed to fetch product categories");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProductCategories();
+  }, [isVisible, session?.token]);
+
+  // Set initial form values when product prop changes
+  useEffect(() => {
+    if (product && form) {
+      form.setFieldsValue({
+        ...product,
+        category: product.categories || null, // Use the existing category name
+        currency: product.currency || "Naira",
+      });
+      setSelectedCurrency(product.currency || "Naira");
+    }
+  }, [product, form, setSelectedCurrency]);
+
   return (
     <Modal
       title="Edit Product"
@@ -28,7 +78,11 @@ export default function EditProductModal({
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={product}
+        initialValues={{
+          ...product,
+          category: product?.categories || null, // Preselect existing category name
+          currency: product?.currency || "Naira",
+        }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
@@ -42,16 +96,15 @@ export default function EditProductModal({
           <Form.Item
             name="category"
             label="Category"
-            rules={[{ required: true, message: "Please select category" }]}
+            rules={[{ required: true, message: "Please select a category" }]}
           >
             <Select
               placeholder="Select category"
-              options={[
-                { label: "Food", value: "Food" },
-                { label: "Beverages", value: "Beverages" },
-                { label: "Desserts", value: "Desserts" },
-                { label: "Snacks", value: "Snacks" },
-              ]}
+              loading={loading}
+              options={productCategories.map((name) => ({
+                label: name,
+                value: name, // Use the name as the value to match the database
+              }))}
             />
           </Form.Item>
 
@@ -59,7 +112,6 @@ export default function EditProductModal({
             name="currency"
             label="Currency"
             rules={[{ required: true, message: "Please select currency" }]}
-            initialValue="Naira"
           >
             <Select
               placeholder="Select currency"
@@ -92,10 +144,9 @@ export default function EditProductModal({
                   CURRENCY_OPTIONS.find(
                     (c) => c.value === selectedCurrency
                   )?.label.split(" ")[0] || "₦";
-                return value.replace(
-                  new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
-                  ""
-                );
+                return value
+                  .replace(new RegExp(`\\${currencySymbol}\\s?|(,*)/g`), "")
+                  .replace(/[^0-9.-]/g, "");
               }}
             />
           </Form.Item>
@@ -103,7 +154,7 @@ export default function EditProductModal({
           <Form.Item
             name="stock"
             label="Stock"
-            rules={[{ required: true, message: "Please enter stock" }]}
+            rules={[{ required: false, message: "Please enter stock" }]}
           >
             <InputNumber className="w-full" min={0} />
           </Form.Item>
@@ -119,7 +170,7 @@ export default function EditProductModal({
           <Form.Item
             name="image"
             label="Image"
-            rules={[{ required: true, message: "Please enter image URL" }]}
+            rules={[{ required: false, message: "Please enter image URL" }]}
           >
             <Input />
           </Form.Item>

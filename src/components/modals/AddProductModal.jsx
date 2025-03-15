@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -10,6 +12,8 @@ import {
   message,
 } from "antd";
 import { Upload as UploadIcon } from "lucide-react";
+import { fetchProductCategories } from "@/hooks/useProduct";
+import { useSession } from "@/hooks/useSession";
 
 const CURRENCY_OPTIONS = [
   { label: "Naira (₦)", value: "Naira" },
@@ -28,6 +32,31 @@ export default function AddProductModal({
   imagePreview,
   setImagePreview,
 }) {
+  const [productCategories, setProductCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { session } = useSession();
+
+  // Fetch product categories when the modal is opened
+  useEffect(() => {
+    const loadProductCategories = async () => {
+      if (!isVisible || !session?.token) return;
+
+      try {
+        setLoading(true);
+        const categories = await fetchProductCategories(session.token);
+        // Map to a list of names for the Select options
+        const categoryNames = categories.map((category) => category.name);
+        setProductCategories(categoryNames);
+      } catch (error) {
+        message.error(error.message || "Failed to fetch product categories");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProductCategories();
+  }, [isVisible, session?.token]);
+
   const beforeImageUpload = (file) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
@@ -67,6 +96,7 @@ export default function AddProductModal({
         initialValues={{
           isActive: true,
           currency: "Naira",
+          category: null,
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -85,12 +115,11 @@ export default function AddProductModal({
           >
             <Select
               placeholder="Select category"
-              options={[
-                { label: "Food", value: "Food" },
-                { label: "Beverages", value: "Beverages" },
-                { label: "Desserts", value: "Desserts" },
-                { label: "Snacks", value: "Snacks" },
-              ]}
+              loading={loading}
+              options={productCategories.map((name) => ({
+                label: name,
+                value: name, // Use the name as the value to match the database
+              }))}
             />
           </Form.Item>
 
@@ -130,10 +159,9 @@ export default function AddProductModal({
                   CURRENCY_OPTIONS.find(
                     (c) => c.value === selectedCurrency
                   )?.label.split(" ")[0] || "₦";
-                return value.replace(
-                  new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
-                  ""
-                );
+                return value
+                  .replace(new RegExp(`\\${currencySymbol}\\s?|(,*)/g`), "")
+                  .replace(/[^0-9.-]/g, "");
               }}
             />
           </Form.Item>
@@ -180,7 +208,7 @@ export default function AddProductModal({
                 beforeUpload={beforeImageUpload}
                 onChange={handleImageChange}
                 maxCount={1}
-                customRequest={({ file, onSuccess }) => {
+                customRequest={({ onSuccess }) => {
                   onSuccess();
                 }}
               >

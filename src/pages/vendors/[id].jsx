@@ -109,7 +109,7 @@ export default function VendorDetailsPage() {
         form.setFieldsValue({
           ...response.business,
           deliveryOptions: response.business.deliveryOptions || [],
-          categories: response.business.categories || [],
+          categories: response.business.categories || [], // Business categories might still be an array
           priceRange: response.business.priceRange || "",
           deliveryTimeRange: response.business.deliveryTimeRange || "",
           rating: response.business.rating || "0.0",
@@ -330,7 +330,7 @@ export default function VendorDetailsPage() {
         .toLowerCase()
         .includes(searchText.toLowerCase());
       const matchesCategory =
-        !selectedCategory || product.categories?.includes(selectedCategory);
+        !selectedCategory || product.categories === selectedCategory; // Compare single string
       const matchesPrice =
         parseFloat(product.price) >= priceRange.min &&
         parseFloat(product.price) <= priceRange.max;
@@ -339,10 +339,8 @@ export default function VendorDetailsPage() {
   };
 
   const getUniqueCategories = () => {
-    const allCategories = products.flatMap(
-      (product) => product.categories || []
-    );
-    return [...new Set(allCategories)];
+    const allCategories = products.map((product) => product.categories || ""); // Map to single string
+    return [...new Set(allCategories)].filter((cat) => cat); // Remove empty strings
   };
 
   const handleAddProduct = async (values) => {
@@ -401,11 +399,11 @@ export default function VendorDetailsPage() {
       key: "categories",
       render: (categories) => (
         <Space wrap>
-          {categories?.map((category, index) => (
-            <Tag key={index} color="blue" className="text-xs">
-              {category}
+          {categories ? (
+            <Tag color="blue" className="text-xs">
+              {categories}
             </Tag>
-          ))}
+          ) : null}
         </Space>
       ),
       responsive: ["sm", "md", "lg", "xl"],
@@ -664,11 +662,11 @@ export default function VendorDetailsPage() {
                 {business.description}
               </p>
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                {business.categories?.map((category, index) => (
-                  <Tag key={index} color="purple" className="text-xs">
-                    {category}
+                {business.categories ? (
+                  <Tag color="purple" className="text-xs">
+                    {business.categories}
                   </Tag>
-                ))}
+                ) : null}
               </div>
             </div>
           </div>
@@ -765,7 +763,8 @@ export default function VendorDetailsPage() {
           </div>
           <div className="text-center">
             <div className="text-3xl font-semibold text-primary">
-              {business.categories?.length || 0}
+              {business.categories ? 1 : 0}{" "}
+              {/* Count as 1 if category exists */}
             </div>
             <div className="text-gray-500">Categories</div>
           </div>
@@ -808,7 +807,6 @@ export default function VendorDetailsPage() {
               value={selectedCategory}
               onChange={setSelectedCategory}
               allowClear
-              // className="max-w-md" // Increased from max-w-xs to max-w-md (approximately 256px)
               style={{ width: "300px" }}
             >
               {getUniqueCategories().map((category) => (

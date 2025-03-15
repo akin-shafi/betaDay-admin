@@ -41,15 +41,28 @@ export const fetchProductById = async (id, token) => {
   }
 };
 
-export const createProduct = async (data, token) => {
+// ================== Create Product =========================== //
+export const createProduct = async (values, token) => {
   try {
+    const formData = new FormData();
+
+    // Append all form fields to FormData
+    for (const key in values) {
+      if (key === "image" && typeof values[key] !== "string") {
+        // If image is a file (not a URL), append it as a file
+        formData.append(key, values[key]);
+      } else {
+        // Append other fields as strings
+        formData.append(key, values[key]);
+      }
+    }
+
     const response = await fetch(`${API_URL}/products`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -57,9 +70,30 @@ export const createProduct = async (data, token) => {
       throw new Error(errorData.message || "Failed to create product.");
     }
 
-    return response.json();
+    return await response.json();
   } catch (error) {
     throw new Error(error.message || "Error creating product.");
+  }
+};
+
+// ================== Product Categories =========================== //
+export const fetchProductCategories = async (token) => {
+  try {
+    const response = await fetch(`${API_URL}/product-categories`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Failed to fetch product categories."
+      );
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    throw new Error(error.message || "Error fetching product categories.");
   }
 };
 
