@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 export const fetchProducts = async (token, businessId = null) => {
   try {
     const url = businessId
-      ? `${API_URL}/products?businessId=${businessId}`
+      ? `${API_URL}/products/business/${businessId}`
       : `${API_URL}/products`;
 
     const response = await fetch(url, {

@@ -1,11 +1,31 @@
 const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
 
 // ================== Businesses =========================== //
-export const fetchBusinesses = async (token) => {
+export const fetchBusinesses = async (
+  token,
+  page = 1,
+  limit = 10,
+  businessType = null,
+  search = null
+) => {
   try {
-    const response = await fetch(`${API_URL}/businesses`, {
-      headers: { Authorization: `Bearer ${token}` },
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
     });
+    if (businessType) {
+      queryParams.append("businessType", businessType);
+    }
+    if (search) {
+      queryParams.append("search", search);
+    }
+
+    const response = await fetch(
+      `${API_URL}/businesses?${queryParams.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -13,9 +33,10 @@ export const fetchBusinesses = async (token) => {
     }
 
     const data = await response.json();
-    console.log("data", data.businesses);
-    // Ensure that data is always an array
-    return Array.isArray(data.businesses) ? data.businesses : [];
+    return {
+      businesses: Array.isArray(data.businesses) ? data.businesses : [],
+      total: data.total || 0,
+    };
   } catch (error) {
     throw new Error(error.message || "Error fetching businesses.");
   }

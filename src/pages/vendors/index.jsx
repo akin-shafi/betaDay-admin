@@ -2,26 +2,76 @@ import { useState, useEffect } from "react";
 import { fetchBusinesses, createBusiness } from "@/hooks/useBusiness";
 import { Link } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
-import { Table, Input, Space, Tag, Button, Form, message } from "antd";
+import { Table, Input, Space, Tag, Button, Form, message, Tabs } from "antd";
 import { Search, Plus } from "lucide-react";
 import AddBusinessModal from "@/components/modals/AddBusinessModal";
+import debounce from "lodash/debounce"; // Optional: Install lodash for debouncing
 
 export default function VendorsPage() {
-  const [businesses, setBusinesses] = useState([]);
+  const [businesses, setBusinesses] = useState({ businesses: [], total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // For debounced search
+  const [activeTab, setActiveTab] = useState("All");
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [imagePreview, setImagePreview] = useState(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [businessTypes, setBusinessTypes] = useState(["All"]);
   const { session } = useSession();
 
+  // Debounce search input to avoid excessive API calls
+  const debouncedSetSearch = debounce((value) => {
+    setDebouncedSearchText(value);
+    setPage(1); // Reset to page 1 on search change
+  }, 500);
+
+  useEffect(() => {
+    debouncedSetSearch(searchText);
+    return () => debouncedSetSearch.cancel(); // Cleanup on unmount
+  }, [searchText]);
+
+  // Fetch all business types on initial load (without filters)
+  useEffect(() => {
+    const fetchBusinessTypes = async () => {
+      try {
+        const data = await fetchBusinesses(session?.token, 1, 1000);
+        const types = [
+          "All",
+          ...new Set(
+            data.businesses
+              .map((business) => business.businessType)
+              .filter(Boolean)
+          ),
+        ];
+        setBusinessTypes(types);
+      } catch (err) {
+        console.error("Error fetching business types:", err);
+      }
+    };
+
+    if (session?.token) {
+      fetchBusinessTypes();
+    }
+  }, [session?.token]);
+
+  // Fetch businesses based on activeTab, page, limit, and search
   useEffect(() => {
     const getBusinesses = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await fetchBusinesses(session?.token);
+        const businessType = activeTab === "All" ? null : activeTab;
+        const search = debouncedSearchText || null; // Use debounced search term
+        const data = await fetchBusinesses(
+          session?.token,
+          page,
+          limit,
+          businessType,
+          search
+        );
         setBusinesses(data);
       } catch (err) {
         setError(err);
@@ -34,14 +84,7 @@ export default function VendorsPage() {
     if (session?.token) {
       getBusinesses();
     }
-  }, [session?.token]);
-
-  // Filter businesses based on search text
-  const filteredBusinesses = businesses.filter((business) =>
-    Object.values(business).some((value) =>
-      String(value).toLowerCase().includes(searchText.toLowerCase())
-    )
-  );
+  }, [session?.token, page, limit, activeTab, debouncedSearchText]);
 
   const columns = [
     {
@@ -106,7 +149,6 @@ export default function VendorsPage() {
           <Link to={`/vendors/${record.id}`}>
             <Button type="link">View</Button>
           </Link>
-          <Button type="link">Edit</Button>
         </Space>
       ),
     },
@@ -119,9 +161,28 @@ export default function VendorsPage() {
       setIsAddModalVisible(false);
       form.resetFields();
       setImagePreview(null);
-      // Refresh businesses list
-      const data = await fetchBusinesses(session?.token);
+      // Refresh businesses list with current page, limit, activeTab, and search
+      const businessType = activeTab === "All" ? null : activeTab;
+      const search = debouncedSearchText || null;
+      const data = await fetchBusinesses(
+        session?.token,
+        page,
+        limit,
+        businessType,
+        search
+      );
       setBusinesses(data);
+      // Refresh business types as well
+      const typesData = await fetchBusinesses(session?.token, 1, 1000);
+      const types = [
+        "All",
+        ...new Set(
+          typesData.businesses
+            .map((business) => business.businessType)
+            .filter(Boolean)
+        ),
+      ];
+      setBusinessTypes(types);
     } catch (err) {
       message.error(err.message || "Failed to create business");
     }
@@ -212,17 +273,37 @@ export default function VendorsPage() {
         />
       </div>
 
-      {/* Business List Table */}
-      <div className="bg-white rounded-lg shadow">
+      {/* Business List Table with Tabs */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <Tabs
+          activeKey={activeTab}
+          onChange={(key) => {
+            setActiveTab(key);
+            setPage(1); // Reset to page 1 when changing tabs
+          }}
+          className="mb-4"
+          items={businessTypes.map((type) => ({
+            key: type,
+            label: type || "Unknown",
+          }))}
+        />
         <Table
           columns={columns}
-          dataSource={filteredBusinesses}
+          dataSource={businesses.businesses} // No client-side filtering
           rowKey="id"
           loading={isLoading}
           pagination={{
-            pageSize: 5,
+            current: page,
+            pageSize: limit,
+            total: businesses.total,
+            onChange: (page, pageSize) => {
+              setPage(page);
+              setLimit(pageSize);
+            },
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} businesses`,
+            pageSizeOptions: ["5", "10", "20"],
+            showTotal: (total, range) =>
+              `Showing ${range[0]}-${range[1]} of ${total} businesses`,
           }}
           className="overflow-x-auto"
         />

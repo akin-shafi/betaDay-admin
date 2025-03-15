@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {
   Modal,
   Form,
@@ -161,9 +162,9 @@ export default function AddBusinessModal({
               placeholder="Select categories"
               options={[
                 { label: "Restaurant", value: "Restaurant" },
-                { label: "Local Cuisine", value: "Local Cuisine" },
-                { label: "Fast Food", value: "Fast Food" },
-                { label: "Cafe", value: "Cafe" },
+                { label: "Hotel", value: "Hotel" },
+                { label: "Pharmacy", value: "Pharmacy" },
+                { label: "Bakery", value: "Bakery" },
               ]}
             />
           </Form.Item>
@@ -194,7 +195,7 @@ export default function AddBusinessModal({
                 beforeUpload={beforeImageUpload}
                 onChange={handleImageChange}
                 maxCount={1}
-                customRequest={({ file, onSuccess }) => {
+                customRequest={({ onSuccess }) => {
                   onSuccess();
                 }}
               >

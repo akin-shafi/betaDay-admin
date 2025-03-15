@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Modal, Form, Input, Select, Switch, Button } from "antd";
 
 export default function EditBusinessModal({
@@ -122,9 +123,9 @@ export default function EditBusinessModal({
               placeholder="Select categories"
               options={[
                 { label: "Restaurant", value: "Restaurant" },
-                { label: "Local Cuisine", value: "Local Cuisine" },
-                { label: "Fast Food", value: "Fast Food" },
-                { label: "Cafe", value: "Cafe" },
+                { label: "Hotel", value: "Hotel" },
+                { label: "Pharmacy", value: "Pharmacy" },
+                { label: "Bakery", value: "Bakery" },
               ]}
             />
           </Form.Item>

@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
-import { Table, Tag, Space, Button, message } from "antd";
+import { Table, Tag, Space, Button, message, Tabs } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
 import { fetchBusinesses } from "@/hooks/useBusiness";
 import { FiEye } from "react-icons/fi";
 
+const { TabPane } = Tabs;
+
 export default function BusinessesPage() {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all"); // Removed <string> type annotation
   const navigate = useNavigate();
   const { session } = useSession();
 
@@ -26,6 +29,20 @@ export default function BusinessesPage() {
       setLoading(false);
     }
   };
+
+  // Extract unique business types for tabs
+  const businessTypes = [
+    "all",
+    ...new Set(
+      businesses.map((business) => business.businessType).filter(Boolean)
+    ),
+  ];
+
+  // Filter businesses based on active tab
+  const filteredBusinesses =
+    activeTab === "all"
+      ? businesses
+      : businesses.filter((business) => business.businessType === activeTab);
 
   const columns = [
     {
@@ -96,9 +113,18 @@ export default function BusinessesPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow">
+        <Tabs
+          activeKey={activeTab}
+          onChange={(key) => setActiveTab(key)}
+          className="mb-4"
+        >
+          {businessTypes.map((type) => (
+            <TabPane tab={type || "Unknown"} key={type} />
+          ))}
+        </Tabs>
         <Table
           columns={columns}
-          dataSource={businesses}
+          dataSource={filteredBusinesses}
           rowKey="id"
           loading={loading}
           pagination={{
