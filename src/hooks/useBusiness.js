@@ -61,59 +61,22 @@ export const fetchBusinessById = async (id, token) => {
   }
 };
 
-// export const createBusiness = async (data, token) => {
-//   const response = await fetch(`${API_URL}/businesses`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${token}`,
-//     },
-//     body: JSON.stringify(data),
-//   });
+export const createBusiness = async (data, token) => {
+  const response = await fetch(`${API_URL}/businesses`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
 
-//   if (!response.ok) {
-//     const errorData = await response.json();
-//     throw new Error(errorData.message || "Failed to create business.");
-//   }
-
-//   return response.json();
-// };
-
-export const createBusiness = async (values, token) => {
-  try {
-    const formData = new FormData();
-
-    // Append all form fields to FormData
-    for (const key in values) {
-      if (key === "image" && typeof values[key] !== "string") {
-        // If image is a file (not a URL), append it as a file
-        formData.append(key, values[key]);
-      } else if (key === "deliveryOptions") {
-        // Append deliveryOptions as a JSON string
-        formData.append(key, JSON.stringify(values[key]));
-      } else {
-        // Append other fields as strings
-        formData.append(key, values[key]);
-      }
-    }
-
-    const response = await fetch(`${API_URL}/businesses`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to create business.");
-    }
-
-    return await response.json();
-  } catch (error) {
-    throw new Error(error.message || "Error creating business.");
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to create business.");
   }
+
+  return response.json();
 };
 
 export const updateBusiness = async (id, data, token) => {

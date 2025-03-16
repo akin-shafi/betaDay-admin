@@ -109,6 +109,7 @@ export default function VendorDetailsPage() {
         form.setFieldsValue({
           ...response.business,
           deliveryOptions: response.business.deliveryOptions || [],
+          businessType: response.business.businessType || "",
           categories: response.business.categories || [], // Business categories might still be an array
           priceRange: response.business.priceRange || "",
           deliveryTimeRange: response.business.deliveryTimeRange || "",

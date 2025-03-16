@@ -7,10 +7,10 @@ import {
   Select,
   Switch,
   Button,
-  Upload,
+  // Upload,
   message,
 } from "antd";
-import { Upload as UploadIcon } from "lucide-react";
+// import { Upload as UploadIcon } from "lucide-react";
 import { fetchBusinessTypes } from "@/hooks/useBusiness";
 import { useSession } from "@/hooks/useSession";
 
@@ -19,7 +19,7 @@ export default function AddBusinessModal({
   onCancel,
   onFinish,
   form,
-  imagePreview,
+  // imagePreview,
   setImagePreview,
 }) {
   const [businessTypes, setBusinessTypes] = useState([]);
@@ -45,26 +45,26 @@ export default function AddBusinessModal({
     loadBusinessTypes();
   }, [isVisible, session?.token]);
 
-  const beforeImageUpload = (file) => {
-    const isImage = file.type.startsWith("image/");
-    if (!isImage) {
-      message.error("You can only upload image files!");
-      return false;
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Image must be smaller than 2MB!");
-      return false;
-    }
-    return false; // Prevent default upload behavior
-  };
+  // const beforeImageUpload = (file) => {
+  //   const isImage = file.type.startsWith("image/");
+  //   if (!isImage) {
+  //     message.error("You can only upload image files!");
+  //     return false;
+  //   }
+  //   const isLt2M = file.size / 1024 / 1024 < 2;
+  //   if (!isLt2M) {
+  //     message.error("Image must be smaller than 2MB!");
+  //     return false;
+  //   }
+  //   return false; // Prevent default upload behavior
+  // };
 
-  const handleImageChange = (info) => {
-    if (info.file) {
-      setImagePreview(URL.createObjectURL(info.file));
-      form.setFieldsValue({ image: info.file });
-    }
-  };
+  // const handleImageChange = (info) => {
+  //   if (info.file) {
+  //     setImagePreview(URL.createObjectURL(info.file));
+  //     form.setFieldsValue({ image: info.file });
+  //   }
+  // };
 
   return (
     <Modal
@@ -190,11 +190,11 @@ export default function AddBusinessModal({
               loading={loading}
               options={businessTypes.map((type) => ({
                 label: type.name,
-                value: type.id,
+                value: type.name,
               }))}
             />
           </Form.Item>
-
+          {/* 
           <Form.Item
             name="image"
             label="Business Image"
@@ -246,7 +246,7 @@ export default function AddBusinessModal({
                 }}
               />
             </div>
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item name="isActive" label="Status" valuePropName="checked">
             <Switch />

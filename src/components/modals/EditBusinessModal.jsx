@@ -34,16 +34,17 @@ export default function EditBusinessModal({
     loadBusinessTypes();
   }, [isVisible, session?.token]);
 
-  // Set initial form values when business prop changes
+  // Set form values when the modal opens or business changes
   useEffect(() => {
-    if (business && form) {
+    if (isVisible && business && form) {
       form.setFieldsValue({
         ...business,
-        businessType: business.businessType?.id || null, // Use the businessType.id for the form
+        businessType: business.businessType || null, // Use the string value directly
         deliveryOptions: business.deliveryOptions || [],
+        isActive: business.isActive !== undefined ? business.isActive : true,
       });
     }
-  }, [business, form]);
+  }, [isVisible, business, form]);
 
   return (
     <Modal
@@ -53,16 +54,7 @@ export default function EditBusinessModal({
       footer={null}
       width={800}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={{
-          ...business,
-          businessType: business?.businessType?.id || null,
-          deliveryOptions: business?.deliveryOptions || [],
-        }}
-      >
+      <Form form={form} layout="vertical" onFinish={onFinish}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
             name="name"
@@ -88,11 +80,7 @@ export default function EditBusinessModal({
             <Input />
           </Form.Item>
 
-          <Form.Item
-            name="website"
-            label="Website"
-            rules={[{ required: false, message: "Please enter website" }]}
-          >
+          <Form.Item name="website" label="Website">
             <Input />
           </Form.Item>
 
@@ -148,8 +136,8 @@ export default function EditBusinessModal({
               placeholder="Select delivery options"
               options={[
                 { label: "In-house", value: "In-house" },
-                { label: "Pickup", value: "Pickup" },
-                { label: "Delivery", value: "Delivery" },
+                { label: "Pickup", value: "pickup" }, // Match backend casing
+                { label: "Delivery", value: "delivery" }, // Match backend casing
               ]}
             />
           </Form.Item>
@@ -166,7 +154,7 @@ export default function EditBusinessModal({
               loading={loading}
               options={businessTypes.map((type) => ({
                 label: type.name,
-                value: type.name,
+                value: type.name, // Use name instead of id
               }))}
             />
           </Form.Item>
