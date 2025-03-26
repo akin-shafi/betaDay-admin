@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import { fetchBusinesses, createBusiness } from "@/hooks/useBusiness";
 import { Link } from "react-router-dom";

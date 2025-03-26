@@ -176,7 +176,6 @@ export default function VendorDetailsPage() {
       await updateProduct(selectedProduct.id, values, session?.token);
       message.success("Product updated successfully");
       setIsProductEditModalVisible(false);
-      // Refresh products list
       const data = await fetchProducts(session.token, id);
       setProducts(data);
     } catch (err) {
@@ -330,8 +329,11 @@ export default function VendorDetailsPage() {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchText.toLowerCase());
+      // Check if selectedCategory is in the product's categories array
       const matchesCategory =
-        !selectedCategory || product.categories === selectedCategory; // Compare single string
+        !selectedCategory ||
+        (Array.isArray(product.categories) &&
+          product.categories.some((cat) => cat.name === selectedCategory));
       const matchesPrice =
         parseFloat(product.price) >= priceRange.min &&
         parseFloat(product.price) <= priceRange.max;
@@ -340,8 +342,15 @@ export default function VendorDetailsPage() {
   };
 
   const getUniqueCategories = () => {
-    const allCategories = products.map((product) => product.categories || ""); // Map to single string
-    return [...new Set(allCategories)].filter((cat) => cat); // Remove empty strings
+    // Flatten all category names from products and deduplicate
+    const allCategories = products
+      .flatMap((product) =>
+        Array.isArray(product.categories)
+          ? product.categories.map((cat) => cat.name)
+          : []
+      )
+      .filter(Boolean); // Remove falsy values
+    return [...new Set(allCategories)];
   };
 
   const handleAddProduct = async (values) => {
@@ -400,11 +409,17 @@ export default function VendorDetailsPage() {
       key: "categories",
       render: (categories) => (
         <Space wrap>
-          {categories ? (
-            <Tag color="blue" className="text-xs">
-              {categories}
+          {Array.isArray(categories) && categories.length > 0 ? (
+            categories.map((category) => (
+              <Tag key={category.id} color="blue" className="text-xs">
+                {category.name}
+              </Tag>
+            ))
+          ) : (
+            <Tag color="default" className="text-xs">
+              None
             </Tag>
-          ) : null}
+          )}
         </Space>
       ),
       responsive: ["sm", "md", "lg", "xl"],

@@ -10,7 +10,7 @@ import {
   InputNumber,
   message,
 } from "antd";
-import { fetchProductCategories } from "@/hooks/useProduct";
+import { fetchProductCategories } from "@/hooks/useProduct"; // Assuming this is the file path
 import { useSession } from "@/hooks/useSession";
 
 const CURRENCY_OPTIONS = [
@@ -41,9 +41,7 @@ export default function EditProductModal({
       try {
         setLoading(true);
         const categories = await fetchProductCategories(session.token);
-        // Map to a list of names for the Select options
-        const categoryNames = categories.map((category) => category.name);
-        setProductCategories(categoryNames);
+        setProductCategories(categories); // Store full category objects
       } catch (error) {
         message.error(error.message || "Failed to fetch product categories");
       } finally {
@@ -59,7 +57,7 @@ export default function EditProductModal({
     if (product && form) {
       form.setFieldsValue({
         ...product,
-        category: product.categories || null, // Use the existing category name
+        categories: product.categories?.map((cat) => cat.name) || [], // Map to array of names
         currency: product.currency || "Naira",
       });
       setSelectedCurrency(product.currency || "Naira");
@@ -80,7 +78,7 @@ export default function EditProductModal({
         onFinish={onFinish}
         initialValues={{
           ...product,
-          category: product?.categories || null, // Preselect existing category name
+          categories: product?.categories?.map((cat) => cat.name) || [],
           currency: product?.currency || "Naira",
         }}
       >
@@ -94,16 +92,17 @@ export default function EditProductModal({
           </Form.Item>
 
           <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select a category" }]}
+            name="categories"
+            label="Categories"
+            rules={[{ required: true, message: "Please select at least one category" }]}
           >
             <Select
-              placeholder="Select category"
+              mode="multiple"
+              placeholder="Select categories"
               loading={loading}
-              options={productCategories.map((name) => ({
-                label: name,
-                value: name, // Use the name as the value to match the database
+              options={productCategories.map((category) => ({
+                label: category.name,
+                value: category.name, // Use name as value for consistency with backend
               }))}
             />
           </Form.Item>
@@ -131,19 +130,12 @@ export default function EditProductModal({
               step={0.01}
               formatter={(value) => {
                 const currencySymbol =
-                  CURRENCY_OPTIONS.find(
-                    (c) => c.value === selectedCurrency
-                  )?.label.split(" ")[0] || "₦";
-                return `${currencySymbol} ${value}`.replace(
-                  /\B(?=(\d{3})+(?!\d))/g,
-                  ","
-                );
+                  CURRENCY_OPTIONS.find((c) => c.value === selectedCurrency)?.label.split(" ")[0] || "₦";
+                return `${currencySymbol} ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
               }}
               parser={(value) => {
                 const currencySymbol =
-                  CURRENCY_OPTIONS.find(
-                    (c) => c.value === selectedCurrency
-                  )?.label.split(" ")[0] || "₦";
+                  CURRENCY_OPTIONS.find((c) => c.value === selectedCurrency)?.label.split(" ")[0] || "₦";
                 return value
                   .replace(new RegExp(`\\${currencySymbol}\\s?|(,*)/g`), "")
                   .replace(/[^0-9.-]/g, "");

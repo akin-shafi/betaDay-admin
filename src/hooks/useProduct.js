@@ -91,7 +91,8 @@ export const fetchProductCategories = async (token) => {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    // Return full category objects (id, name, description, etc.)
+    return Array.isArray(data.categories) ? data.categories : [];
   } catch (error) {
     throw new Error(error.message || "Error fetching product categories.");
   }
