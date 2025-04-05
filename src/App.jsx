@@ -35,6 +35,8 @@ import AnalyticsPage from "./pages/analytics/index";
 
 // Import Settings Pages
 import SettingsPage from "./pages/settings/index";
+import GroupsPage from "./pages/Groups/index";
+import SubGroupsPage from "./pages/Groups/[groupId]";
 
 function App() {
   return (
@@ -122,6 +124,22 @@ function App() {
           element={
             <ProtectedRoute>
               <BusinessViewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <GroupsPage />{" "}
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups/:groupId/subgroups"
+          element={
+            <ProtectedRoute>
+              <SubGroupsPage />
             </ProtectedRoute>
           }
         />

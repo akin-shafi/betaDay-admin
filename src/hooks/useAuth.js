@@ -20,7 +20,7 @@ export async function verifyEmail(token) {
 
 export const loginUser = async (email, password) => {
   try {
-    console.log("Base Url", API_BASE_URL);
+    console.log("Base Url", API_URL);
     const response = await fetch(`${API_URL}/users/login`, {
       // Adjust the URL as necessary
       method: "POST",
