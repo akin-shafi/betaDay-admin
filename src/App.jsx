@@ -3,7 +3,6 @@ import { LoginPage } from "./pages/auth/login";
 import { SignupPage } from "./pages/auth/signup";
 import { DashboardPage } from "./pages/DashboardPage";
 import { AdminPage } from "./pages/Admin";
-
 // import { ContactPage } from "./pages/Contact";
 import ForgotPassword from "./pages/auth/forgot-password";
 import ResetPassword from "./pages/auth/reset-password";
@@ -37,6 +36,7 @@ import AnalyticsPage from "./pages/analytics/index";
 import SettingsPage from "./pages/settings/index";
 import GroupsPage from "./pages/Groups/index";
 import SubGroupsPage from "./pages/Groups/[groupId]";
+import MealsPage from "./pages/MealsPage";
 
 function App() {
   return (
@@ -132,6 +132,15 @@ function App() {
           element={
             <ProtectedRoute>
               <GroupsPage />{" "}
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/meals"
+          element={
+            <ProtectedRoute>
+              <MealsPage />
             </ProtectedRoute>
           }
         />

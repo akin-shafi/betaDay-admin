@@ -53,6 +53,12 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       showFor: ["admin"],
     },
     {
+      path: "/meals",
+      icon: Store,
+      title: "Meal",
+      showFor: ["admin"],
+    },
+    {
       path: "/categories",
       icon: Tags,
       title: "Categories",
