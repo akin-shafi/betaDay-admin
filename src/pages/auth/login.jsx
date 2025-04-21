@@ -9,8 +9,8 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [formData, setFormData] = useState({
-    email: "sakinropo@gmail.com",
-    password: "Password@99",
+    identifier: "help.betaday@gmail.com",
+    password: "Admin@123",
   });
 
   const { login } = useSession();
@@ -30,7 +30,7 @@ export function LoginPage() {
     setMessage(null);
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await login(formData.identifier, formData.password);
       if (result.success === true) {
         const { data } = result;
         const role = data.role;
@@ -74,7 +74,7 @@ export function LoginPage() {
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div>
           <label
-            htmlFor="email"
+            htmlFor="identifier"
             className="block text-sm font-medium text-gray-700"
           >
             Email address
@@ -84,14 +84,14 @@ export function LoginPage() {
               <FiMail className="h-5 w-5 text-gray-400" />
             </div>
             <input
-              id="email"
-              name="email"
+              id="identifier"
+              name="identifier"
               type="email"
               autoComplete="email"
               required
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#ff6600] focus:border-[#ff6600] sm:text-sm transition-colors duration-200"
               placeholder="you@example.com"
-              value={formData.email}
+              value={formData.identifier}
               onChange={handleChange}
               disabled={isLoading}
             />

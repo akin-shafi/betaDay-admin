@@ -7,8 +7,10 @@ import logoImage from "@/assets/images/logo-white.png";
 
 import {
   LayoutDashboard,
+  User,
   Users,
   // Building2,
+  Utensils,
   ShoppingCart,
   Bike,
   FileText,
@@ -35,7 +37,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
     },
     {
       path: "/users",
-      icon: Users,
+      icon: User,
       title: "Users",
       showFor: ["admin"],
     },
@@ -48,13 +50,13 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
 
     {
       path: "/groups",
-      icon: Store,
-      title: "Groups",
+      icon: Users, // Changed from Store to Users
+      title: "Business Types",
       showFor: ["admin"],
     },
     {
       path: "/meals",
-      icon: Store,
+      icon: Utensils, // Changed from Store to Utensils
       title: "Meal",
       showFor: ["admin"],
     },
