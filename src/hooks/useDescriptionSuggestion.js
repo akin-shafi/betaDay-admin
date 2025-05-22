@@ -1,10 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 
-export function useDescriptionSuggestion(businessType) {
+/**
+ * A custom hook to fetch a business description suggestion based on business type and optional business name.
+ * @param {Object} params - Parameters for the suggestion
+ * @param {string} params.businessType - The type of business (e.g., "Restaurant")
+ * @param {string} [params.businessName] - The name of the business (optional)
+ * @returns {Object} - The suggested description and loading state
+ */
+export function useDescriptionSuggestion({ businessType, businessName }) {
   const [suggestedDescription, setSuggestedDescription] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8500";
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3100";
 
   useEffect(() => {
     const fetchDescriptionSuggestion = async () => {
@@ -15,10 +22,14 @@ export function useDescriptionSuggestion(businessType) {
 
       setIsLoading(true);
       try {
+        const params = new URLSearchParams();
+        params.append("businessType", businessType.toLowerCase());
+        if (businessName) {
+          params.append("businessName", businessName);
+        }
+
         const response = await fetch(
-          `${baseUrl}/api/description-suggestion?businessType=${encodeURIComponent(
-            businessType
-          )}`,
+          `${baseUrl}/api/description-suggestion?${params.toString()}`,
           {
             method: "GET",
             headers: {
@@ -42,16 +53,10 @@ export function useDescriptionSuggestion(businessType) {
     };
 
     fetchDescriptionSuggestion();
-  }, [businessType]);
+  }, [businessType, businessName]);
 
   return {
     suggestedDescription,
     isLoading,
   };
 }
-
-// const UseDescriptionSuggestion = () => {
-//   return <div></div>;
-// };
-
-// export default UseDescriptionSuggestion;

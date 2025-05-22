@@ -1,5 +1,6 @@
-// hooks/useBusiness.js
-const API_URL = import.meta.env.VITE_API_BASE_URL; // Use Vite environment variable
+import { useState, useEffect } from "react";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8500"; // Use Vite environment variable
 
 // ================== Businesses =========================== //
 export const fetchBusinesses = async (
@@ -101,21 +102,52 @@ export const deleteBusiness = async (id, token) => {
   if (!response.ok) throw new Error("Failed to delete business");
 };
 
-// ================== Business Types =========================== //
-export const fetchBusinessTypes = async (token) => {
-  try {
-    const response = await fetch(`${API_URL}/business-types`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+// ================== Business Groups =========================== //
+export function useFetchBusinessGroups(token, isVisible) {
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to fetch business types.");
-    }
+  useEffect(() => {
+    const fetchGroups = async () => {
+      if (!isVisible || !token) {
+        setGroups([]);
+        return;
+      }
 
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    throw new Error(error.message || "Error fetching business types.");
-  }
-};
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`${API_URL}/api/groups?isActive=true`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Failed to fetch business groups."
+          );
+        }
+
+        const data = await response.json();
+        const groupList = Array.isArray(data.groups)
+          ? data.groups.map((group) => ({ name: group.name }))
+          : [];
+        setGroups(groupList);
+      } catch (err) {
+        setError(err.message || "Error fetching business groups.");
+        setGroups([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGroups();
+  }, [token, isVisible]);
+
+  return { groups, loading, error };
+}

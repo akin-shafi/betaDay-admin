@@ -1,9 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { Modal } from "antd";
-import { fetchBusinessTypes } from "@/hooks/useBusiness";
+import { useFetchBusinessGroups } from "@/hooks/useBusiness";
 import { useSession } from "@/hooks/useSession";
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
+import { useDescriptionSuggestion } from "@/hooks/useDescriptionSuggestion";
 
 export default function EditBusinessModal({
   isVisible,
@@ -13,6 +14,7 @@ export default function EditBusinessModal({
 }) {
   const [businessTypes, setBusinessTypes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [suggestionError, setSuggestionError] = useState(null);
   const { session } = useSession();
   const addressInputRef = useRef(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -54,24 +56,21 @@ export default function EditBusinessModal({
     error: addressError,
   } = useAddressAutocomplete();
 
-  // Fetch business types when the modal is opened
+  // Use description suggestion hook (only fetch when triggered by button)
+  const [fetchSuggestion, setFetchSuggestion] = useState(false);
+  const { suggestedDescription, isLoading: suggestionLoading } = useDescriptionSuggestion({
+    businessType: formData.businessType,
+    businessName: formData.name,
+  });
+
+  // Fetch business groups when the modal is opened
+  const { groups: businessGroups, loading: groupsLoading, error: groupsError } = useFetchBusinessGroups(session?.token, isVisible);
+
   useEffect(() => {
-    const loadBusinessTypes = async () => {
-      if (!isVisible || !session?.token) return;
-
-      try {
-        setLoading(true);
-        const types = await fetchBusinessTypes(session.token);
-        setBusinessTypes(types);
-      } catch (error) {
-        setError(error.message || "Failed to fetch business types");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBusinessTypes();
-  }, [isVisible, session?.token]);
+    setBusinessTypes(businessGroups);
+    setLoading(groupsLoading);
+    setError(groupsError || null);
+  }, [businessGroups, groupsLoading, groupsError]);
 
   // Sync formData.address with addressInput
   useEffect(() => {
@@ -94,6 +93,14 @@ export default function EditBusinessModal({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Apply suggested description when available
+  useEffect(() => {
+    if (fetchSuggestion && suggestedDescription && !suggestionLoading) {
+      setFormData((prev) => ({ ...prev, description: suggestedDescription }));
+      setFetchSuggestion(false); // Reset trigger
+    }
+  }, [suggestedDescription, suggestionLoading, fetchSuggestion]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -118,17 +125,23 @@ export default function EditBusinessModal({
     }));
   };
 
-  // Handle suggestion selection
+  // Handle suggestion selection for address
   const handleSuggestionSelect = (suggestion) => {
     // Log suggestion.details for debugging
     console.log("Suggestion Details:", suggestion.details);
 
+    // Reformat localGovernment: replace '/' or spaces with '-'
+    const formatLocalGovernment = (localGov) => {
+      if (!localGov) return "";
+      return localGov.replace(/\/|\s+/g, "-");
+    };
+
     setFormData((prev) => ({
       ...prev,
       address: suggestion.description,
-      city: suggestion.details?.city || "",
+      city: suggestion.details?.localGovernment || "",
       state: suggestion.details?.state || "",
-      localGovernment: suggestion.details?.localGovernment || "",
+      localGovernment: formatLocalGovernment(suggestion.details?.localGovernment) || "",
       latitude: suggestion.details?.latitude || null,
       longitude: suggestion.details?.longitude || null,
     }));
@@ -137,7 +150,7 @@ export default function EditBusinessModal({
     setActiveSuggestionIndex(-1);
   };
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation for address suggestions
   const handleKeyDown = (e) => {
     if (!showSuggestions || suggestions.length === 0) return;
     switch (e.key) {
@@ -166,20 +179,43 @@ export default function EditBusinessModal({
     }
   };
 
+  // Handle description suggestion fetch
+  const handleDescriptionSuggestion = () => {
+    if (!formData.businessType) {
+      setSuggestionError("Please select a business group");
+      return;
+    }
+    setSuggestionError(null);
+    setFetchSuggestion(true); // Trigger the hook to fetch
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
+    // Basic validation
+    if (
+      !formData.name ||
+      !formData.description ||
+      !formData.contactNumber ||
+      !formData.address ||
+      !formData.city ||
+      !formData.state ||
+      !formData.openingTime ||
+      !formData.closingTime ||
+      !formData.deliveryOptions[0] ||
+      !formData.businessType
+    ) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
     try {
       await onFinish({
         ...formData,
-        openingTime: formData.openingTime
-          ? `${formData.openingTime}:00`
-          : undefined,
-        closingTime: formData.closingTime
-          ? `${formData.closingTime}:00`
-          : undefined,
+        openingTime: formData.openingTime ? `${formData.openingTime}:00` : undefined,
+        closingTime: formData.closingTime ? `${formData.closingTime}:00` : undefined,
         latitude: formData.latitude,
         longitude: formData.longitude,
       });
@@ -215,18 +251,65 @@ export default function EditBusinessModal({
               value={formData.name}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded"
-              placeholder="e.g. Foodturns Cafe"
+              placeholder="e.g. Ola Mummy"
               required
             />
           </div>
 
           <div className="space-y-2">
             <label
-              htmlFor="description"
+              htmlFor="businessType"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Description*
+              Business Group*
             </label>
+            <select
+              id="businessType"
+              name="businessType"
+              value={formData.businessType}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
+              disabled={loading}
+              required
+            >
+              <option value="">Select business group</option>
+              {businessTypes.map((group) => (
+                <option key={group.name} value={group.name}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+            {loading && (
+              <p className="text-gray-500 text-xs mt-1">
+                Loading business groups...
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2 col-span-2">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description*
+              </label>
+              <button
+                type="button"
+                onClick={handleDescriptionSuggestion}
+                disabled={suggestionLoading || !formData.businessType}
+                className={`px-3 py-1 text-sm rounded font-medium transition-colors ${
+                  suggestionLoading || !formData.businessType
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-orange-500 text-white hover:bg-orange-600"
+                }`}
+              >
+                {suggestionLoading ? "Loading..." : "Suggest"}
+              </button>
+            </div>
+            {suggestionError && (
+              <p className="text-red-500 text-xs mb-2">{suggestionError}</p>
+            )}
             <textarea
               id="description"
               name="description"
@@ -439,36 +522,6 @@ export default function EditBusinessModal({
               <option value="pickup">Pickup</option>
               <option value="delivery">Delivery</option>
             </select>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="businessType"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Business Type*
-            </label>
-            <select
-              id="businessType"
-              name="businessType"
-              value={formData.businessType}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
-              disabled={loading}
-              required
-            >
-              <option value="">Select business type</option>
-              {businessTypes.map((type) => (
-                <option key={type.name} value={type.name}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-            {loading && (
-              <p className="text-gray-500 text-xs mt-1">
-                Loading business types...
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">
