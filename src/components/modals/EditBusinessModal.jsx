@@ -31,8 +31,10 @@ export default function EditBusinessModal({
     city: business?.city || "",
     state: business?.state || "",
     localGovernment: business?.localGovernment || "",
-    latitude: business?.latitude || null,
-    longitude: business?.longitude || null,
+    latitude:
+      business?.latitude !== undefined ? Number(business?.latitude) : null,
+    longitude:
+      business?.longitude !== undefined ? Number(business?.longitude) : null,
     openingTime: business?.openingTime
       ? business.openingTime.slice(0, 5)
       : "08:00",
@@ -58,13 +60,18 @@ export default function EditBusinessModal({
 
   // Use description suggestion hook (only fetch when triggered by button)
   const [fetchSuggestion, setFetchSuggestion] = useState(false);
-  const { suggestedDescription, isLoading: suggestionLoading } = useDescriptionSuggestion({
-    businessType: formData.businessType,
-    businessName: formData.name,
-  });
+  const { suggestedDescription, isLoading: suggestionLoading } =
+    useDescriptionSuggestion({
+      businessType: formData.businessType,
+      businessName: formData.name,
+    });
 
   // Fetch business groups when the modal is opened
-  const { groups: businessGroups, loading: groupsLoading, error: groupsError } = useFetchBusinessGroups(session?.token, isVisible);
+  const {
+    groups: businessGroups,
+    loading: groupsLoading,
+    error: groupsError,
+  } = useFetchBusinessGroups(session?.token, isVisible);
 
   useEffect(() => {
     setBusinessTypes(businessGroups);
@@ -141,9 +148,16 @@ export default function EditBusinessModal({
       address: suggestion.description,
       city: suggestion.details?.localGovernment || "",
       state: suggestion.details?.state || "",
-      localGovernment: formatLocalGovernment(suggestion.details?.localGovernment) || "",
-      latitude: suggestion.details?.latitude || null,
-      longitude: suggestion.details?.longitude || null,
+      localGovernment:
+        formatLocalGovernment(suggestion.details?.localGovernment) || "",
+      latitude:
+        suggestion.details?.latitude !== undefined
+          ? Number(suggestion.details.latitude)
+          : null,
+      longitude:
+        suggestion.details?.longitude !== undefined
+          ? Number(suggestion.details.longitude)
+          : null,
     }));
     setAddressInput(suggestion.description);
     setShowSuggestions(false);
@@ -214,8 +228,12 @@ export default function EditBusinessModal({
     try {
       await onFinish({
         ...formData,
-        openingTime: formData.openingTime ? `${formData.openingTime}:00` : undefined,
-        closingTime: formData.closingTime ? `${formData.closingTime}:00` : undefined,
+        openingTime: formData.openingTime
+          ? `${formData.openingTime}:00`
+          : undefined,
+        closingTime: formData.closingTime
+          ? `${formData.closingTime}:00`
+          : undefined,
         latitude: formData.latitude,
         longitude: formData.longitude,
       });
@@ -224,6 +242,10 @@ export default function EditBusinessModal({
       setError(err.message || "Failed to save business details");
     }
   };
+
+  // Check if latitude and longitude are valid numbers
+  const isValidCoordinate = (coord) =>
+    typeof coord === "number" && !isNaN(coord);
 
   return (
     <Modal
@@ -544,6 +566,18 @@ export default function EditBusinessModal({
             </span>
           </div>
         </div>
+
+        {/* Display latitude and longitude if set and valid */}
+        {isValidCoordinate(formData.latitude) &&
+          isValidCoordinate(formData.longitude) && (
+            <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-700">
+              <p>
+                <span className="font-medium">Selected Coordinates:</span>{" "}
+                Latitude: {formData.latitude.toFixed(6)}, Longitude:{" "}
+                {formData.longitude.toFixed(6)}
+              </p>
+            </div>
+          )}
 
         <div className="flex justify-end space-x-4 mt-6">
           <button

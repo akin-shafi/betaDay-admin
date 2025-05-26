@@ -56,16 +56,16 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
 
   // Fetch business groups when the modal is opened
   const {
-    groups: businessGroups,
+    groups: fetchedGroups,
     loading: groupsLoading,
     error: groupsError,
   } = useFetchBusinessGroups(session?.token, isVisible);
 
   useEffect(() => {
-    setBusinessTypes(businessGroups);
+    setBusinessTypes(fetchedGroups);
     setLoading(groupsLoading);
     setError(groupsError || null);
-  }, [businessGroups, groupsLoading, groupsError]);
+  }, [fetchedGroups, groupsLoading, groupsError]);
 
   // Sync formData.address with addressInput
   useEffect(() => {
@@ -138,8 +138,14 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
       state: suggestion.details?.state || "",
       localGovernment:
         formatLocalGovernment(suggestion.details?.localGovernment) || "",
-      latitude: suggestion.details?.latitude || null,
-      longitude: suggestion.details?.longitude || null,
+      latitude:
+        suggestion.details?.latitude !== undefined
+          ? Number(suggestion.details.latitude)
+          : null,
+      longitude:
+        suggestion.details?.longitude !== undefined
+          ? Number(suggestion.details.longitude)
+          : null,
     }));
     setAddressInput(suggestion.description);
     setShowSuggestions(false);
@@ -185,6 +191,10 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
     setFetchSuggestion(true); // Trigger the hook to fetch
   };
 
+  // Check if latitude and longitude are valid numbers
+  const isValidCoordinate = (coord) =>
+    typeof coord === "number" && !isNaN(coord);
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -204,6 +214,19 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
       !formData.businessType
     ) {
       setError("Please fill in all required fields");
+      addressInputRef.current?.focus();
+      return;
+    }
+
+    // Validate coordinates
+    if (
+      !isValidCoordinate(formData.latitude) ||
+      !isValidCoordinate(formData.longitude)
+    ) {
+      setError(
+        "Please select a valid address from the dropdown to set coordinates."
+      );
+      addressInputRef.current?.focus();
       return;
     }
 
@@ -545,11 +568,23 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
           </div>
         </div>
 
+        {/* Display latitude and longitude if set and valid */}
+        {isValidCoordinate(formData.latitude) &&
+          isValidCoordinate(formData.longitude) && (
+            <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-700">
+              <p>
+                <span className="font-medium">Selected Coordinates:</span>{" "}
+                Latitude: {formData.latitude.toFixed(6)}, Longitude:{" "}
+                {formData.longitude.toFixed(6)}
+              </p>
+            </div>
+          )}
+
         <div className="flex justify-end space-x-4 mt-6">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-medium hover:bg-gray-300 transition-colors"
           >
             Cancel
           </button>
