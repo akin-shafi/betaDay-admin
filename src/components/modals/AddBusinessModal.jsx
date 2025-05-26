@@ -17,7 +17,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [error, setError] = useState(null);
 
-  // Form state with latitude and longitude
+  // Form state with latitude, longitude, and new fields
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -31,8 +31,12 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
     longitude: null,
     openingTime: "08:00",
     closingTime: "18:00",
+    businessDays: "",
     deliveryOptions: ["In-house"],
     businessType: "",
+    accountNumber: "",
+    bankName: "",
+    accountName: "",
     isActive: true,
   });
 
@@ -241,6 +245,10 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
           : undefined,
         latitude: formData.latitude,
         longitude: formData.longitude,
+        businessDays: formData.businessDays || undefined,
+        accountNumber: formData.accountNumber || undefined,
+        bankName: formData.bankName || undefined,
+        accountName: formData.accountName || undefined,
       });
       onCancel(); // Close modal on success
     } catch (err) {
@@ -527,6 +535,24 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
 
           <div className="space-y-2">
             <label
+              htmlFor="businessDays"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Business Days
+            </label>
+            <input
+              type="text"
+              id="businessDays"
+              name="businessDays"
+              value={formData.businessDays}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="e.g. Mon - Fri"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label
               htmlFor="deliveryOptions"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
@@ -545,6 +571,60 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               <option value="pickup">Pickup</option>
               <option value="delivery">Delivery</option>
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="accountNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Account Number
+            </label>
+            <input
+              type="text"
+              id="accountNumber"
+              name="accountNumber"
+              value={formData.accountNumber}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="e.g. 1234567890"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="bankName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Bank Name
+            </label>
+            <input
+              type="text"
+              id="bankName"
+              name="bankName"
+              value={formData.bankName}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="e.g. First Bank"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="accountName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Account Name
+            </label>
+            <input
+              type="text"
+              id="accountName"
+              name="accountName"
+              value={formData.accountName}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded"
+              placeholder="e.g. John Doe Enterprises"
+            />
           </div>
 
           <div className="space-y-2">
@@ -584,7 +664,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-medium hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
           >
             Cancel
           </button>
