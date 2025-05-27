@@ -3,7 +3,17 @@ import { useState, useEffect } from "react";
 import { fetchBusinesses, createBusiness } from "@/hooks/useBusiness";
 import { Link } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
-import { Table, Input, Space, Tag, Button, Form, message, Tabs } from "antd";
+import {
+  Table,
+  Input,
+  Space,
+  Tag,
+  Button,
+  Form,
+  message,
+  Tabs,
+  Tooltip,
+} from "antd";
 import { Search, Plus } from "lucide-react";
 import AddBusinessModal from "@/components/modals/AddBusinessModal";
 import debounce from "lodash/debounce"; // Optional: Install lodash for debouncing
@@ -112,6 +122,11 @@ export default function VendorsPage() {
       title: "Address",
       dataIndex: "address",
       key: "address",
+      render: (address) => (
+        <Tooltip title={address} placement="top">
+          <span className="block truncate w-[200px]">{address}</span>
+        </Tooltip>
+      ),
     },
     {
       title: "Contact",

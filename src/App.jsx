@@ -16,8 +16,8 @@ import { UsersPage } from "./pages/Users";
 import VendorsPage from "./pages/vendors";
 import VendorDetailsPage from "./pages/vendors/[id]";
 
-import BusinessesPage from "./pages/businesses";
-import BusinessViewPage from "./pages/businesses/view";
+// import BusinessesPage from "./pages/businesses";
+// import BusinessViewPage from "./pages/businesses/view";
 
 // Import Orders Pages
 import OrdersPage from "@/pages/orders";
@@ -103,14 +103,14 @@ function App() {
         />
 
         {/* Business Routes */}
-        <Route
+        {/* <Route
           path="/businesses"
           element={
             <ProtectedRoute>
               <BusinessesPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
         {/* <Route
           path="/businesses/add"
           element={
@@ -119,14 +119,14 @@ function App() {
             </ProtectedRoute>
           }
         /> */}
-        <Route
+        {/* <Route
           path="/businesses/:id"
           element={
             <ProtectedRoute>
               <BusinessViewPage />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/groups"
           element={

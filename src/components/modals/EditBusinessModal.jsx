@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { Modal } from "antd";
@@ -7,7 +6,12 @@ import { useSession } from "@/hooks/useSession";
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import { useDescriptionSuggestion } from "@/hooks/useDescriptionSuggestion";
 
-export default function EditBusinessModal({ isVisible, onCancel, onFinish, business }) {
+export default function EditBusinessModal({
+  isVisible,
+  onCancel,
+  onFinish,
+  business,
+}) {
   const [businessTypes, setBusinessTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState(null);
@@ -27,10 +31,16 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
     city: business?.city || "",
     state: business?.state || "",
     localGovernment: business?.localGovernment || "",
-    latitude: business?.latitude !== undefined ? Number(business.latitude) : null,
-    longitude: business?.longitude !== undefined ? Number(business.longitude) : null,
-    openingTime: business?.openingTime ? business.openingTime.slice(0, 5) : "08:00",
-    closingTime: business?.closingTime ? business.closingTime.slice(0, 5) : "18:00",
+    latitude:
+      business?.latitude !== undefined ? Number(business.latitude) : null,
+    longitude:
+      business?.longitude !== undefined ? Number(business.longitude) : null,
+    openingTime: business?.openingTime
+      ? business.openingTime.slice(0, 5)
+      : "08:00",
+    closingTime: business?.closingTime
+      ? business.closingTime.slice(0, 5)
+      : "18:00",
     businessDays: business?.businessDays || "",
     deliveryOptions: business?.deliveryOptions || ["In-house"],
     businessType: business?.businessType || "",
@@ -52,10 +62,11 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
 
   // Use description suggestion hook
   const [fetchSuggestion, setFetchSuggestion] = useState(false);
-  const { suggestedDescription, isLoading: suggestionLoading } = useDescriptionSuggestion({
-    businessType: formData.businessType,
-    businessName: formData.name,
-  });
+  const { suggestedDescription, isLoading: suggestionLoading } =
+    useDescriptionSuggestion({
+      businessType: formData.businessType,
+      businessName: formData.name,
+    });
 
   // Fetch business groups when modal is opened
   const {
@@ -89,10 +100,16 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
         city: business.city || "",
         state: business.state || "",
         localGovernment: business.localGovernment || "",
-        latitude: business.latitude !== undefined ? Number(business.latitude) : null,
-        longitude: business.longitude !== undefined ? Number(business.longitude) : null,
-        openingTime: business.openingTime ? business.openingTime.slice(0, 5) : "08:00",
-        closingTime: business.closingTime ? business.closingTime.slice(0, 5) : "18:00",
+        latitude:
+          business.latitude !== undefined ? Number(business.latitude) : null,
+        longitude:
+          business.longitude !== undefined ? Number(business.longitude) : null,
+        openingTime: business.openingTime
+          ? business.openingTime.slice(0, 5)
+          : "08:00",
+        closingTime: business.closingTime
+          ? business.closingTime.slice(0, 5)
+          : "18:00",
         businessDays: business.businessDays || "",
         deliveryOptions: business.deliveryOptions || ["In-house"],
         businessType: business.businessType || "",
@@ -108,7 +125,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
   // Handle clicks outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (addressInputRef.current && !addressInputRef.current.contains(event.target)) {
+      if (
+        addressInputRef.current &&
+        !addressInputRef.current.contains(event.target)
+      ) {
         setShowSuggestions(false);
         setActiveSuggestionIndex(-1);
       }
@@ -160,9 +180,16 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
       address: suggestion.description,
       city: formatLocalGovernment(suggestion.details?.localGovernment) || "",
       state: suggestion.details?.state || "",
-      localGovernment: formatLocalGovernment(suggestion.details?.localGovernment) || "",
-      latitude: suggestion.details?.latitude !== undefined ? Number(suggestion.details.latitude) : null,
-      longitude: suggestion.details?.longitude !== undefined ? Number(suggestion.details.longitude) : null,
+      localGovernment:
+        formatLocalGovernment(suggestion.details?.localGovernment) || "",
+      latitude:
+        suggestion.details?.latitude !== undefined
+          ? Number(suggestion.details.latitude)
+          : null,
+      longitude:
+        suggestion.details?.longitude !== undefined
+          ? Number(suggestion.details.longitude)
+          : null,
     }));
     setAddressInput(suggestion.description);
     setShowSuggestions(false);
@@ -175,7 +202,9 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setActiveSuggestionIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
+        setActiveSuggestionIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
         break;
       case "ArrowUp":
         e.preventDefault();
@@ -207,7 +236,8 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
   };
 
   // Validate coordinates
-  const isValidCoordinate = (coord) => typeof coord === 'number' && !isNaN(coord);
+  const isValidCoordinate = (coord) =>
+    typeof coord === "number" && !isNaN(coord);
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -233,8 +263,13 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
     }
 
     // Validate coordinates
-    if (!isValidCoordinate(formData.latitude) || !isValidCoordinate(formData.longitude)) {
-      setError("Please select a valid address from the dropdown to set coordinates.");
+    if (
+      !isValidCoordinate(formData.latitude) ||
+      !isValidCoordinate(formData.longitude)
+    ) {
+      setError(
+        "Please select a valid address from the dropdown to set coordinates."
+      );
       addressInputRef.current?.focus();
       return;
     }
@@ -270,7 +305,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Business Name*
             </label>
             <input
@@ -286,7 +324,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="businessType" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="businessType"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Business Group*
             </label>
             <select
@@ -305,12 +346,19 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
                 </option>
               ))}
             </select>
-            {loading && <p className="text-gray-500 text-xs mt-1">Loading business groups...</p>}
+            {loading && (
+              <p className="text-gray-500 text-xs mt-1">
+                Loading business groups...
+              </p>
+            )}
           </div>
 
           <div className="space-y-2 col-span-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Description*
               </label>
               <button
@@ -326,7 +374,9 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
                 {suggestionLoading ? "Loading..." : "Suggest"}
               </button>
             </div>
-            {suggestionError && <p className="text-red-500 text-xs mb-2">{suggestionError}</p>}
+            {suggestionError && (
+              <p className="text-red-500 text-xs mb-2">{suggestionError}</p>
+            )}
             <textarea
               id="description"
               name="description"
@@ -340,7 +390,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="contactNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Contact Number*
             </label>
             <input
@@ -356,7 +409,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="website"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Website
             </label>
             <input
@@ -371,7 +427,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2 relative" ref={addressInputRef}>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Address*
             </label>
             <input
@@ -407,17 +466,24 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
                   >
                     {suggestion.description}
                     {!suggestion.details && (
-                      <span className="text-xs text-gray-500 ml-2">(Details unavailable)</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        (Details unavailable)
+                      </span>
                     )}
                   </li>
                 ))}
               </ul>
             )}
-            {addressError && <p className="text-red-500 text-xs mt-1">{addressError}</p>}
+            {addressError && (
+              <p className="text-red-500 text-xs mt-1">{addressError}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="city"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               City*
             </label>
             <input
@@ -432,7 +498,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="state"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               State*
             </label>
             <input
@@ -447,7 +516,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="localGovernment" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="localGovernment"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Local Government
             </label>
             <input
@@ -462,7 +534,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="openingTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="openingTime"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Opening Time*
             </label>
             <input
@@ -477,7 +552,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="closingTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="closingTime"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Closing Time*
             </label>
             <input
@@ -492,7 +570,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="businessDays" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="businessDays"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Business Days
             </label>
             <input
@@ -507,7 +588,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="deliveryOptions" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="deliveryOptions"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Delivery Options*
             </label>
             <select
@@ -526,7 +610,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="accountNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="accountNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Account Number
             </label>
             <input
@@ -541,7 +628,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="bankName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Bank Name
             </label>
             <input
@@ -556,7 +646,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="accountName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="accountName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Account Name
             </label>
             <input
@@ -571,7 +664,10 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="isActive" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="isActive"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Status
             </label>
             <input
@@ -589,14 +685,16 @@ export default function EditBusinessModal({ isVisible, onCancel, onFinish, busin
         </div>
 
         {/* Display latitude and longitude if set and valid */}
-        {isValidCoordinate(formData.latitude) && isValidCoordinate(formData.longitude) && (
-          <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-700">
-            <p>
-              <span className="font-medium">Selected Coordinates:</span>{" "}
-              Latitude: {formData.latitude.toFixed(6)}, Longitude: {formData.longitude.toFixed(6)}
-            </p>
-          </div>
-        )}
+        {isValidCoordinate(formData.latitude) &&
+          isValidCoordinate(formData.longitude) && (
+            <div className="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-700">
+              <p>
+                <span className="font-medium">Selected Coordinates:</span>{" "}
+                Latitude: {formData.latitude.toFixed(6)}, Longitude:{" "}
+                {formData.longitude.toFixed(6)}
+              </p>
+            </div>
+          )}
 
         <div className="flex justify-end space-x-4 mt-6">
           <button

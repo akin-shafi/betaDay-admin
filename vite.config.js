@@ -39,7 +39,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3100,
+    port: 3000,
     strictPort: true,
   },
   esbuild: {

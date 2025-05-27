@@ -12,7 +12,7 @@ import {
   message,
 } from "antd";
 import { Upload as UploadIcon } from "lucide-react";
-import { fetchProductCategories } from "@/hooks/useProduct";
+import { getProductCategories } from "@/hooks/useProduct";
 import { useSession } from "@/hooks/useSession";
 
 const CURRENCY_OPTIONS = [
@@ -43,8 +43,7 @@ export default function AddProductModal({
 
       try {
         setLoading(true);
-        const categories = await fetchProductCategories(session.token);
-        // Map to a list of names for the Select options
+        const categories = await getProductCategories(session.token);
         const categoryNames = categories.map((category) => category.name);
         setProductCategories(categoryNames);
       } catch (error) {
@@ -109,17 +108,24 @@ export default function AddProductModal({
           </Form.Item>
 
           <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select category" }]}
+            label="Categories"
+            name="categories"
+            rules={[
+              {
+                required: true,
+                message: "Please select at least one category",
+              },
+            ]}
           >
             <Select
-              placeholder="Select category"
+              placeholder="Select categories"
               loading={loading}
-              options={productCategories.map((name) => ({
-                label: name,
-                value: name, // Use the name as the value to match the database
+              options={productCategories.map((category) => ({
+                label: category.name,
+                value: category.name,
               }))}
+              showSearch
+              optionFilterProp="label"
             />
           </Form.Item>
 
@@ -174,11 +180,7 @@ export default function AddProductModal({
             <InputNumber className="w-full" min={0} />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: "Please enter description" }]}
-          >
+          <Form.Item name="description" label="Description">
             <Input.TextArea rows={4} />
           </Form.Item>
 

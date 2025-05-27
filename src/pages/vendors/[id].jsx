@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   fetchBusinessById,
   updateBusiness,
@@ -11,7 +10,8 @@ import {
   fetchProducts,
   updateProduct,
   deleteProduct,
-  createProduct,
+  createSingleProduct,
+  createMultipleProducts,
 } from "@/hooks/useProduct";
 import { updateBusinessImage } from "@/hooks/useBusinessImage";
 import { useSession } from "@/hooks/useSession";
@@ -49,16 +49,16 @@ import {
   Upload as UploadIcon,
   Search,
 } from "lucide-react";
-import { updateProductImage } from "@/hooks/useProductImage";
+import { updateProductImage } from "@/hooks/useProduct";
 import EditBusinessModal from "@/components/modals/EditBusinessModal";
 import DeleteBusinessModal from "@/components/modals/DeleteBusinessModal";
 import BusinessImageModal from "@/components/modals/BusinessImageModal";
 import EditProductModal from "@/components/modals/EditProductModal";
 import DeleteProductModal from "@/components/modals/DeleteProductModal";
 import ProductImageModal from "@/components/modals/ProductImageModal";
-import AddProductModal from "@/components/modals/AddProductModal";
+import AddSingleProductModal from "@/components/modals/AddSingleProductModal";
+import AddMultipleProductsModal from "@/components/modals/AddMultipleProductsModal";
 
-// Update currency options to match backend format
 const CURRENCY_OPTIONS = [
   { label: "Naira (₦)", value: "Naira" },
   { label: "Dollar ($)", value: "Dollar" },
@@ -95,9 +95,14 @@ export default function VendorDetailsPage() {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
-  const [isAddProductModalVisible, setIsAddProductModalVisible] =
+  const [isAddSingleProductModalVisible, setIsAddSingleProductModalVisible] =
     useState(false);
-  const [addProductForm] = Form.useForm();
+  const [
+    isAddMultipleProductsModalVisible,
+    setIsAddMultipleProductsModalVisible,
+  ] = useState(false);
+  const [addSingleProductForm] = Form.useForm();
+  const [addMultipleProductsForm] = Form.useForm();
 
   useEffect(() => {
     const getBusiness = async () => {
@@ -110,7 +115,7 @@ export default function VendorDetailsPage() {
           ...response.business,
           deliveryOptions: response.business.deliveryOptions || [],
           businessType: response.business.businessType || "",
-          categories: response.business.categories || [], // Business categories might still be an array
+          categories: response.business.categories || [],
           priceRange: response.business.priceRange || "",
           deliveryTimeRange: response.business.deliveryTimeRange || "",
           rating: response.business.rating || "0.0",
@@ -136,7 +141,11 @@ export default function VendorDetailsPage() {
       try {
         setIsProductsLoading(true);
         const data = await fetchProducts(session.token, id);
-        setProducts(data);
+        // Fallback filter in case fetchProducts doesn't filter by businessId server-side
+        const filteredProducts = Array.isArray(data)
+          ? data.filter((product) => product.businessId === id)
+          : [];
+        setProducts(filteredProducts);
       } catch (err) {
         message.error("Failed to fetch products");
         console.error("Error fetching products:", err);
@@ -153,7 +162,6 @@ export default function VendorDetailsPage() {
       await updateBusiness(id, values, session?.token);
       message.success("Business updated successfully");
       setIsEditModalVisible(false);
-      // Refresh business data
       const response = await fetchBusinessById(id, session?.token);
       setBusiness(response.business);
     } catch (err) {
@@ -177,7 +185,10 @@ export default function VendorDetailsPage() {
       message.success("Product updated successfully");
       setIsProductEditModalVisible(false);
       const data = await fetchProducts(session.token, id);
-      setProducts(data);
+      const filteredProducts = Array.isArray(data)
+        ? data.filter((product) => product.businessId === id)
+        : [];
+      setProducts(filteredProducts);
     } catch (err) {
       message.error(err.message || "Failed to update product");
     }
@@ -188,9 +199,11 @@ export default function VendorDetailsPage() {
       await deleteProduct(productId, session?.token);
       message.success("Product deleted successfully");
       setIsProductDeleteModalVisible(false);
-      // Refresh products list
       const data = await fetchProducts(session.token, id);
-      setProducts(data);
+      const filteredProducts = Array.isArray(data)
+        ? data.filter((product) => product.businessId === id)
+        : [];
+      setProducts(filteredProducts);
     } catch (err) {
       message.error(err.message || "Failed to delete product");
     }
@@ -198,9 +211,12 @@ export default function VendorDetailsPage() {
 
   const openEditProductModal = (product) => {
     setSelectedProduct(product);
-    // Set the selected currency when opening the modal
     setSelectedCurrency(product.currency || "Naira");
-    productForm.setFieldsValue(product);
+    productForm.setFieldsValue({
+      ...product,
+      categories: product.categories?.map((cat) => cat.id) || [],
+      options: product.options ? JSON.stringify(product.options) : "",
+    });
     setIsProductEditModalVisible(true);
   };
 
@@ -211,15 +227,12 @@ export default function VendorDetailsPage() {
 
   const handleImageUpdate = async (values) => {
     try {
-      console.log("Starting image update in component...");
-      console.log("Form values:", values);
-
       await updateBusinessImage(id, values.image, session?.token);
       setIsImageEditModalVisible(false);
       setImagePreview(null);
-      // Refresh business data
       const response = await fetchBusinessById(id, session?.token);
       setBusiness(response.business);
+      message.success("Business image updated successfully");
     } catch (err) {
       console.error("Error in handleImageUpdate:", err);
       message.error(err.message || "Failed to update business image");
@@ -227,35 +240,22 @@ export default function VendorDetailsPage() {
   };
 
   const beforeImageUpload = (file) => {
-    console.log("Validating image file...");
-    console.log("File details:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
       message.error("You can only upload image files!");
       return false;
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Image must be smaller than 2MB!");
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error("Image must be smaller than 5MB!");
       return false;
     }
-    return false; // Prevent default upload behavior
+    return false;
   };
 
   const handleImageChange = (info) => {
-    console.log("Image change event:", info);
     if (info.file) {
       const file = info.file;
-      console.log("Selected file:", {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
       setImagePreview(URL.createObjectURL(file));
       imageForm.setFieldsValue({ image: file });
     }
@@ -263,9 +263,6 @@ export default function VendorDetailsPage() {
 
   const handleProductImageUpdate = async (values) => {
     try {
-      console.log("Starting product image update in component...");
-      console.log("Form values:", values);
-
       await updateProductImage(
         selectedProduct.id,
         values.image,
@@ -273,9 +270,12 @@ export default function VendorDetailsPage() {
       );
       setIsProductImageEditModalVisible(false);
       setProductImagePreview(null);
-      // Refresh products list
       const data = await fetchProducts(session.token, id);
-      setProducts(data);
+      const filteredProducts = Array.isArray(data)
+        ? data.filter((product) => product.businessId === id)
+        : [];
+      setProducts(filteredProducts);
+      message.success("Product image updated successfully");
     } catch (err) {
       console.error("Error in handleProductImageUpdate:", err);
       message.error(err.message || "Failed to update product image");
@@ -283,35 +283,22 @@ export default function VendorDetailsPage() {
   };
 
   const beforeProductImageUpload = (file) => {
-    console.log("Validating product image file...");
-    console.log("File details:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
       message.error("You can only upload image files!");
       return false;
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Image must be smaller than 2MB!");
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error("Image must be smaller than 5MB!");
       return false;
     }
-    return false; // Prevent default upload behavior
+    return false;
   };
 
   const handleProductImageChange = (info) => {
-    console.log("Product image change event:", info);
     if (info.file) {
       const file = info.file;
-      console.log("Selected file:", {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      });
       setProductImagePreview(URL.createObjectURL(file));
       productImageForm.setFieldsValue({ image: file });
     }
@@ -324,12 +311,51 @@ export default function VendorDetailsPage() {
     setIsProductImageEditModalVisible(true);
   };
 
+  const handleAddSingleProduct = async (values) => {
+    try {
+      const data = { ...values, businessId: id };
+      await createSingleProduct(data, values.image, session?.token);
+      message.success("Product created successfully");
+      setIsAddSingleProductModalVisible(false);
+      addSingleProductForm.resetFields();
+      setProductImagePreview(null);
+      const dataProducts = await fetchProducts(session.token, id);
+      const filteredProducts = Array.isArray(dataProducts)
+        ? dataProducts.filter((product) => product.businessId === id)
+        : [];
+      setProducts(filteredProducts);
+    } catch (err) {
+      message.error(err.message || "Failed to create product");
+    }
+  };
+
+  const handleAddMultipleProducts = async (values) => {
+    try {
+      const products = values.products.map((product) => ({
+        ...product,
+        businessId: id,
+      }));
+      const images = values.products.map((product) => product.image || null);
+      await createMultipleProducts(products, images, session?.token);
+      message.success("Products created successfully");
+      setIsAddMultipleProductsModalVisible(false);
+      addMultipleProductsForm.resetFields();
+      setProductImagePreview(null);
+      const data = await fetchProducts(session.token, id);
+      const filteredProducts = Array.isArray(data)
+        ? data.filter((product) => product.businessId === id)
+        : [];
+      setProducts(filteredProducts);
+    } catch (err) {
+      message.error(err.message || "Failed to create products");
+    }
+  };
+
   const getFilteredProducts = () => {
     return products.filter((product) => {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchText.toLowerCase());
-      // Check if selectedCategory is in the product's categories array
       const matchesCategory =
         !selectedCategory ||
         (Array.isArray(product.categories) &&
@@ -342,33 +368,16 @@ export default function VendorDetailsPage() {
   };
 
   const getUniqueCategories = () => {
-    // Flatten all category names from products and deduplicate
     const allCategories = products
       .flatMap((product) =>
         Array.isArray(product.categories)
           ? product.categories.map((cat) => cat.name)
           : []
       )
-      .filter(Boolean); // Remove falsy values
+      .filter(Boolean);
     return [...new Set(allCategories)];
   };
 
-  const handleAddProduct = async (values) => {
-    try {
-      await createProduct(id, values, session?.token);
-      message.success("Product created successfully");
-      setIsAddProductModalVisible(false);
-      addProductForm.resetFields();
-      setProductImagePreview(null);
-      // Refresh products list
-      const data = await fetchProducts(session.token, id);
-      setProducts(data);
-    } catch (err) {
-      message.error(err.message || "Failed to create product");
-    }
-  };
-
-  // Products table columns
   const productColumns = [
     {
       title: "Image",
@@ -411,7 +420,11 @@ export default function VendorDetailsPage() {
         <Space wrap>
           {Array.isArray(categories) && categories.length > 0 ? (
             categories.map((category) => (
-              <Tag key={category.id} color="blue" className="text-xs">
+              <Tag
+                key={category.id || category.name}
+                color="blue"
+                className="text-xs"
+              >
                 {category.name}
               </Tag>
             ))
@@ -428,9 +441,18 @@ export default function VendorDetailsPage() {
       title: "Price",
       dataIndex: "price",
       key: "price",
-      render: (price) => (
-        <span className="text-sm">₦{parseFloat(price).toFixed(2)}</span>
-      ),
+      render: (price, record) => {
+        const currencySymbol =
+          CURRENCY_OPTIONS.find(
+            (c) => c.value === selectedCurrency
+          )?.label.split(" ")[0] || "₦";
+        return (
+          <span className="text-sm">
+            {currencySymbol}
+            {parseFloat(price).toFixed(2)}
+          </span>
+        );
+      },
       sorter: (a, b) => parseFloat(a.price) - parseFloat(b.price),
     },
     {
@@ -486,7 +508,6 @@ export default function VendorDetailsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {/* Header Skeleton */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
@@ -499,8 +520,6 @@ export default function VendorDetailsPage() {
             <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
           </div>
         </div>
-
-        {/* Business Details Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4"></div>
@@ -516,7 +535,6 @@ export default function VendorDetailsPage() {
               ))}
             </div>
           </div>
-
           <div className="bg-white rounded-lg shadow p-6">
             <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-4"></div>
             <div className="space-y-4">
@@ -532,8 +550,6 @@ export default function VendorDetailsPage() {
             </div>
           </div>
         </div>
-
-        {/* Statistics Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white rounded-lg shadow p-6">
@@ -542,8 +558,6 @@ export default function VendorDetailsPage() {
             </div>
           ))}
         </div>
-
-        {/* Products Table Skeleton */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
@@ -600,7 +614,6 @@ export default function VendorDetailsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-4">
           <Link to="/vendors">
@@ -629,10 +642,7 @@ export default function VendorDetailsPage() {
           </Button>
         </Space>
       </div>
-
-      {/* Business Details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Information Card */}
         <Card className="lg:col-span-2">
           <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="relative group mx-auto sm:mx-0">
@@ -668,9 +678,9 @@ export default function VendorDetailsPage() {
                 </Tag>
                 <div className="flex items-center text-gray-500 text-sm">
                   <span className="mr-1">★</span>
-                  <span>{business.rating}</span>
+                  <span>{business.rating || "0.0"}</span>
                   <span className="ml-1">
-                    ({business.totalRatings} ratings)
+                    ({business.totalRatings || 0} ratings)
                   </span>
                 </div>
               </div>
@@ -687,8 +697,6 @@ export default function VendorDetailsPage() {
             </div>
           </div>
         </Card>
-
-        {/* Contact Information Card */}
         <Card title="Contact Information">
           <Descriptions column={1}>
             <Descriptions.Item label="Phone">
@@ -734,8 +742,6 @@ export default function VendorDetailsPage() {
             </Descriptions.Item>
           </Descriptions>
         </Card>
-
-        {/* Delivery Options Card */}
         <Card title="Delivery Options" className="lg:col-span-2">
           <Space wrap>
             {business.deliveryOptions?.map((option, index) => (
@@ -745,8 +751,6 @@ export default function VendorDetailsPage() {
             ))}
           </Space>
         </Card>
-
-        {/* Additional Information Card */}
         <Card title="Additional Information">
           <Descriptions column={1}>
             <Descriptions.Item label="Price Range">
@@ -756,13 +760,11 @@ export default function VendorDetailsPage() {
               {business.deliveryTimeRange || "Not specified"}
             </Descriptions.Item>
             <Descriptions.Item label="Rating">
-              {business.rating} ({business.totalRatings} ratings)
+              {business.rating || "0.0"} ({business.totalRatings || 0} ratings)
             </Descriptions.Item>
           </Descriptions>
         </Card>
       </div>
-
-      {/* Statistics Section */}
       <Card title="Business Statistics">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
@@ -779,8 +781,7 @@ export default function VendorDetailsPage() {
           </div>
           <div className="text-center">
             <div className="text-3xl font-semibold text-primary">
-              {business.categories ? 1 : 0}{" "}
-              {/* Count as 1 if category exists */}
+              {business.categories ? 1 : 0}
             </div>
             <div className="text-gray-500">Categories</div>
           </div>
@@ -792,20 +793,28 @@ export default function VendorDetailsPage() {
           </div>
         </div>
       </Card>
-
-      {/* Products Table Section */}
       <Card
         title={
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <span className="text-lg sm:text-xl">Products</span>
-            <Button
-              type="primary"
-              icon={<Plus size={16} />}
-              onClick={() => setIsAddProductModalVisible(true)}
-              className="text-sm bg-gray-900 hover:bg-[#ff6600]"
-            >
-              Add Product
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                icon={<Plus size={16} />}
+                onClick={() => setIsAddSingleProductModalVisible(true)}
+                className="text-sm bg-gray-900 hover:bg-[#ff6600]"
+              >
+                Add Single Product
+              </Button>
+              <Button
+                type="primary"
+                icon={<Plus size={16} />}
+                onClick={() => setIsAddMultipleProductsModalVisible(true)}
+                className="text-sm bg-gray-900 hover:bg-[#ff6600]"
+              >
+                Add Multiple Products
+              </Button>
+            </Space>
           </div>
         }
       >
@@ -842,7 +851,7 @@ export default function VendorDetailsPage() {
                 formatter={(value) => {
                   const currencySymbol =
                     CURRENCY_OPTIONS.find(
-                      (c) => c.value === selectedProduct?.currency
+                      (c) => c.value === selectedCurrency
                     )?.label.split(" ")[0] || "₦";
                   return `${currencySymbol} ${value}`.replace(
                     /\B(?=(\d{3})+(?!\d))/g,
@@ -852,7 +861,7 @@ export default function VendorDetailsPage() {
                 parser={(value) => {
                   const currencySymbol =
                     CURRENCY_OPTIONS.find(
-                      (c) => c.value === selectedProduct?.currency
+                      (c) => c.value === selectedCurrency
                     )?.label.split(" ")[0] || "₦";
                   return value.replace(
                     new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
@@ -871,7 +880,7 @@ export default function VendorDetailsPage() {
                 formatter={(value) => {
                   const currencySymbol =
                     CURRENCY_OPTIONS.find(
-                      (c) => c.value === selectedProduct?.currency
+                      (c) => c.value === selectedCurrency
                     )?.label.split(" ")[0] || "₦";
                   return `${currencySymbol} ${value}`.replace(
                     /\B(?=(\d{3})+(?!\d))/g,
@@ -881,7 +890,7 @@ export default function VendorDetailsPage() {
                 parser={(value) => {
                   const currencySymbol =
                     CURRENCY_OPTIONS.find(
-                      (c) => c.value === selectedProduct?.currency
+                      (c) => c.value === selectedCurrency
                     )?.label.split(" ")[0] || "₦";
                   return value.replace(
                     new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
@@ -922,7 +931,6 @@ export default function VendorDetailsPage() {
             )}
           </div>
         </div>
-
         <Table
           columns={productColumns}
           dataSource={getFilteredProducts()}
@@ -939,8 +947,6 @@ export default function VendorDetailsPage() {
           size="small"
         />
       </Card>
-
-      {/* Edit Modal */}
       <EditBusinessModal
         isVisible={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
@@ -948,16 +954,12 @@ export default function VendorDetailsPage() {
         business={business}
         form={form}
       />
-
-      {/* Delete Confirmation Modal */}
       <DeleteBusinessModal
         isVisible={isDeleteModalVisible}
         onCancel={() => setIsDeleteModalVisible(false)}
         onOk={handleDelete}
         businessName={business?.name}
       />
-
-      {/* Product Edit Modal */}
       <EditProductModal
         isVisible={isProductEditModalVisible}
         onCancel={() => setIsProductEditModalVisible(false)}
@@ -967,16 +969,12 @@ export default function VendorDetailsPage() {
         selectedCurrency={selectedCurrency}
         setSelectedCurrency={setSelectedCurrency}
       />
-
-      {/* Product Delete Modal */}
       <DeleteProductModal
         isVisible={isProductDeleteModalVisible}
         onCancel={() => setIsProductDeleteModalVisible(false)}
         onOk={() => handleDeleteProduct(selectedProduct?.id)}
         productName={selectedProduct?.name}
       />
-
-      {/* Image Edit Modal */}
       <BusinessImageModal
         isVisible={isImageEditModalVisible}
         onCancel={() => setIsImageEditModalVisible(false)}
@@ -986,8 +984,6 @@ export default function VendorDetailsPage() {
         imagePreview={imagePreview}
         setImagePreview={setImagePreview}
       />
-
-      {/* Product Image Edit Modal */}
       <ProductImageModal
         isVisible={isProductImageEditModalVisible}
         onCancel={() => setIsProductImageEditModalVisible(false)}
@@ -997,21 +993,31 @@ export default function VendorDetailsPage() {
         imagePreview={productImagePreview}
         setImagePreview={setProductImagePreview}
       />
-
-      {/* Add Product Modal */}
-      <AddProductModal
-        isVisible={isAddProductModalVisible}
+      <AddSingleProductModal
+        isVisible={isAddSingleProductModalVisible}
         onCancel={() => {
-          setIsAddProductModalVisible(false);
-          addProductForm.resetFields();
+          setIsAddSingleProductModalVisible(false);
+          addSingleProductForm.resetFields();
           setProductImagePreview(null);
         }}
-        onFinish={handleAddProduct}
-        form={addProductForm}
+        onFinish={handleAddSingleProduct}
+        form={addSingleProductForm}
         selectedCurrency={selectedCurrency}
         setSelectedCurrency={setSelectedCurrency}
         imagePreview={productImagePreview}
         setImagePreview={setProductImagePreview}
+      />
+      <AddMultipleProductsModal
+        isVisible={isAddMultipleProductsModalVisible}
+        onCancel={() => {
+          setIsAddMultipleProductsModalVisible(false);
+          addMultipleProductsForm.resetFields();
+          setProductImagePreview(null);
+        }}
+        onFinish={handleAddMultipleProducts}
+        form={addMultipleProductsForm}
+        selectedCurrency={selectedCurrency}
+        setSelectedCurrency={setSelectedCurrency}
       />
     </div>
   );
