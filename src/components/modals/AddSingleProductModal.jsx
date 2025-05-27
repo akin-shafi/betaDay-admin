@@ -16,6 +16,7 @@ export default function AddSingleProductModal({
 }) {
   const [productCategories, setProductCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false); // Add submitting state
   const { session } = useSession();
 
   // Fetch product categories when the modal is opened
@@ -43,6 +44,21 @@ export default function AddSingleProductModal({
     }
   }, [isVisible, form]);
 
+  // Handle form submission with submitting state
+  const handleFinish = async (values) => {
+    setSubmitting(true);
+    try {
+      await onFinish(values);
+      message.success("Product created successfully");
+      form.resetFields();
+      onCancel();
+    } catch (error) {
+      message.error(error.message || "Failed to create product");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Modal
       title="Add New Product"
@@ -53,14 +69,18 @@ export default function AddSingleProductModal({
       cancelText="Cancel"
       okButtonProps={{
         className: "bg-gray-900 hover:bg-[#ff6600] !text-base md:!text-sm",
+        disabled: submitting, // Disable OK button when submitting
+        loading: submitting, // Show loading state
       }}
-      cancelButtonProps={{ className: "!text-base md:!text-sm" }}
-      // width={{ xs: "90vw", lg: 800 }}
+      cancelButtonProps={{
+        className: "!text-base md:!text-sm",
+        disabled: submitting, // Disable Cancel button when submitting
+      }}
     >
       <Form
         form={form}
         layout="vertical"
-        onFinish={onFinish}
+        onFinish={handleFinish} // Use custom handleFinish
         initialValues={{
           stockQuantity: 0,
           categories: [],
@@ -75,6 +95,7 @@ export default function AddSingleProductModal({
             placeholder="Enter product name"
             className="!text-base md:!text-sm"
             style={{ fontSize: "16px" }}
+            disabled={submitting} // Disable input when submitting
           />
         </Form.Item>
         <Form.Item
@@ -89,6 +110,7 @@ export default function AddSingleProductModal({
             step={0.01}
             className="w-full !text-base md:!text-sm"
             style={{ fontSize: "16px" }}
+            disabled={submitting} // Disable input when submitting
             formatter={(value) => {
               const currencySymbol =
                 CURRENCY_OPTIONS.find(
@@ -117,18 +139,22 @@ export default function AddSingleProductModal({
             rows={4}
             className="!text-base md:!text-sm"
             style={{ fontSize: "16px" }}
+            disabled={submitting} // Disable input when submitting
           />
         </Form.Item>
         <Form.Item
           label="Categories"
           name="categories"
           rules={[
-            { required: true, message: "Please select at least one category" },
+            {
+              required: true,
+              message: "Please select or add at least one category",
+            },
           ]}
         >
           <Select
-            mode="multiple"
-            placeholder="Select categories"
+            mode="tags" // Allow adding new categories
+            placeholder="Select or type to add categories"
             loading={loading}
             options={productCategories.map((category) => ({
               label: category.name,
@@ -138,15 +164,11 @@ export default function AddSingleProductModal({
             optionFilterProp="label"
             className="!text-base md:!text-sm"
             style={{ fontSize: "16px" }}
-            tagRender={(props) => (
-              <span
-                className="text-base md:text-sm"
-                style={{ fontSize: "16px" }}
-              >
-                <Select.Option {...props} />
-              </span>
-            )}
-            dropdownStyle={{ fontSize: "16px" }}
+            disabled={submitting} // Disable input when submitting
+            onChange={(value) => {
+              // Update form field value explicitly
+              form.setFieldsValue({ categories: value });
+            }}
           />
         </Form.Item>
         <Form.Item label="Stock Quantity" name="stockQuantity">
@@ -154,6 +176,7 @@ export default function AddSingleProductModal({
             min={0}
             className="w-full !text-base md:!text-sm"
             style={{ fontSize: "16px" }}
+            disabled={submitting} // Disable input when submitting
           />
         </Form.Item>
       </Form>

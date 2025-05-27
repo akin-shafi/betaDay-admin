@@ -9,12 +9,14 @@ import { useSession } from "@/hooks/useSession";
 export default function AddMultipleProductsModal({
   isVisible,
   onCancel,
-  onFinish,
+  onFinish: onFinishProp,
   form,
   selectedCurrency,
 }) {
   const [productCategories, setProductCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const { session } = useSession();
 
   // Fetch product categories when the modal is opened
@@ -42,6 +44,19 @@ export default function AddMultipleProductsModal({
     }
   }, [isVisible, form]);
 
+  const handleFinish = async (values) => {
+    setSubmitting(true);
+    try {
+      await onFinishProp(values);
+      message.success("Products created successfully");
+      form.resetFields();
+      onCancel();
+    } catch (error) {
+      message.error(error.message || "Failed to create products");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <Modal
       title="Add Multiple Products"
@@ -50,13 +65,20 @@ export default function AddMultipleProductsModal({
       onOk={() => form.submit()}
       okText="Create"
       cancelText="Cancel"
-      okButtonProps={{ className: "bg-gray-900 hover:bg-[#ff6600]" }}
-      // width={{ xs: "60vw", md: 600 }}
+      okButtonProps={{
+        className: "bg-gray-900 hover:bg-[#ff6600] !text-base md:!text-sm",
+        disabled: submitting,
+        loading: submitting,
+      }}
+      cancelButtonProps={{
+        className: "!text-base md:!text-sm",
+        disabled: submitting,
+      }}
     >
       <Form
         form={form}
         layout="vertical"
-        onFinish={onFinish}
+        onFinish={handleFinish}
         initialValues={{
           products: [{ categories: [] }],
         }}
@@ -65,122 +87,105 @@ export default function AddMultipleProductsModal({
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <div
-                  key={key}
-                  className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 border p-4 mb-4 rounded gap-4 sm:gap-0"
-                >
-                  <div className="flex-1 min-w-0 w-full sm:w-auto">
-                    <Form.Item
-                      {...restField}
-                      label="Product Name"
-                      name={[name, "name"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Enter name",
-                        },
-                      ]}
-                      className="mb-0"
-                    >
-                      <Input
-                        placeholder="Enter product name"
-                        className="!text-base md:!text-sm"
-                        style={{ fontSize: "16px" }}
-                      />
-                    </Form.Item>
-                  </div>
-                  <div className="w-full sm:w-24">
-                    <Form.Item
-                      {...restField}
-                      label="Price"
-                      name={[name, "price"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Enter price",
-                        },
-                      ]}
-                      className="mb-0"
-                    >
-                      <InputNumber
-                        min={0}
-                        step={0.01}
-                        className="w-full !text-base md:!text-sm"
-                        style={{ fontSize: "16px" }}
-                        formatter={(value) => {
-                          const currencySymbol =
-                            CURRENCY_OPTIONS.find(
-                              (c) => c.value === selectedCurrency
-                            )?.label.split(" ")[0] || "₦";
-                          return `${currencySymbol}${value}`.replace(
-                            /\B(?=(\d{3})+(?!\d))/g,
-                            ","
-                          );
-                        }}
-                        parser={(value) => {
-                          const currencySymbol =
-                            CURRENCY_OPTIONS.find(
-                              (c) => c.value === selectedCurrency
-                            )?.label.split(" ")[0] || "₦";
-                          return value.replace(
-                            new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
-                            ""
-                          );
-                        }}
-                      />
-                    </Form.Item>
-                  </div>
-                  <div className="flex-1 min-w-0 w-full sm:w-auto">
-                    <Form.Item
-                      {...restField}
-                      label="Categories"
-                      name={[name, "categories"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Select or add category",
-                        },
-                      ]}
-                      className="mb-0"
-                    >
-                      <Select
-                        mode="tags"
-                        placeholder="Select or type categories"
-                        loading={loading}
-                        options={productCategories.map((category) => ({
-                          label: category.name,
-                          value: category.name,
-                        }))}
-                        showSearch
-                        optionFilterProp="label"
-                        className="!text-base md:!text-sm"
-                        style={{ fontSize: "16px" }}
-                        onChange={(value) => {
-                          form.setFieldsValue({
-                            products: {
-                              [name]: { categories: value },
-                            },
-                          });
-                        }}
-                        tagRender={(props) => (
-                          <span
-                            className="text-base md:text-sm"
-                            style={{ fontSize: "16px" }}
-                          >
-                            <Select.Option {...props} />
-                          </span>
-                        )}
-                        dropdownStyle={{ fontSize: "16px" }}
-                      />
-                    </Form.Item>
-                  </div>
+                <div key={key} className="border p-4 mb-4 rounded">
+                  <Form.Item
+                    {...restField}
+                    label="Product Name"
+                    name={[name, "name"]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter the product name",
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="Enter product name"
+                      className="!text-base md:!text-sm"
+                      style={{ fontSize: "16px" }}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    {...restField}
+                    label="Price"
+                    name={[name, "price"]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter the product price",
+                      },
+                    ]}
+                  >
+                    <InputNumber
+                      min={0}
+                      step={0.01}
+                      className="w-full !text-base md:!text-sm"
+                      style={{ fontSize: "16px" }}
+                      formatter={(value) => {
+                        const currencySymbol =
+                          CURRENCY_OPTIONS.find(
+                            (c) => c.value === selectedCurrency
+                          )?.label.split(" ")[0] || "₦";
+                        return `${currencySymbol} ${value}`.replace(
+                          /\B(?=(\d{3})+(?!\d))/g,
+                          ","
+                        );
+                      }}
+                      parser={(value) => {
+                        const currencySymbol =
+                          CURRENCY_OPTIONS.find(
+                            (c) => c.value === selectedCurrency
+                          )?.label.split(" ")[0] || "₦";
+                        return value.replace(
+                          new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
+                          ""
+                        );
+                      }}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    {...restField}
+                    label="Categories"
+                    name={[name, "categories"]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select or add at least one category",
+                      },
+                    ]}
+                  >
+                    <Select
+                      mode="tags"
+                      placeholder="Select or type to add categories"
+                      loading={loading}
+                      options={productCategories.map((category) => ({
+                        label: category.name,
+                        value: category.name,
+                      }))}
+                      showSearch
+                      optionFilterProp="label"
+                      className="!text-base md:!text-sm"
+                      style={{ fontSize: "16px" }}
+                      onChange={(value) => {
+                        form.setFieldsValue({
+                          products: {
+                            [name]: { categories: value },
+                          },
+                        });
+                      }}
+                    />
+                  </Form.Item>
                   {fields.length > 1 && (
                     <Button
-                      type="text"
+                      type="link"
                       icon={<MinusCircle size={16} />}
                       onClick={() => remove(name)}
-                      className="text-red-500 self-end sm:self-center mb-2 sm:mb-0"
-                    />
+                      className="text-red-500"
+                      disabled={submitting}
+                      style={{ fontSize: "16px" }}
+                    >
+                      Remove Product
+                    </Button>
                   )}
                 </div>
               ))}
@@ -191,6 +196,7 @@ export default function AddMultipleProductsModal({
                 icon={<Plus size={16} />}
                 className="mt-2 !text-base md:!text-sm"
                 style={{ fontSize: "16px" }}
+                disabled={submitting}
               >
                 Add Another Product
               </Button>
