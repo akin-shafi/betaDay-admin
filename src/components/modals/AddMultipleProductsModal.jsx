@@ -5,6 +5,7 @@ import { Plus, MinusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getProductCategories } from "@/hooks/useProduct";
 import { useSession } from "@/hooks/useSession";
+const { TextArea } = Input;
 
 export default function AddMultipleProductsModal({
   isVisible,
@@ -88,61 +89,66 @@ export default function AddMultipleProductsModal({
             <>
               {fields.map(({ key, name, ...restField }) => (
                 <div key={key} className="border p-4 mb-4 rounded">
-                  <Form.Item
-                    {...restField}
-                    label="Product Name"
-                    name={[name, "name"]}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter the product name",
-                      },
-                    ]}
-                  >
-                    <Input
-                      placeholder="Enter product name"
-                      className="!text-base md:!text-sm"
-                      style={{ fontSize: "16px" }}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    {...restField}
-                    label="Price"
-                    name={[name, "price"]}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter the product price",
-                      },
-                    ]}
-                  >
-                    <InputNumber
-                      min={0}
-                      step={0.01}
-                      className="w-full !text-base md:!text-sm"
-                      style={{ fontSize: "16px" }}
-                      formatter={(value) => {
-                        const currencySymbol =
-                          CURRENCY_OPTIONS.find(
-                            (c) => c.value === selectedCurrency
-                          )?.label.split(" ")[0] || "₦";
-                        return `${currencySymbol} ${value}`.replace(
-                          /\B(?=(\d{3})+(?!\d))/g,
-                          ","
-                        );
-                      }}
-                      parser={(value) => {
-                        const currencySymbol =
-                          CURRENCY_OPTIONS.find(
-                            (c) => c.value === selectedCurrency
-                          )?.label.split(" ")[0] || "₦";
-                        return value.replace(
-                          new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
-                          ""
-                        );
-                      }}
-                    />
-                  </Form.Item>
+                  {/* Two-column grid for Product Name and Price */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Form.Item
+                      {...restField}
+                      label="Product Name"
+                      name={[name, "name"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the product name",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="Enter product name"
+                        className="!text-base md:!text-sm"
+                        style={{ fontSize: "16px" }}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      {...restField}
+                      label="Price"
+                      name={[name, "price"]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the product price",
+                        },
+                      ]}
+                    >
+                      <InputNumber
+                        min={0}
+                        step={0.01}
+                        className="w-full !text-base md:!text-sm"
+                        style={{ fontSize: "16px" }}
+                        formatter={(value) => {
+                          const currencySymbol =
+                            CURRENCY_OPTIONS.find(
+                              (c) => c.value === selectedCurrency
+                            )?.label.split(" ")[0] || "₦";
+                          return `${currencySymbol} ${value}`.replace(
+                            /\B(?=(\d{3})+(?!\d))/g,
+                            ","
+                          );
+                        }}
+                        parser={(value) => {
+                          const currencySymbol =
+                            CURRENCY_OPTIONS.find(
+                              (c) => c.value === selectedCurrency
+                            )?.label.split(" ")[0] || "₦";
+                          return value.replace(
+                            new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
+                            ""
+                          );
+                        }}
+                      />
+                    </Form.Item>
+                  </div>
+
+                  {/* Remaining Fields */}
                   <Form.Item
                     {...restField}
                     label="Categories"
@@ -175,6 +181,17 @@ export default function AddMultipleProductsModal({
                       }}
                     />
                   </Form.Item>
+
+                  <Form.Item label="Description" name="description">
+                    <TextArea
+                      placeholder="Enter product description"
+                      rows={2}
+                      className="!text-base md:!text-sm"
+                      style={{ fontSize: "16px" }}
+                      disabled={submitting}
+                    />
+                  </Form.Item>
+
                   {fields.length > 1 && (
                     <Button
                       type="link"
@@ -189,6 +206,7 @@ export default function AddMultipleProductsModal({
                   )}
                 </div>
               ))}
+
               <Button
                 type="dashed"
                 onClick={() => add()}

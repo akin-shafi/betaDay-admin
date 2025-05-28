@@ -80,68 +80,65 @@ export default function AddSingleProductModal({
       <Form
         form={form}
         layout="vertical"
-        onFinish={handleFinish} // Use custom handleFinish
+        onFinish={handleFinish}
         initialValues={{
-          stockQuantity: 0,
           categories: [],
         }}
       >
-        <Form.Item
-          label="Product Name"
-          name="name"
-          rules={[{ required: true, message: "Please enter the product name" }]}
-        >
-          <Input
-            placeholder="Enter product name"
-            className="!text-base md:!text-sm"
-            style={{ fontSize: "16px" }}
-            disabled={submitting} // Disable input when submitting
-          />
-        </Form.Item>
-        <Form.Item
-          label="Price"
-          name="price"
-          rules={[
-            { required: true, message: "Please enter the product price" },
-          ]}
-        >
-          <InputNumber
-            min={0}
-            step={0.01}
-            className="w-full !text-base md:!text-sm"
-            style={{ fontSize: "16px" }}
-            disabled={submitting} // Disable input when submitting
-            formatter={(value) => {
-              const currencySymbol =
-                CURRENCY_OPTIONS.find(
-                  (c) => c.value === selectedCurrency
-                )?.label.split(" ")[0] || "₦";
-              return `${currencySymbol} ${value}`.replace(
-                /\B(?=(\d{3})+(?!\d))/g,
-                ","
-              );
-            }}
-            parser={(value) => {
-              const currencySymbol =
-                CURRENCY_OPTIONS.find(
-                  (c) => c.value === selectedCurrency
-                )?.label.split(" ")[0] || "₦";
-              return value.replace(
-                new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
-                ""
-              );
-            }}
-          />
-        </Form.Item>
-        <Form.Item label="Description" name="description">
-          <TextArea
-            placeholder="Enter product description"
-            rows={4}
-            className="!text-base md:!text-sm"
-            style={{ fontSize: "16px" }}
-            disabled={submitting} // Disable input when submitting
-          />
-        </Form.Item>
+        {/* Product Name & Price side by side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Form.Item
+            label="Product Name"
+            name="name"
+            rules={[
+              { required: true, message: "Please enter the product name" },
+            ]}
+          >
+            <Input
+              placeholder="Enter product name"
+              className="!text-base md:!text-sm"
+              style={{ fontSize: "16px" }}
+              disabled={submitting}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Price"
+            name="price"
+            rules={[
+              { required: true, message: "Please enter the product price" },
+            ]}
+          >
+            <InputNumber
+              min={0}
+              step={0.01}
+              className="w-full !text-base md:!text-sm"
+              style={{ fontSize: "16px" }}
+              disabled={submitting}
+              formatter={(value) => {
+                const currencySymbol =
+                  CURRENCY_OPTIONS.find(
+                    (c) => c.value === selectedCurrency
+                  )?.label.split(" ")[0] || "₦";
+                return `${currencySymbol} ${value}`.replace(
+                  /\B(?=(\d{3})+(?!\d))/g,
+                  ","
+                );
+              }}
+              parser={(value) => {
+                const currencySymbol =
+                  CURRENCY_OPTIONS.find(
+                    (c) => c.value === selectedCurrency
+                  )?.label.split(" ")[0] || "₦";
+                return value.replace(
+                  new RegExp(`\\${currencySymbol}\\s?|(,*)/g`),
+                  ""
+                );
+              }}
+            />
+          </Form.Item>
+        </div>
+
         <Form.Item
           label="Categories"
           name="categories"
@@ -153,7 +150,7 @@ export default function AddSingleProductModal({
           ]}
         >
           <Select
-            mode="tags" // Allow adding new categories
+            mode="tags"
             placeholder="Select or type to add categories"
             loading={loading}
             options={productCategories.map((category) => ({
@@ -164,19 +161,20 @@ export default function AddSingleProductModal({
             optionFilterProp="label"
             className="!text-base md:!text-sm"
             style={{ fontSize: "16px" }}
-            disabled={submitting} // Disable input when submitting
+            disabled={submitting}
             onChange={(value) => {
-              // Update form field value explicitly
               form.setFieldsValue({ categories: value });
             }}
           />
         </Form.Item>
-        <Form.Item label="Stock Quantity" name="stockQuantity">
-          <InputNumber
-            min={0}
-            className="w-full !text-base md:!text-sm"
+
+        <Form.Item label="Description" name="description">
+          <TextArea
+            placeholder="Enter product description"
+            rows={4}
+            className="!text-base md:!text-sm"
             style={{ fontSize: "16px" }}
-            disabled={submitting} // Disable input when submitting
+            disabled={submitting}
           />
         </Form.Item>
       </Form>
