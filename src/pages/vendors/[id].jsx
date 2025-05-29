@@ -173,7 +173,7 @@ export default function VendorDetailsPage() {
     try {
       await deleteBusiness(id, session?.token);
       message.success("Business deleted successfully");
-      navigate("/businesses");
+      navigate("/vendors");
     } catch (err) {
       message.error(err.message || "Failed to delete business");
     }
