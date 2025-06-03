@@ -461,13 +461,15 @@ export function OrderTable({
             value={newStatus}
             onChange={setNewStatus}
           >
+            {/* [pending, processing, accepted, preparing, ready_for_pickup,
+            delivered, cancelled] */}
             <Select.Option value="pending">Pending</Select.Option>
-            <Select.Option value="confirmed">Confirmed</Select.Option>
-            <Select.Option value="preparing">Preparing</Select.Option>
-            <Select.Option value="ready">Ready</Select.Option>
+            <Select.Option value="processing">processing</Select.Option>
+            {/* <Select.Option value="preparing">Preparing</Select.Option> */}
+            {/* <Select.Option value="ready_for_pickup">Ready</Select.Option>
             <Select.Option value="out_for_delivery">
               Out for Delivery
-            </Select.Option>
+            </Select.Option> */}
             <Select.Option value="delivered">Delivered</Select.Option>
             <Select.Option value="cancelled">Cancelled</Select.Option>
           </Select>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 "use client";
 
@@ -7,7 +8,7 @@ import { OrderAnalyticsComponent } from "@/components/orders/order-analytics";
 import { OrderFiltersComponent } from "@/components/orders/order-filters";
 import { OrderTable } from "@/components/orders/order-table";
 import { useSession } from "@/hooks/useSession";
-
+import ErrorBoundary from "@/components/ErrorBoundary"; // Adjust path as needed
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -29,24 +30,30 @@ export default function OrderManagement() {
   const [error, setError] = useState(null);
 
   // Normalize order data to match OrderTable expectations
-  const normalizeOrder = (order) => ({
-    id: order.id,
-    customerName: order.user?.fullName || "N/A",
-    customerEmail: order.user?.email || "N/A",
-    customerPhone: order.user?.phoneNumber || "N/A",
-    items: order.orderItems || [],
-    finalAmount: parseFloat(order.totalAmount) || 0,
-    paymentMethod: order.paymentMethod || "N/A",
-    paymentStatus: order.paymentStatus || "N/A",
-    orderStatus: order.status || "N/A",
-    createdAt: order.createdAt,
-    deliveryAddress: order.deliveryAddress,
-    deliveryInstructions: order.deliveryInstructions,
-    estimatedDeliveryTime: order.estimatedDeliveryTime,
-    totalAmount: parseFloat(order.totalAmount) || 0,
-    deliveryFee: parseFloat(order.deliveryFee) || 0,
-    serviceFee: parseFloat(order.serviceFee) || 0,
-  });
+  const normalizeOrder = (order) => {
+    if (!order) {
+      console.error("normalizeOrder received invalid order:", order);
+      return {};
+    }
+    return {
+      id: order.id || "",
+      customerName: order.user?.fullName || "N/A",
+      customerEmail: order.user?.email || "N/A",
+      customerPhone: order.user?.phoneNumber || "N/A",
+      items: order.orderItems || [],
+      finalAmount: parseFloat(order.totalAmount) || 0,
+      paymentMethod: order.paymentMethod || "N/A",
+      paymentStatus: order.paymentStatus || "N/A",
+      orderStatus: order.status || "N/A",
+      createdAt: order.createdAt || "",
+      deliveryAddress: order.deliveryAddress || {},
+      deliveryInstructions: order.deliveryInstructions || "",
+      estimatedDeliveryTime: order.estimatedDeliveryTime || "",
+      totalAmount: parseFloat(order.totalAmount) || 0,
+      deliveryFee: parseFloat(order.deliveryFee) || 0,
+      serviceFee: parseFloat(order.serviceFee) || 0,
+    };
+  };
 
   // Fetch orders from API
   const fetchOrders = async () => {
@@ -147,21 +154,16 @@ export default function OrderManagement() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to update order status");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update order status");
       }
 
-      const updatedOrder = await response.json();
-      const normalizedOrder = normalizeOrder(updatedOrder);
-      setOrders((prev) =>
-        prev.map((order) => (order.id === orderId ? normalizedOrder : order))
-      );
-      setFilteredOrders((prev) =>
-        prev.map((order) => (order.id === orderId ? normalizedOrder : order))
-      );
+      // Refetch orders instead of manual state update
+      await fetchOrders();
       message.success(`Order status updated to ${status}`);
     } catch (error) {
       console.error("Error updating order status:", error);
-      message.error("Failed to update order status");
+      message.error(error.message || "Failed to update order status");
     } finally {
       setLoading(false);
     }
@@ -339,15 +341,16 @@ export default function OrderManagement() {
         totalOrders={orders.length}
         filteredOrders={filteredOrders.length}
       />
-
-      <OrderTable
-        orders={filteredOrders}
-        onUpdateStatus={handleUpdateStatus}
-        onDeleteOrder={handleDeleteOrder}
-        onRefundOrder={handleRefundOrder}
-        onBulkAction={handleBulkAction}
-        loading={loading}
-      />
+      <ErrorBoundary>
+        <OrderTable
+          orders={filteredOrders}
+          onUpdateStatus={handleUpdateStatus}
+          onDeleteOrder={handleDeleteOrder}
+          onRefundOrder={handleRefundOrder}
+          onBulkAction={handleBulkAction}
+          loading={loading}
+        />
+      </ErrorBoundary>
     </div>
   );
 }
