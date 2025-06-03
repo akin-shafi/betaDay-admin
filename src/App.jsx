@@ -19,6 +19,9 @@ import VendorDetailsPage from "./pages/vendors/[id]";
 // import BusinessesPage from "./pages/businesses";
 // import BusinessViewPage from "./pages/businesses/view";
 
+import OrdersPageMgt from "@/pages/orders-mgt";
+
+
 // Import Orders Pages
 import OrdersPage from "@/pages/orders";
 import OrderDetailsPage from "@/pages/orders/[id]";
@@ -170,6 +173,15 @@ function App() {
             </ProtectedRoute>
           }
         /> */}
+
+        <Route
+          path="/orders-mgt"
+          element={
+            <ProtectedRoute>
+              <OrdersPageMgt />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Orders Routes */}
         <Route

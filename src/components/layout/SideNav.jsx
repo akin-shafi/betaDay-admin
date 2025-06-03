@@ -72,7 +72,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
     //   title: "Businesses",
     // },
     {
-      path: "/orders",
+      path: "/orders-mgt",
       icon: ShoppingCart,
       title: "Orders",
     },

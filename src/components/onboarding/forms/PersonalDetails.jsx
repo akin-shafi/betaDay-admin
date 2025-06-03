@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "@/hooks/useSession";
@@ -47,7 +48,7 @@ const PersonalDetails = ({ onChange }) => {
     };
 
     fetchApplicantData();
-  }, [token, userId, hasFetchedData, onChange, API_BASE_URL]);
+  }, [token, userId, hasFetchedData, onChange,]);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
