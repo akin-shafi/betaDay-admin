@@ -22,7 +22,10 @@ function ZoneConfigManagement() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingConfig, setEditingConfig] = useState(null);
   const [form] = Form.useForm();
+  const [states, setStates] = useState([]);
   const [localGovernments, setLocalGovernments] = useState([]);
+  const [selectedStateName, setSelectedStateName] = useState("Lagos"); // Default to Lagos
+  const [selectedStateId, setSelectedStateId] = useState(null); // Store stateId for API
   const [filters, setFilters] = useState({ search: "" });
 
   // Normalize zone config data for table
@@ -31,9 +34,15 @@ function ZoneConfigManagement() {
       console.error("normalizeZoneConfig received invalid config:", config);
       return {};
     }
+    const state = states.find((s) => s.id === config.localGovernment?.stateId);
     return {
       id: config.id || "",
-      localGovernment: config.localGovernment || { id: "" },
+      localGovernment: {
+        id: config.localGovernment?.id || "",
+        stateId: config.localGovernment?.stateId || null,
+        stateName: state ? state.name : config.localGovernment?.stateName || "",
+        name: config.localGovernment?.name || "",
+      },
       baseFee: parseFloat(config.baseFee) || 0,
       perKmRate: parseFloat(config.perKmRate) || 0,
       itemSurcharge: parseFloat(config.itemSurcharge) || 0,
@@ -46,6 +55,38 @@ function ZoneConfigManagement() {
     };
   };
 
+  // Fetch states from API
+  const fetchStates = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/delivery-locations/states`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch states");
+      }
+
+      const { data } = await response.json();
+      setStates(data || []);
+      // Set default state to Lagos
+      const lagosState = (data || []).find((state) => state.name.toLowerCase() === "lagos");
+      if (lagosState) {
+        setSelectedStateId(lagosState.id);
+        setSelectedStateName(lagosState.name);
+        setLocalGovernments(lagosState.localGovernments || []);
+      }
+    } catch (error) {
+      console.error("Error fetching states:", error);
+      message.error("Failed to load states");
+      setStates([]);
+      setLocalGovernments([]);
+    }
+  };
+
   // Fetch zone configs from API
   const fetchZoneConfigs = async () => {
     setLoading(true);
@@ -53,6 +94,7 @@ function ZoneConfigManagement() {
     try {
       const params = new URLSearchParams();
       if (filters.search) params.append("search", filters.search);
+      if (selectedStateId) params.append("stateId", selectedStateId);
 
       const response = await fetch(`${API_BASE_URL}/api/zone-configs?${params}`, {
         method: "GET",
@@ -82,39 +124,24 @@ function ZoneConfigManagement() {
     }
   };
 
-  // Fetch local governments for dropdown
-  const fetchLocalGovernments = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/delivery-local-governments`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch local governments");
-      }
-
-      const data = await response.json();
-      setLocalGovernments(data || []);
-    } catch (error) {
-      console.error("Error fetching local governments:", error);
-      message.error("Failed to load local governments");
-    }
+  // Update local governments when state changes
+  const updateLocalGovernments = (stateName) => {
+    const state = states.find((s) => s.name === stateName);
+    setLocalGovernments(state ? state.localGovernments || [] : []);
   };
 
   // Initial data fetch
   useEffect(() => {
-    fetchZoneConfigs();
-    fetchLocalGovernments();
+    fetchStates();
   }, []);
 
-  // Refetch when filters change
+  // Fetch zone configs and update local governments when state or filters change
   useEffect(() => {
-    fetchZoneConfigs();
-  }, [filters]);
+    if (selectedStateId) {
+      fetchZoneConfigs();
+      updateLocalGovernments(selectedStateName);
+    }
+  }, [selectedStateId, selectedStateName, filters]);
 
   // Handle create or update zone config
   const handleSaveZoneConfig = async (values) => {
@@ -133,7 +160,10 @@ function ZoneConfigManagement() {
         },
         body: JSON.stringify({
           ...values,
-          surgeHours: values.surgeHours ? values.surgeHours.split(",").map((h) => h.trim()) : [],
+          surgeHours: values.surgeHours
+            ? values.surgeHours.split(",").map((h) => h.trim())
+            : [],
+          stateId: selectedStateId, // Include stateId in the payload
         }),
       });
 
@@ -184,10 +214,15 @@ function ZoneConfigManagement() {
   // Handle edit zone config
   const handleEditZoneConfig = (config) => {
     setEditingConfig(config);
+    const state = states.find((s) => s.id === config.localGovernment.stateId) || { name: "Lagos" };
+    setSelectedStateName(state.name);
+    setSelectedStateId(config.localGovernment.stateId || states.find((s) => s.name.toLowerCase() === "lagos")?.id);
+    updateLocalGovernments(state.name);
     form.setFieldsValue({
       ...config,
       localGovernmentId: config.localGovernment.id,
       surgeHours: config.surgeHours.join(", "),
+      stateName: state.name,
     });
     setIsModalVisible(true);
   };
@@ -213,6 +248,13 @@ function ZoneConfigManagement() {
       key: "perKmRate",
       sorter: (a, b) => a.perKmRate - b.perKmRate,
       render: (value) => `₦${value.toFixed(2)}`,
+    },
+    {
+      title: "Service Fee Rate",
+      dataIndex: "serviceFeeRate",
+      key: "serviceFeeRate",
+      sorter: (a, b) => a.serviceFeeRate - b.serviceFeeRate,
+      render: (value) => `${(value * 100).toFixed(2)}%`, // Display as percentage
     },
     {
       title: "Surge Hours",
@@ -262,7 +304,7 @@ function ZoneConfigManagement() {
         </p>
       </div>
 
-      <div style={{ marginBottom: "16px" }}>
+      <div style={{ marginBottom: "16px", display: "flex", gap: "16px" }}>
         <Button
           type="primary"
           onClick={() => {
@@ -273,11 +315,29 @@ function ZoneConfigManagement() {
         >
           Create Zone Configuration
         </Button>
+        <Select
+          value={selectedStateName}
+          onChange={(value) => {
+            const state = states.find((s) => s.name === value);
+            setSelectedStateName(value);
+            setSelectedStateId(state ? state.id : null);
+            updateLocalGovernments(value);
+            form.setFieldsValue({ localGovernmentId: undefined }); // Reset LG selection
+          }}
+          style={{ width: 200 }}
+          placeholder="Select State"
+        >
+          {states.map((state) => (
+            <Select.Option key={state.name} value={state.name}>
+              {state.name}
+            </Select.Option>
+          ))}
+        </Select>
         <Input
           placeholder="Search by local government"
           value={filters.search}
           onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          style={{ width: 200, marginLeft: 16 }}
+          style={{ width: 200 }}
         />
       </div>
 
@@ -305,8 +365,30 @@ function ZoneConfigManagement() {
           form={form}
           layout="vertical"
           onFinish={handleSaveZoneConfig}
-          initialValues={{ surgeHours: "" }}
+          initialValues={{ surgeHours: "", stateName: selectedStateName }}
         >
+          <Form.Item
+            name="stateName"
+            label="State"
+            rules={[{ required: true, message: "Please select a state" }]}
+          >
+            <Select
+              placeholder="Select State"
+              onChange={(value) => {
+                const state = states.find((s) => s.name === value);
+                setSelectedStateName(value);
+                setSelectedStateId(state ? state.id : null);
+                updateLocalGovernments(value);
+                form.setFieldsValue({ localGovernmentId: undefined }); // Reset LG selection
+              }}
+            >
+              {states.map((state) => (
+                <Select.Option key={state.name} value={state.name}>
+                  {state.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
           <Form.Item
             name="localGovernmentId"
             label="Local Government"

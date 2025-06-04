@@ -12,6 +12,7 @@ import {
   // Building2,
   Utensils,
   ShoppingCart,
+  MapPin,
   Bike,
   FileText,
   BarChart3,
@@ -75,6 +76,11 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       path: "/orders-mgt",
       icon: ShoppingCart,
       title: "Orders",
+    },
+    {
+      path: "/zone-mgt",
+      icon: MapPin,
+      title: "Zone Mgt",
     },
     {
       path: "/riders",
