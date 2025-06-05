@@ -12,7 +12,7 @@ import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
-function ZoneConfigManagement() {
+function RateConfigManagement() {
   const { session } = useSession();
   const token = session?.token;
   const [zoneConfigs, setZoneConfigs] = useState([]);
@@ -297,10 +297,10 @@ function ZoneConfigManagement() {
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ marginBottom: "24px" }}>
         <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0" }}>
-          Zone Configuration Management
+          Rate Management
         </h1>
         <p style={{ color: "#666", margin: "8px 0 0" }}>
-          Manage delivery zone configurations and fees
+          Manage delivery-zone rates
         </p>
       </div>
 
@@ -353,7 +353,7 @@ function ZoneConfigManagement() {
 
       <Modal
         title={editingConfig ? "Edit Zone Configuration" : "Create Zone Configuration"}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
           setEditingConfig(null);
@@ -471,4 +471,4 @@ function ZoneConfigManagement() {
   );
 }
 
-export default ZoneConfigManagement;
+export default RateConfigManagement;

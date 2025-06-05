@@ -1,90 +1,172 @@
+"use client"
+
+import { useState } from "react"
+import { useAnalytics } from "@/hooks/useAnalytics"
+import {
+  useTotalDeliveryFees,
+  useTotalServiceFees,
+  useRevenueByBusiness,
+  useDeliveryFeesByBusiness,
+  useServiceFeesByBusiness,
+} from "@/hooks/useAnalyticsMetrics"
+import { DateRangePicker } from "@/components/analytics/DateRangePicker"
+import { FeesCard } from "@/components/analytics/FeesCard"
+import { BusinessTable } from "@/components/analytics/BusinessTable"
+
 export default function AnalyticsPage() {
+  const [dateRange, setDateRange] = useState({})
+  const [activeTab, setActiveTab] = useState("overview")
+
+  // Fetch all analytics data
+  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(dateRange)
+  const { data: deliveryFees, loading: deliveryFeesLoading, error: deliveryFeesError } = useTotalDeliveryFees(dateRange)
+  const { data: serviceFees, loading: serviceFeesLoading, error: serviceFeesError } = useTotalServiceFees(dateRange)
+  const { data: revenueByBusiness, loading: revenueLoading, error: revenueError } = useRevenueByBusiness(dateRange)
+  const {
+    data: deliveryFeesByBusiness,
+    loading: deliveryByBusinessLoading,
+    error: deliveryByBusinessError,
+  } = useDeliveryFeesByBusiness(dateRange)
+  const {
+    data: serviceFeesByBusiness,
+    loading: serviceByBusinessLoading,
+    error: serviceByBusinessError,
+  } = useServiceFeesByBusiness(dateRange)
+
+  const tabs = [
+    { id: "overview", label: "Overview" },
+    { id: "revenue", label: "Revenue by Business" },
+    { id: "delivery", label: "Delivery Fees" },
+    { id: "service", label: "Service Fees" },
+  ]
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case "revenue":
+        return (
+          <BusinessTable
+            title="Revenue by Business"
+            data={revenueByBusiness}
+            loading={revenueLoading}
+            error={revenueError}
+          />
+        )
+      case "delivery":
+        return (
+          <div className="space-y-6">
+            <FeesCard
+              title="Total Delivery Fees"
+              data={deliveryFees}
+              loading={deliveryFeesLoading}
+              error={deliveryFeesError}
+            />
+            <BusinessTable
+              title="Delivery Fees by Business"
+              data={deliveryFeesByBusiness}
+              loading={deliveryByBusinessLoading}
+              error={deliveryByBusinessError}
+            />
+          </div>
+        )
+      case "service":
+        return (
+          <div className="space-y-6">
+            <FeesCard
+              title="Total Service Fees"
+              data={serviceFees}
+              loading={serviceFeesLoading}
+              error={serviceFeesError}
+            />
+            <BusinessTable
+              title="Service Fees by Business"
+              data={serviceFeesByBusiness}
+              loading={serviceByBusinessLoading}
+              error={serviceByBusinessError}
+            />
+          </div>
+        )
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Analytics Summary Cards */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-white p-6 rounded-xl border">
+                <h4 className="text-sm font-medium text-gray-500">Total Revenue</h4>
+                <p className="text-2xl font-bold text-gray-900 mt-2">
+                  ₦{analytics?.totalRevenue ? (analytics.totalRevenue / 1000000).toFixed(1) + "M" : "0"}
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-xl border">
+                <h4 className="text-sm font-medium text-gray-500">Total Orders</h4>
+                <p className="text-2xl font-bold text-gray-900 mt-2">
+                  {analytics?.totalOrders?.toLocaleString() || "0"}
+                </p>
+              </div>
+              <FeesCard
+                title="Total Delivery Fees"
+                data={deliveryFees}
+                loading={deliveryFeesLoading}
+                error={deliveryFeesError}
+              />
+              <FeesCard
+                title="Total Service Fees"
+                data={serviceFees}
+                loading={serviceFeesLoading}
+                error={serviceFeesError}
+              />
+            </div>
+
+            {/* Business Performance Tables */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <BusinessTable
+                title="Top Revenue by Business"
+                data={revenueByBusiness?.slice(0, 5)}
+                loading={revenueLoading}
+                error={revenueError}
+              />
+              <BusinessTable
+                title="Top Delivery Fees by Business"
+                data={deliveryFeesByBusiness?.slice(0, 5)}
+                loading={deliveryByBusinessLoading}
+                error={deliveryByBusinessError}
+              />
+            </div>
+          </div>
+        )
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Analytics</h1>
-        <div className="flex space-x-4">
-          <select className="rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm">
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-            <option>Last 90 days</option>
-            <option>Custom Range</option>
-          </select>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-            Export Data
-          </button>
-        </div>
+      <div>
+        <h5 className="text-2xl font-semibold text-gray-900">Analytics</h5>
+        <p className="text-gray-600 text-sm">Comprehensive analytics and insights</p>
       </div>
 
-      {/* Analytics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Revenue Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">$24,500</p>
-          <div className="mt-2 flex items-center text-sm">
-            <span className="text-green-600">↑ 12%</span>
-            <span className="text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
+      {/* Date Range Picker */}
+      <DateRangePicker onChange={setDateRange} />
 
-        {/* Total Orders Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500">Total Orders</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">1,245</p>
-          <div className="mt-2 flex items-center text-sm">
-            <span className="text-green-600">↑ 8%</span>
-            <span className="text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
-
-        {/* Average Order Value Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500">
-            Average Order Value
-          </h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">$19.68</p>
-          <div className="mt-2 flex items-center text-sm">
-            <span className="text-green-600">↑ 4%</span>
-            <span className="text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
-
-        {/* Customer Growth Card */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-medium text-gray-500">Customer Growth</h3>
-          <p className="mt-2 text-3xl font-semibold text-gray-900">+156</p>
-          <div className="mt-2 flex items-center text-sm">
-            <span className="text-green-600">↑ 15%</span>
-            <span className="text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
+      {/* Tabs */}
+      <div className="border-b">
+        <nav className="flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`py-4 px-1 inline-flex items-center border-b-2 font-medium text-sm transition-colors ${
+                activeTab === tab.id
+                  ? "border-primary-500 text-primary-500"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Revenue Overview
-          </h2>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">
-              Revenue chart will be displayed here
-            </p>
-          </div>
-        </div>
-
-        {/* Orders Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Orders Overview
-          </h2>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <p className="text-gray-500">Orders chart will be displayed here</p>
-          </div>
-        </div>
-      </div>
+      {/* Active Tab Content */}
+      {renderActiveTab()}
     </div>
-  );
+  )
 }

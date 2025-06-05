@@ -4,7 +4,8 @@
 
 import { useState, useEffect } from "react";
 import { message } from "antd";
-import { OrderAnalyticsComponent } from "@/components/orders/order-analytics";
+// import { OrderAnalyticsComponent } from "@/components/orders/order-analytics";
+import { PerformanceOverviewComponent } from "@/components/orders/performance-overview";
 import { OrderFiltersComponent } from "@/components/orders/order-filters";
 import { OrderTable } from "@/components/orders/order-table";
 import { useSession } from "@/hooks/useSession";
@@ -327,7 +328,12 @@ export default function OrderManagement() {
         </p>
       </div>
 
-      <OrderAnalyticsComponent
+      {/* <OrderAnalyticsComponent
+        analytics={analytics}
+        loading={analyticsLoading}
+        error={error}
+      /> */}
+      <PerformanceOverviewComponent
         analytics={analytics}
         loading={analyticsLoading}
         error={error}

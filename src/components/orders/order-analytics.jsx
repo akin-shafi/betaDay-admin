@@ -3,15 +3,12 @@
 /* eslint-disable no-unused-vars */
 "use client";
 
-import { Card, Row, Col, Statistic, Badge, Spin, Alert } from "antd";
+import { Card, Row, Col, Statistic, Alert, Spin, Badge } from "antd";
 import {
   ArrowUpOutlined,
-  ArrowDownOutlined,
-  DollarOutlined,
+  ArrowDownOutlined, 
   ShoppingCartOutlined,
   ClockCircleOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import PropTypes from "prop-types";
@@ -27,21 +24,17 @@ export function OrderAnalyticsComponent({ analytics, loading, error }) {
     }).format(amount);
   };
 
-  // Handle nested data structure and map completedOrders
+  // Handle nested data structure
   const normalizedAnalytics = {
     totalOrders: analytics?.data?.totalOrders ?? 0,
     totalRevenue: analytics?.data?.totalRevenue ?? 0,
     pendingOrders: analytics?.data?.pendingOrders ?? 0,
     averageOrderValue: analytics?.data?.averageOrderValue ?? 0,
-    todayOrders: analytics?.data?.todayOrders ?? 0,
-    todayRevenue: analytics?.data?.todayRevenue ?? 0,
-    completedOrders: analytics?.data?.ordersByStatus?.delivered ?? 0,
-    cancelledOrders: analytics?.data?.ordersByStatus?.cancelled ?? 0,
   };
 
-  // Calculate percentage changes (example logic, adjust based on trends if needed)
+  // Calculate percentage changes
   const calculateOrderChange = () => {
-    const todayOrders = normalizedAnalytics.todayOrders;
+    const todayOrders = analytics?.data?.todayOrders ?? 0;
     const last7Days = analytics?.data?.recentTrends?.last7Days || [];
     const previousDayOrders =
       last7Days.find((trend) => trend.date === "2025-05-31")?.orders || 0;
@@ -50,7 +43,7 @@ export function OrderAnalyticsComponent({ analytics, loading, error }) {
   };
 
   const calculateRevenueChange = () => {
-    const todayRevenue = normalizedAnalytics.todayRevenue;
+    const todayRevenue = analytics?.data?.todayRevenue ?? 0;
     const last7Days = analytics?.data?.recentTrends?.last7Days || [];
     const previousDayRevenue =
       last7Days.find((trend) => trend.date === "2025-05-31")?.revenue || 0;
@@ -119,7 +112,6 @@ export function OrderAnalyticsComponent({ analytics, loading, error }) {
             <Statistic
               title="Total Revenue"
               value={normalizedAnalytics.totalRevenue}
-              prefix={<DollarOutlined />}
               formatter={(value) => formatCurrency(value)}
               suffix={
                 <div style={{ fontSize: "12px", color: revenueChange >= 0 ? "#52c41a" : "#ff4d4f" }}>
@@ -157,77 +149,6 @@ export function OrderAnalyticsComponent({ analytics, loading, error }) {
             />
           </Card>
         </Col>
-
-        <Col xs={24} lg={12}>
-          <Card title="Today's Performance">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Statistic
-                  title="Orders Today"
-                  value={normalizedAnalytics.todayOrders}
-                  valueStyle={{ fontSize: "24px" }}
-                />
-              </Col>
-              <Col span={12}>
-                <Statistic
-                  title="Revenue Today"
-                  value={normalizedAnalytics.todayRevenue}
-                  formatter={(value) => formatCurrency(value)}
-                  valueStyle={{ fontSize: "24px" }}
-                />
-              </Col>
-            </Row>
-          </Card>
-        </Col>
-
-        <Col xs={24} lg={12}>
-          <Card title="Order Status Overview">
-            <Row gutter={16}>
-              <Col span={8} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#52c41a",
-                  }}
-                >
-                  {normalizedAnalytics.completedOrders}
-                </div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  <CheckCircleOutlined /> Completed
-                </div>
-              </Col>
-              <Col span={8} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#faad14",
-                  }}
-                >
-                  {normalizedAnalytics.pendingOrders}
-                </div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  <ClockCircleOutlined /> Pending
-                </div>
-              </Col>
-              <Col span={8} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "bold",
-                    color: "#ff4d4f",
-                  }}
-                >
-                  {normalizedAnalytics.cancelledOrders}
-                </div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  <CloseCircleOutlined /> Cancelled
-                </div>
-              </Col>
-            </Row>
-          </Card>
-        </Col>
       </Row>
     </div>
   );
@@ -242,10 +163,6 @@ OrderAnalyticsComponent.propTypes = {
       averageOrderValue: PropTypes.number,
       todayOrders: PropTypes.number,
       todayRevenue: PropTypes.number,
-      ordersByStatus: PropTypes.shape({
-        delivered: PropTypes.number,
-        cancelled: PropTypes.number,
-      }),
     }),
   }),
   loading: PropTypes.bool,

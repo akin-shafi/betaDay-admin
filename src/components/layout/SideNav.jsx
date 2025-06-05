@@ -37,6 +37,23 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Dashboard",
     },
     {
+      path: "/analytics",
+      icon: BarChart3,
+      title: "Analytics",
+      showFor: ["admin"],
+    },
+    
+    {
+      path: "/orders-mgt",
+      icon: ShoppingCart,
+      title: "Orders",
+    },
+    {
+      path: "/rate-mgt",
+      icon: MapPin,
+      title: "Rate Mgt",
+    },
+    {
       path: "/users",
       icon: User,
       title: "Users",
@@ -48,7 +65,6 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Vendors",
       showFor: ["admin"],
     },
-
     {
       path: "/groups",
       icon: Users, // Changed from Store to Users
@@ -72,16 +88,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
     //   icon: Building2,
     //   title: "Businesses",
     // },
-    {
-      path: "/orders-mgt",
-      icon: ShoppingCart,
-      title: "Orders",
-    },
-    {
-      path: "/zone-mgt",
-      icon: MapPin,
-      title: "Zone Mgt",
-    },
+    
     {
       path: "/riders",
       icon: Bike,
@@ -99,12 +106,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Reports",
       showFor: ["admin"],
     },
-    {
-      path: "/analytics",
-      icon: BarChart3,
-      title: "Analytics",
-      showFor: ["admin"],
-    },
+    
     {
       path: "/support",
       icon: AlertCircle,

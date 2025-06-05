@@ -20,7 +20,7 @@ import VendorDetailsPage from "./pages/vendors/[id]";
 // import BusinessViewPage from "./pages/businesses/view";
 
 import OrdersPageMgt from "@/pages/orders-mgt";
-import ZonePageMgt from "@/pages/zone-mgt";
+import RatePageMgt from "@/pages/rate-mgt";
 
 
 // Import Orders Pages
@@ -185,10 +185,10 @@ function App() {
         />
 
       <Route
-          path="/zone-mgt"
+          path="/rate-mgt"
           element={
             <ProtectedRoute>
-              <ZonePageMgt />
+              <RatePageMgt />
             </ProtectedRoute>
           }
         />
