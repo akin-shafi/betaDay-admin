@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useAnalytics } from "@/hooks/useAnalytics"
+import { useSession } from "@/hooks/useSession"
 import {
   useTotalDeliveryFees,
   useTotalServiceFees,
@@ -16,22 +17,36 @@ import { BusinessTable } from "@/components/analytics/BusinessTable"
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState({})
   const [activeTab, setActiveTab] = useState("overview")
+  const { session } = useSession()
+  const token = session?.token
 
   // Fetch all analytics data
-  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(dateRange)
-  const { data: deliveryFees, loading: deliveryFeesLoading, error: deliveryFeesError } = useTotalDeliveryFees(dateRange)
-  const { data: serviceFees, loading: serviceFeesLoading, error: serviceFeesError } = useTotalServiceFees(dateRange)
-  const { data: revenueByBusiness, loading: revenueLoading, error: revenueError } = useRevenueByBusiness(dateRange)
+  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(token, dateRange)
+  const {
+    data: deliveryFees,
+    loading: deliveryFeesLoading,
+    error: deliveryFeesError,
+  } = useTotalDeliveryFees(token, dateRange)
+  const {
+    data: serviceFees,
+    loading: serviceFeesLoading,
+    error: serviceFeesError,
+  } = useTotalServiceFees(token, dateRange)
+  const {
+    data: revenueByBusiness,
+    loading: revenueLoading,
+    error: revenueError,
+  } = useRevenueByBusiness(token, dateRange)
   const {
     data: deliveryFeesByBusiness,
     loading: deliveryByBusinessLoading,
     error: deliveryByBusinessError,
-  } = useDeliveryFeesByBusiness(dateRange)
+  } = useDeliveryFeesByBusiness(token, dateRange)
   const {
     data: serviceFeesByBusiness,
     loading: serviceByBusinessLoading,
     error: serviceByBusinessError,
-  } = useServiceFeesByBusiness(dateRange)
+  } = useServiceFeesByBusiness(token, dateRange)
 
   const tabs = [
     { id: "overview", label: "Overview" },

@@ -42,6 +42,7 @@ import GroupsPage from "./pages/Groups/index";
 import SubGroupsPage from "./pages/Groups/[groupId]";
 import MealsPage from "./pages/MealsPage";
 
+
 function App() {
   return (
     <Router>

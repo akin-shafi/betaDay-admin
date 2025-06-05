@@ -1,22 +1,34 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { analyticsAPI } from "../services/api"
+import {
+  getTotalDeliveryFees,
+  getTotalServiceFees,
+  getRevenueByBusiness,
+  getDeliveryFeesByBusiness,
+  getServiceFeesByBusiness,
+} from "./useAnalytics"
 
 // Hook for Total Delivery Fees
-export function useTotalDeliveryFees(dateRange = {}) {
+export function useTotalDeliveryFees(token, dateRange = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const fetchData = async () => {
+    if (!token) {
+      setLoading(false)
+      setError("No authentication token provided")
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
-      const response = await analyticsAPI.getTotalDeliveryFees(dateRange)
-      setData(response.data.data)
+      const response = await getTotalDeliveryFees(token, dateRange)
+      setData(response.data)
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch delivery fees")
+      setError(err.message || "Failed to fetch delivery fees")
       console.error("Error fetching delivery fees:", err)
     } finally {
       setLoading(false)
@@ -25,26 +37,32 @@ export function useTotalDeliveryFees(dateRange = {}) {
 
   useEffect(() => {
     fetchData()
-  }, [dateRange.startDate, dateRange.endDate])
+  }, [token, dateRange.startDate, dateRange.endDate])
 
-  return { data, loading, error, refetch: () => fetchData() }
+  return { data, loading, error, refetch: fetchData }
 }
 
 // Hook for Total Service Fees
-export function useTotalServiceFees(dateRange = {}) {
+export function useTotalServiceFees(token, dateRange = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!token) {
+      setLoading(false)
+      setError("No authentication token provided")
+      return
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await analyticsAPI.getTotalServiceFees(dateRange)
-        setData(response.data.data)
+        const response = await getTotalServiceFees(token, dateRange)
+        setData(response.data)
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch service fees")
+        setError(err.message || "Failed to fetch service fees")
         console.error("Error fetching service fees:", err)
       } finally {
         setLoading(false)
@@ -52,88 +70,106 @@ export function useTotalServiceFees(dateRange = {}) {
     }
 
     fetchData()
-  }, [JSON.stringify(dateRange)])
+  }, [token, JSON.stringify(dateRange)])
 
   return { data, loading, error, refetch: () => fetchData() }
 }
 
 // Hook for Revenue by Business
-export function useRevenueByBusiness(dateRange = {}) {
+export function useRevenueByBusiness(token, dateRange = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await analyticsAPI.getRevenueByBusiness(dateRange)
-        setData(response.data.data)
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch business revenue")
-        console.error("Error fetching business revenue:", err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = async () => {
+    if (!token) {
+      setLoading(false)
+      setError("No authentication token provided")
+      return
     }
 
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await getRevenueByBusiness(token, dateRange)
+      setData(response.data)
+    } catch (err) {
+      setError(err.message || "Failed to fetch business revenue")
+      console.error("Error fetching business revenue:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
-  }, [JSON.stringify(dateRange)])
+  }, [token, JSON.stringify(dateRange)])
 
   return { data, loading, error, refetch: () => fetchData() }
 }
 
 // Hook for Delivery Fees by Business
-export function useDeliveryFeesByBusiness(dateRange = {}) {
+export function useDeliveryFeesByBusiness(token, dateRange = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await analyticsAPI.getDeliveryFeesByBusiness(dateRange)
-        setData(response.data.data)
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch delivery fees by business")
-        console.error("Error fetching delivery fees by business:", err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = async () => {
+    if (!token) {
+      setLoading(false)
+      setError("No authentication token provided")
+      return
     }
 
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await getDeliveryFeesByBusiness(token, dateRange)
+      setData(response.data)
+    } catch (err) {
+      setError(err.message || "Failed to fetch delivery fees by business")
+      console.error("Error fetching delivery fees by business:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
-  }, [JSON.stringify(dateRange)])
+  }, [token, JSON.stringify(dateRange)])
 
   return { data, loading, error, refetch: () => fetchData() }
 }
 
 // Hook for Service Fees by Business
-export function useServiceFeesByBusiness(dateRange = {}) {
+export function useServiceFeesByBusiness(token, dateRange = {}) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await analyticsAPI.getServiceFeesByBusiness(dateRange)
-        setData(response.data.data)
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch service fees by business")
-        console.error("Error fetching service fees by business:", err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = async () => {
+    if (!token) {
+      setLoading(false)
+      setError("No authentication token provided")
+      return
     }
 
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await getServiceFeesByBusiness(token, dateRange)
+      setData(response.data)
+    } catch (err) {
+      setError(err.message || "Failed to fetch service fees by business")
+      console.error("Error fetching service fees by business:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
-  }, [JSON.stringify(dateRange)])
+  }, [token, JSON.stringify(dateRange)])
 
   return { data, loading, error, refetch: () => fetchData() }
 }
