@@ -1,187 +1,88 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useAnalytics } from "@/hooks/useAnalytics"
-import { useSession } from "@/hooks/useSession"
-import {
-  useTotalDeliveryFees,
-  useTotalServiceFees,
-  useRevenueByBusiness,
-  useDeliveryFeesByBusiness,
-  useServiceFeesByBusiness,
-} from "@/hooks/useAnalyticsMetrics"
-import { DateRangePicker } from "@/components/analytics/DateRangePicker"
-import { FeesCard } from "@/components/analytics/FeesCard"
-import { BusinessTable } from "@/components/analytics/BusinessTable"
+import { useState, useEffect } from "react";
+import { message, Button, Space } from "antd";
+import { ReloadOutlined, PrinterOutlined } from "@ant-design/icons";
+import { useSession } from "@/hooks/useSession";
+import { DateRangePicker } from "@/components/analytics/DateRangePicker";
+import { AnalyticsOverview } from "@/components/analytics/AnalyticsOverview";
+import { fetchAllAnalytics } from "@/services/analyticsService";
 
 export default function AnalyticsPage() {
-  const [dateRange, setDateRange] = useState({})
-  const [activeTab, setActiveTab] = useState("overview")
-  const { session } = useSession()
-  const token = session?.token
+  const { session } = useSession();
+  const token = session?.token;
+  const [dateRange, setDateRange] = useState({});
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Fetch all analytics data
-  const { data: analytics, loading: analyticsLoading, error: analyticsError } = useAnalytics(token, dateRange)
-  const {
-    data: deliveryFees,
-    loading: deliveryFeesLoading,
-    error: deliveryFeesError,
-  } = useTotalDeliveryFees(token, dateRange)
-  const {
-    data: serviceFees,
-    loading: serviceFeesLoading,
-    error: serviceFeesError,
-  } = useTotalServiceFees(token, dateRange)
-  const {
-    data: revenueByBusiness,
-    loading: revenueLoading,
-    error: revenueError,
-  } = useRevenueByBusiness(token, dateRange)
-  const {
-    data: deliveryFeesByBusiness,
-    loading: deliveryByBusinessLoading,
-    error: deliveryByBusinessError,
-  } = useDeliveryFeesByBusiness(token, dateRange)
-  const {
-    data: serviceFeesByBusiness,
-    loading: serviceByBusinessLoading,
-    error: serviceByBusinessError,
-  } = useServiceFeesByBusiness(token, dateRange)
-
-  const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "revenue", label: "Revenue by Business" },
-    { id: "delivery", label: "Delivery Fees" },
-    { id: "service", label: "Service Fees" },
-  ]
-
-  const renderActiveTab = () => {
-    switch (activeTab) {
-      case "revenue":
-        return (
-          <BusinessTable
-            title="Revenue by Business"
-            data={revenueByBusiness}
-            loading={revenueLoading}
-            error={revenueError}
-          />
-        )
-      case "delivery":
-        return (
-          <div className="space-y-6">
-            <FeesCard
-              title="Total Delivery Fees"
-              data={deliveryFees}
-              loading={deliveryFeesLoading}
-              error={deliveryFeesError}
-            />
-            <BusinessTable
-              title="Delivery Fees by Business"
-              data={deliveryFeesByBusiness}
-              loading={deliveryByBusinessLoading}
-              error={deliveryByBusinessError}
-            />
-          </div>
-        )
-      case "service":
-        return (
-          <div className="space-y-6">
-            <FeesCard
-              title="Total Service Fees"
-              data={serviceFees}
-              loading={serviceFeesLoading}
-              error={serviceFeesError}
-            />
-            <BusinessTable
-              title="Service Fees by Business"
-              data={serviceFeesByBusiness}
-              loading={serviceByBusinessLoading}
-              error={serviceByBusinessError}
-            />
-          </div>
-        )
-      default:
-        return (
-          <div className="space-y-6">
-            {/* Analytics Summary Cards */}
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="bg-white p-6 rounded-xl border">
-                <h4 className="text-sm font-medium text-gray-500">Total Revenue</h4>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  ₦{analytics?.totalRevenue ? (analytics.totalRevenue / 1000000).toFixed(1) + "M" : "0"}
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl border">
-                <h4 className="text-sm font-medium text-gray-500">Total Orders</h4>
-                <p className="text-2xl font-bold text-gray-900 mt-2">
-                  {analytics?.totalOrders?.toLocaleString() || "0"}
-                </p>
-              </div>
-              <FeesCard
-                title="Total Delivery Fees"
-                data={deliveryFees}
-                loading={deliveryFeesLoading}
-                error={deliveryFeesError}
-              />
-              <FeesCard
-                title="Total Service Fees"
-                data={serviceFees}
-                loading={serviceFeesLoading}
-                error={serviceFeesError}
-              />
-            </div>
-
-            {/* Business Performance Tables */}
-            <div className="grid md:grid-cols-2 gap-6">
-              <BusinessTable
-                title="Top Revenue by Business"
-                data={revenueByBusiness?.slice(0, 5)}
-                loading={revenueLoading}
-                error={revenueError}
-              />
-              <BusinessTable
-                title="Top Delivery Fees by Business"
-                data={deliveryFeesByBusiness?.slice(0, 5)}
-                loading={deliveryByBusinessLoading}
-                error={deliveryByBusinessError}
-              />
-            </div>
-          </div>
-        )
+  const fetchAnalytics = async () => {
+    if (!token) {
+      setError("No authentication token provided");
+      return;
     }
-  }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchAllAnalytics(token, dateRange);
+      setAnalyticsData(response.data);
+      message.success("Analytics data loaded successfully");
+    } catch (err) {
+      setError(err.message || "Failed to fetch analytics data");
+      message.error("Failed to load analytics data");
+      console.error("Analytics fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [token, dateRange.startDate, dateRange.endDate]);
+
+  const handlePrint = () => {
+    window.print();
+    message.success("Print initiated");
+  };
+
+  const handleRefresh = () => {
+    fetchAnalytics();
+  };
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="non-printable">
         <h5 className="text-2xl font-semibold text-gray-900">Analytics</h5>
-        <p className="text-gray-600 text-sm">Comprehensive analytics and insights</p>
+        <p className="text-gray-600 text-sm">
+          Comprehensive analytics and insights
+        </p>
       </div>
 
-      {/* Date Range Picker */}
-      <DateRangePicker onChange={setDateRange} />
-
-      {/* Tabs */}
-      <div className="border-b">
-        <nav className="flex space-x-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`py-4 px-1 inline-flex items-center border-b-2 font-medium text-sm transition-colors ${
-                activeTab === tab.id
-                  ? "border-primary-500 text-primary-500"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      <div className="flex justify-between items-center non-printable">
+        <DateRangePicker onChange={setDateRange} />
+        <Space>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleRefresh}
+            loading={loading}
+          >
+            Refresh
+          </Button>
+          <Button icon={<PrinterOutlined />} onClick={handlePrint}>
+            Print
+          </Button>
+        </Space>
       </div>
 
-      {/* Active Tab Content */}
-      {renderActiveTab()}
+      <div className="printable-content">
+        <AnalyticsOverview
+          data={analyticsData?.dashboardData}
+          loading={loading}
+          error={error}
+        />
+      </div>
     </div>
-  )
+  );
 }

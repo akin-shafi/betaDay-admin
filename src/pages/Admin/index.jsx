@@ -10,6 +10,8 @@ import { FiUsers } from "react-icons/fi";
 
 export function AdminPage() {
   const { session } = useSession();
+  const token = session?.token;
+
   const fullname = session?.user?.fullname;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -31,7 +33,7 @@ export function AdminPage() {
   const renderActiveSection = () => {
     switch (activeTab) {
       case "orders":
-        return <OrdersSection />;
+        return <OrdersSection token={token} />;
       case "business":
         return <BusinessPerformanceSection />;
       case "transactions":

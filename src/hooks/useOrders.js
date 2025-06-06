@@ -1,20 +1,24 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL
+const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Orders API functions
 export const getAllOrders = async (token, params = {}) => {
-  const queryParams = new URLSearchParams()
+  const queryParams = new URLSearchParams();
 
-  if (params.page) queryParams.append("page", params.page)
-  if (params.limit) queryParams.append("limit", params.limit)
-  if (params.status) queryParams.append("status", params.status)
-  if (params.startDate) queryParams.append("startDate", params.startDate.toISOString())
-  if (params.endDate) queryParams.append("endDate", params.endDate.toISOString())
+  if (params.page) queryParams.append("page", params.page);
+  if (params.limit) queryParams.append("limit", params.limit);
+  if (params.status) queryParams.append("status", params.status);
+  if (params.startDate)
+    queryParams.append("startDate", params.startDate.toISOString());
+  if (params.endDate)
+    queryParams.append("endDate", params.endDate.toISOString());
 
-  const url = `${API_URL}/orders${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
+  const url = `${API_URL}/api/orders${
+    queryParams.toString() ? `?${queryParams.toString()}` : ""
+  }`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -22,59 +26,63 @@ export const getAllOrders = async (token, params = {}) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to fetch orders")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fetch orders");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 export const getOrderById = async (token, orderId) => {
-  const response = await fetch(`${API_URL}/orders/${orderId}`, {
+  const response = await fetch(`${API_URL}/api/orders/${orderId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to fetch order")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fetch order");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 export const updateOrderStatus = async (token, orderId, data) => {
-  const response = await fetch(`${API_URL}/orders/${orderId}/status`, {
+  const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to update order status")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update order status");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 export const getOrderAnalytics = async (token, params = {}) => {
-  const queryParams = new URLSearchParams()
+  const queryParams = new URLSearchParams();
 
-  if (params.startDate) queryParams.append("startDate", params.startDate.toISOString())
-  if (params.endDate) queryParams.append("endDate", params.endDate.toISOString())
-  if (params.businessId) queryParams.append("businessId", params.businessId)
+  if (params.startDate)
+    queryParams.append("startDate", params.startDate.toISOString());
+  if (params.endDate)
+    queryParams.append("endDate", params.endDate.toISOString());
+  if (params.businessId) queryParams.append("businessId", params.businessId);
 
-  const url = `${API_URL}/orders/analytics${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
+  const url = `${API_URL}/api/orders/analytics${
+    queryParams.toString() ? `?${queryParams.toString()}` : ""
+  }`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -82,82 +90,89 @@ export const getOrderAnalytics = async (token, params = {}) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to fetch order analytics")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fetch order analytics");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 export const bulkOrderOperations = async (token, data) => {
-  const response = await fetch(`${API_URL}/orders/bulk`, {
+  const response = await fetch(`${API_URL}/api/orders/bulk`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to perform bulk operations")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to perform bulk operations");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 export const processRefund = async (token, orderId, data) => {
-  const response = await fetch(`${API_URL}/orders/${orderId}/refund`, {
+  const response = await fetch(`${API_URL}/api/orders/${orderId}/refund`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
-  })
+  });
 
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Failed to process refund")
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to process refund");
   }
 
-  return response.json()
-}
+  return response.json();
+};
 
 // Hook for orders
 export function useOrders(token, params = {}) {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!token) {
-      setLoading(false)
-      setError("No authentication token provided")
-      return
+      setLoading(false);
+      setError("No authentication token provided");
+      return;
     }
 
-    fetchOrders()
-  }, [token, params.page, params.limit, params.status, params.startDate, params.endDate])
+    fetchOrders();
+  }, [
+    token,
+    params.page,
+    params.limit,
+    params.status,
+    params.startDate,
+    params.endDate,
+  ]);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      const response = await getAllOrders(token, params)
-      setData(response.data)
+      const response = await getAllOrders(token, params);
+      setData(response.data);
     } catch (err) {
-      setError(err.message || "Failed to fetch orders")
-      console.error("Orders fetch error:", err)
+      setError(err.message || "Failed to fetch orders");
+      console.error("Orders fetch error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  return { data, loading, error, refetch: fetchOrders }
+  return { data, loading, error, refetch: fetchOrders };
 }

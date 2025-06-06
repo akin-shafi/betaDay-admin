@@ -42,7 +42,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Analytics",
       showFor: ["admin"],
     },
-    
+
     {
       path: "/orders-mgt",
       icon: ShoppingCart,
@@ -88,7 +88,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
     //   icon: Building2,
     //   title: "Businesses",
     // },
-    
+
     {
       path: "/riders",
       icon: Bike,
@@ -106,7 +106,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       title: "Reports",
       showFor: ["admin"],
     },
-    
+
     {
       path: "/support",
       icon: AlertCircle,
@@ -137,7 +137,7 @@ const SideNav = forwardRef(({ isOpen, onClose, isMobile }, ref) => {
       {/* Sidebar */}
       <aside
         ref={ref}
-        className={`fixed top-0 left-0 h-screen w-64 bg-[#1A1A1A] text-white transition-transform duration-300 ease-in-out z-50 ${
+        className={`sidenav fixed top-0 left-0 h-screen w-64 bg-[#1A1A1A] text-white transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >

@@ -1,8 +1,9 @@
-"use client"
+/* eslint-disable react/prop-types */
+"use client";
 
-import { useState } from "react"
-import { useOrders } from "../../hooks/useOrders"
-import { FiEye, FiEdit, FiTrash2, FiFilter } from "react-icons/fi"
+import { useState } from "react";
+import { useOrders } from "../../hooks/useOrders";
+import { FiEye, FiEdit, FiTrash2, FiFilter } from "react-icons/fi";
 
 export function OrdersSection({ token }) {
   const [filters, setFilters] = useState({
@@ -11,24 +12,24 @@ export function OrdersSection({ token }) {
     status: "",
     startDate: "",
     endDate: "",
-  })
+  });
 
-  const { data, loading, error } = useOrders(token, filters)
+  const { data, loading, error } = useOrders(token, filters);
 
   const handleStatusFilter = (status) => {
-    setFilters((prev) => ({ ...prev, status, page: 1 }))
-  }
+    setFilters((prev) => ({ ...prev, status, page: 1 }));
+  };
 
   const handlePageChange = (page) => {
-    setFilters((prev) => ({ ...prev, page }))
-  }
+    setFilters((prev) => ({ ...prev, page }));
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -36,7 +37,7 @@ export function OrdersSection({ token }) {
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <p className="text-red-600">Error loading orders: {error}</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -46,23 +47,27 @@ export function OrdersSection({ token }) {
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
             <FiFilter className="text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">Filter by status:</span>
+            <span className="text-sm font-medium text-gray-700">
+              Filter by status:
+            </span>
           </div>
 
           <div className="flex gap-2">
-            {["", "pending", "processing", "delivered", "cancelled"].map((status) => (
-              <button
-                key={status}
-                onClick={() => handleStatusFilter(status)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  filters.status === status
-                    ? "bg-primary-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {status || "All"}
-              </button>
-            ))}
+            {["", "pending", "processing", "delivered", "cancelled"].map(
+              (status) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusFilter(status)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    filters.status === status
+                      ? "bg-primary-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {status || "All"}
+                </button>
+              )
+            )}
           </div>
         </div>
       </div>
@@ -92,7 +97,9 @@ export function OrdersSection({ token }) {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -107,7 +114,9 @@ export function OrdersSection({ token }) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {order.user?.fullname || order.user?.email || "N/A"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.business?.name || "N/A"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {order.business?.name || "N/A"}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ₦{Number(order.totalAmount).toLocaleString()}
                   </td>
@@ -117,10 +126,10 @@ export function OrdersSection({ token }) {
                         order.status === "delivered"
                           ? "bg-green-100 text-green-800"
                           : order.status === "cancelled"
-                            ? "bg-red-100 text-red-800"
-                            : order.status === "processing"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
+                          ? "bg-red-100 text-red-800"
+                          : order.status === "processing"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {order.status}
@@ -154,7 +163,8 @@ export function OrdersSection({ token }) {
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
                 Showing {(filters.page - 1) * filters.limit + 1} to{" "}
-                {Math.min(filters.page * filters.limit, data.metadata.total)} of {data.metadata.total} results
+                {Math.min(filters.page * filters.limit, data.metadata.total)} of{" "}
+                {data.metadata.total} results
               </div>
               <div className="flex space-x-2">
                 <button
@@ -180,5 +190,5 @@ export function OrdersSection({ token }) {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -4,12 +4,13 @@
 
 import { useState, useEffect } from "react";
 import { message } from "antd";
-// import { OrderAnalyticsComponent } from "@/components/orders/order-analytics";
 import { PerformanceOverviewComponent } from "@/components/orders/performance-overview";
 import { OrderFiltersComponent } from "@/components/orders/order-filters";
 import { OrderTable } from "@/components/orders/order-table";
 import { useSession } from "@/hooks/useSession";
-import ErrorBoundary from "@/components/ErrorBoundary"; // Adjust path as needed
+import ErrorBoundary from "@/components/ErrorBoundary";
+import moment from "moment";
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -29,6 +30,8 @@ export default function OrderManagement() {
   const [loading, setLoading] = useState(false);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dateFilter, setDateFilter] = useState("last7Days");
+  const [customDateRange, setCustomDateRange] = useState(null);
 
   // Normalize order data to match OrderTable expectations
   const normalizeOrder = (order) => {
@@ -65,10 +68,29 @@ export default function OrderManagement() {
       if (filters.status !== "all") params.append("status", filters.status);
       if (filters.paymentStatus !== "all")
         params.append("paymentStatus", filters.paymentStatus);
+      if (filters.paymentMethod !== "all")
+        params.append("paymentMethod", filters.paymentMethod);
       if (filters.search) params.append("search", filters.search);
-      if (filters.dateRange) {
-        params.append("startDate", filters.dateRange.from);
-        params.append("endDate", filters.dateRange.to);
+
+      // Add date filter parameters based on dateFilter and customDateRange
+      let startDate, endDate;
+      if (dateFilter === "today") {
+        startDate = moment().startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "last7Days") {
+        startDate = moment().subtract(7, "days").startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "last3Months") {
+        startDate = moment().subtract(3, "months").startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "custom" && customDateRange) {
+        startDate = moment(customDateRange[0]).startOf("day").toISOString();
+        endDate = moment(customDateRange[1]).endOf("day").toISOString();
+      }
+
+      if (startDate && endDate) {
+        params.append("startDate", startDate);
+        params.append("endDate", endDate);
       }
 
       const response = await fetch(`${API_BASE_URL}/api/orders?${params}`, {
@@ -103,13 +125,38 @@ export default function OrderManagement() {
   const fetchAnalytics = async () => {
     setAnalyticsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/orders/analytics`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const params = new URLSearchParams();
+      let startDate, endDate;
+
+      if (dateFilter === "today") {
+        startDate = moment().startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "last7Days") {
+        startDate = moment().subtract(7, "days").startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "last3Months") {
+        startDate = moment().subtract(3, "months").startOf("day").toISOString();
+        endDate = moment().endOf("day").toISOString();
+      } else if (dateFilter === "custom" && customDateRange) {
+        startDate = moment(customDateRange[0]).startOf("day").toISOString();
+        endDate = moment(customDateRange[1]).endOf("day").toISOString();
+      }
+
+      if (startDate && endDate) {
+        params.append("startDate", startDate);
+        params.append("endDate", endDate);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/orders/analytics?${params}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch analytics");
@@ -134,10 +181,11 @@ export default function OrderManagement() {
     fetchAnalytics();
   }, []);
 
-  // Refetch orders when filters change
+  // Refetch orders and analytics when filters, dateFilter, or customDateRange change
   useEffect(() => {
     fetchOrders();
-  }, [filters]);
+    fetchAnalytics();
+  }, [filters, dateFilter, customDateRange]);
 
   const handleUpdateStatus = async (orderId, status, notes) => {
     setLoading(true);
@@ -159,7 +207,6 @@ export default function OrderManagement() {
         throw new Error(errorData.message || "Failed to update order status");
       }
 
-      // Refetch orders instead of manual state update
       await fetchOrders();
       message.success(`Order status updated to ${status}`);
     } catch (error) {
@@ -237,8 +284,8 @@ export default function OrderManagement() {
   const handleBulkAction = async (orderIds, action) => {
     setLoading(true);
     try {
-      const mappedAction = action === "confirm" ? "updateStatus" : action; // Map "confirm" to "updateStatus"
-      const status = action === "confirm" ? "accepted" : action; // Use "accepted" for confirm
+      const mappedAction = action === "confirm" ? "updateStatus" : action;
+      const status = action === "confirm" ? "accepted" : action;
       const response = await fetch(`${API_BASE_URL}/api/orders/bulk`, {
         method: "POST",
         headers: {
@@ -328,15 +375,14 @@ export default function OrderManagement() {
         </p>
       </div>
 
-      {/* <OrderAnalyticsComponent
-        analytics={analytics}
-        loading={analyticsLoading}
-        error={error}
-      /> */}
       <PerformanceOverviewComponent
         analytics={analytics}
         loading={analyticsLoading}
         error={error}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        customDateRange={customDateRange}
+        setCustomDateRange={setCustomDateRange} // Added missing prop
       />
 
       <OrderFiltersComponent
@@ -355,6 +401,8 @@ export default function OrderManagement() {
           onRefundOrder={handleRefundOrder}
           onBulkAction={handleBulkAction}
           loading={loading}
+          dateFilter={dateFilter}
+          customDateRange={customDateRange}
         />
       </ErrorBoundary>
     </div>

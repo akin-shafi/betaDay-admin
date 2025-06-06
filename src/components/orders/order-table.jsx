@@ -62,10 +62,10 @@ export function OrderTable({
   const getStatusTag = (status) => {
     const statusConfig = {
       pending: { color: "orange", label: "Pending" },
-      confirmed: { color: "blue", label: "Confirmed" },
+      processing: { color: "blue", label: "Processing" },
+      accepted: { color: "cyan", label: "Accepted" },
       preparing: { color: "purple", label: "Preparing" },
-      ready: { color: "cyan", label: "Ready" },
-      out_for_delivery: { color: "geekblue", label: "Out for Delivery" },
+      ready_for_pickup: { color: "geekblue", label: "Ready for Pickup" },
       delivered: { color: "green", label: "Delivered" },
       cancelled: { color: "red", label: "Cancelled" },
     };
@@ -77,8 +77,10 @@ export function OrderTable({
   const getPaymentStatusTag = (status) => {
     const statusConfig = {
       pending: { color: "orange", label: "Pending" },
-      completed: { color: "green", label: "Completed" },
+      processing: { color: "blue", label: "Processing" },
+      paid: { color: "green", label: "Paid" },
       failed: { color: "red", label: "Failed" },
+      cancelled: { color: "purple", label: "Cancelled" },
       refunded: { color: "purple", label: "Refunded" },
     };
 
@@ -180,7 +182,15 @@ export function OrderTable({
             {formatCurrency(record.finalAmount)}
           </div>
           <div style={{ fontSize: "12px", color: "#666" }}>
-            {record.paymentMethod === "wallet" ? "Wallet" : "Gateway"}
+            {record.paymentMethod === "wallet"
+              ? "Wallet"
+              : record.paymentMethod === "cash"
+              ? "Cash on Delivery"
+              : record.paymentMethod.startsWith("paystack")
+              ? `Paystack (${record.paymentMethod.split("_")[1]})`
+              : record.paymentMethod.startsWith("opay")
+              ? `Opay (${record.paymentMethod.split("_")[1]})`
+              : record.paymentMethod}
           </div>
         </div>
       ),
@@ -309,7 +319,15 @@ export function OrderTable({
                     {getPaymentStatusTag(viewOrder.paymentStatus)}
                   </Descriptions.Item>
                   <Descriptions.Item label="Method">
-                    {viewOrder.paymentMethod}
+                    {viewOrder.paymentMethod === "wallet"
+                      ? "Wallet"
+                      : viewOrder.paymentMethod === "cash"
+                      ? "Cash on Delivery"
+                      : viewOrder.paymentMethod.startsWith("paystack")
+                      ? `Paystack (${viewOrder.paymentMethod.split("_")[1]})`
+                      : viewOrder.paymentMethod.startsWith("opay")
+                      ? `Opay (${viewOrder.paymentMethod.split("_")[1]})`
+                      : viewOrder.paymentMethod}
                   </Descriptions.Item>
                   <Descriptions.Item label="Date">
                     {formatDate(viewOrder.createdAt)}
@@ -461,15 +479,13 @@ export function OrderTable({
             value={newStatus}
             onChange={setNewStatus}
           >
-            {/* [pending, processing, accepted, preparing, ready_for_pickup,
-            delivered, cancelled] */}
             <Select.Option value="pending">Pending</Select.Option>
-            <Select.Option value="processing">processing</Select.Option>
-            {/* <Select.Option value="preparing">Preparing</Select.Option> */}
-            {/* <Select.Option value="ready_for_pickup">Ready</Select.Option>
-            <Select.Option value="out_for_delivery">
-              Out for Delivery
-            </Select.Option> */}
+            <Select.Option value="processing">Processing</Select.Option>
+            <Select.Option value="accepted">Accepted</Select.Option>
+            <Select.Option value="preparing">Preparing</Select.Option>
+            <Select.Option value="ready_for_pickup">
+              Ready for Pickup
+            </Select.Option>
             <Select.Option value="delivered">Delivered</Select.Option>
             <Select.Option value="cancelled">Cancelled</Select.Option>
           </Select>
