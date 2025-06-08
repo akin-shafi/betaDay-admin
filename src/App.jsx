@@ -14,14 +14,13 @@ import { UsersPage } from "./pages/Users";
 
 // Import Vendor Pages
 import VendorsPage from "./pages/vendors";
-import VendorDetailsPage from "./pages/vendors/[id]";
+import VendorDetailsPage from "./pages/vendors/[id]/index";
 
 // import BusinessesPage from "./pages/businesses";
 // import BusinessViewPage from "./pages/businesses/view";
 
 import OrdersPageMgt from "@/pages/orders-mgt";
 import RatePageMgt from "@/pages/rate-mgt";
-
 
 // Import Orders Pages
 import OrdersPage from "@/pages/orders";
@@ -41,7 +40,6 @@ import SettingsPage from "./pages/settings/index";
 import GroupsPage from "./pages/Groups/index";
 import SubGroupsPage from "./pages/Groups/[groupId]";
 import MealsPage from "./pages/MealsPage";
-
 
 function App() {
   return (
@@ -185,7 +183,7 @@ function App() {
           }
         />
 
-      <Route
+        <Route
           path="/rate-mgt"
           element={
             <ProtectedRoute>

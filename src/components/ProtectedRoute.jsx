@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+
 /* eslint-disable react/prop-types */
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +12,7 @@ import { message } from "antd";
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
 
 export function ProtectedRoute({ children }) {
-  const { session, logout } = useSession(); // Assuming logout is available from useSession
+  const { session, logout } = useSession();
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -20,7 +23,7 @@ export function ProtectedRoute({ children }) {
     }
     inactivityTimer.current = setTimeout(() => {
       message.info("You have been logged out due to 5 minutes of inactivity.");
-      logout(); // Clear session and trigger redirect
+      logout();
     }, INACTIVITY_TIMEOUT);
   };
 
@@ -33,29 +36,29 @@ export function ProtectedRoute({ children }) {
     if (!session) {
       localStorage.setItem("message", "Please login to access this page");
       navigate("/auth/login");
-      return; // Exit early if no session
+      return;
     }
 
     // Start the inactivity timer
     resetTimer();
 
     // Add event listeners for user activity
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("click", handleActivity);
-    window.addEventListener("scroll", handleActivity);
+    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
 
     // Cleanup on unmount or when session changes
     return () => {
       if (inactivityTimer.current) {
         clearTimeout(inactivityTimer.current);
       }
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("click", handleActivity);
-      window.removeEventListener("scroll", handleActivity);
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
     };
-  }, [session, navigate, logout]); // Include logout in dependencies
+  }, [session, navigate, logout]);
 
   // If there's no session, don't render anything
   if (!session) {

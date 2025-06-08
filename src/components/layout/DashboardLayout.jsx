@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-vars */
+"use client";
+
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "@/hooks/useSession";
 import { useNavigate } from "react-router-dom";
-import TopNav from "./TopNav";
-import SideNav from "./SideNav";
+import TopNav from "./top-nav";
+import SideNav from "./side-nav";
 
 const DashboardLayout = ({ children }) => {
   const { session } = useSession();
@@ -20,16 +23,22 @@ const DashboardLayout = ({ children }) => {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      setIsMobile(width < 1024);
-      if (width < 1024) {
+      const mobile = width < 1024;
+      setIsMobile(mobile);
+
+      // On mobile, sidebar should be closed by default
+      // On desktop, maintain current state
+      if (mobile && !isMobile) {
         setIsSidebarOpen(false);
+      } else if (!mobile && isMobile) {
+        setIsSidebarOpen(true);
       }
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobile]);
 
   // Redirect to login if session is null
   useEffect(() => {
@@ -38,50 +47,60 @@ const DashboardLayout = ({ children }) => {
     }
   }, [session, navigate]);
 
-  // Close SideNav when clicking outside of it
+  // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         sidebarRef.current &&
         !sidebarRef.current.contains(event.target) &&
-        isMobile
+        isMobile &&
+        isSidebarOpen
       ) {
         setIsSidebarOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMobile]);
+    if (isMobile && isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobile, isSidebarOpen]);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  if (!session) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <TopNav
-        onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        isSidebarOpen={isSidebarOpen}
-      />
+      <TopNav onMenuClick={toggleSidebar} isSidebarOpen={isSidebarOpen} />
 
       {/* Main Layout */}
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex">
         {/* Sidebar */}
         <SideNav
           ref={sidebarRef}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
-          isAssessor={isAssessorOrDataEntry}
           isMobile={isMobile}
         />
 
         {/* Main Content */}
         <main
-          className={`flex-1 transition-all duration-300 ${
+          className={`flex-1 transition-all duration-300 ease-in-out ${
             isSidebarOpen && !isMobile ? "lg:ml-64" : "ml-0"
           }`}
         >
-          <div className="h-full p-6">
-            <div className="container mx-auto">
-              <div className="border mt-20 bg-white rounded-[10px] border border-[#E4E7EC] p-6">
+          <div className="pt-16 min-h-screen">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                 {children}
               </div>
             </div>

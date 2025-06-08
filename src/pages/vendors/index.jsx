@@ -1,264 +1,409 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
-import { fetchBusinesses, createBusiness } from "@/hooks/useBusiness";
+/* eslint-disable react/prop-types */
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "@/hooks/useSession";
+import { fetchBusinesses, createBusiness } from "@/hooks/useBusiness";
 import {
-  Table,
-  Input,
-  Space,
-  Tag,
-  Button,
-  Form,
-  message,
-  Tabs,
-  Tooltip,
-} from "antd";
-import { Search, Plus } from "lucide-react";
+  Search,
+  Plus,
+  MapPin,
+  Phone,
+  Clock,
+  Eye,
+  Grid,
+  List,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { message } from "antd";
 import AddBusinessModal from "@/components/modals/AddBusinessModal";
-import debounce from "lodash/debounce"; // Optional: Install lodash for debouncing
 
-export default function VendorsPage() {
-  const [businesses, setBusinesses] = useState({ businesses: [], total: 0 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchText, setSearchText] = useState("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState(""); // For debounced search
-  const [activeTab, setActiveTab] = useState("All");
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [imagePreview, setImagePreview] = useState(null);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5);
-  const [businessTypes, setBusinessTypes] = useState(["All"]);
-  const { session } = useSession();
-
-  // Debounce search input to avoid excessive API calls
-  const debouncedSetSearch = debounce((value) => {
-    setDebouncedSearchText(value);
-    setPage(1); // Reset to page 1 on search change
-  }, 500);
+// Custom hook for debouncing
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    debouncedSetSearch(searchText);
-    return () => debouncedSetSearch.cancel(); // Cleanup on unmount
-  }, [searchText]);
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-  // Fetch all business types on initial load (without filters)
-  useEffect(() => {
-    const fetchBusinessTypes = async () => {
-      try {
-        const data = await fetchBusinesses(session?.token, 1, 1000);
-        const types = [
-          "All",
-          ...new Set(
-            data.businesses
-              .map((business) => business.businessType)
-              .filter(Boolean)
-          ),
-        ];
-        setBusinessTypes(types);
-      } catch (err) {
-        console.error("Error fetching business types:", err);
-      }
+    return () => {
+      clearTimeout(handler);
     };
+  }, [value, delay]);
 
-    if (session?.token) {
-      fetchBusinessTypes();
-    }
-  }, [session?.token]);
+  return debouncedValue;
+};
 
-  // Fetch businesses based on activeTab, page, limit, and search
-  useEffect(() => {
-    const getBusinesses = async () => {
+// Custom hook for vendors data management
+const useVendorsData = () => {
+  const { session } = useSession();
+  const [state, setState] = useState({
+    businesses: [],
+    total: 0,
+    businessTypes: ["All"],
+    isLoading: true,
+    error: null,
+    isFetching: false,
+  });
+
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 12,
+    activeTab: "All",
+    search: "",
+  });
+
+  const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Single data fetching function
+  const fetchData = useCallback(
+    async (shouldFetchTypes = false) => {
+      if (!session?.token) return;
+
+      // Prevent multiple simultaneous calls
+      if (state.isFetching) return;
+
       try {
-        setIsLoading(true);
-        setError(null);
-        const businessType = activeTab === "All" ? null : activeTab;
-        const search = debouncedSearchText || null; // Use debounced search term
+        setState((prev) => ({
+          ...prev,
+          isFetching: true,
+          error: null,
+          isLoading: shouldFetchTypes ? true : prev.isLoading,
+        }));
+
+        const businessType =
+          filters.activeTab === "All" ? null : filters.activeTab;
+        const search = debouncedSearch || null;
+
+        // Fetch businesses
         const data = await fetchBusinesses(
-          session?.token,
-          page,
-          limit,
+          session.token,
+          filters.page,
+          filters.limit,
           businessType,
           search
         );
-        setBusinesses(data);
-      } catch (err) {
-        setError(err);
-        console.error("Error fetching businesses:", err);
-      } finally {
-        setIsLoading(false);
+
+        // Extract business types if needed
+        let types = state.businessTypes;
+        if (shouldFetchTypes) {
+          const uniqueTypes = [
+            ...new Set(
+              data.businesses.map((b) => b.businessType).filter(Boolean)
+            ),
+          ];
+          types = ["All", ...uniqueTypes];
+        }
+
+        setState((prev) => ({
+          ...prev,
+          businesses: data.businesses,
+          total: data.total,
+          businessTypes: types,
+          isLoading: false,
+          isFetching: false,
+        }));
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error: error.message,
+          isLoading: false,
+          isFetching: false,
+        }));
       }
+    },
+    [
+      session?.token,
+      filters,
+      debouncedSearch,
+      state.isFetching,
+      state.businessTypes,
+    ]
+  );
+
+  // Initial load - fetch data and types only once
+  useEffect(() => {
+    if (session?.token && state.isLoading && state.businessTypes.length === 1) {
+      fetchData(true);
+    }
+  }, [session?.token]);
+
+  // Subsequent loads - only fetch data when filters change
+  useEffect(() => {
+    if (session?.token && !state.isLoading && state.businessTypes.length > 1) {
+      fetchData(false);
+    }
+  }, [filters.page, filters.activeTab, debouncedSearch]);
+
+  const updateFilters = useCallback((newFilters) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  }, []);
+
+  const refreshData = useCallback(() => {
+    fetchData(true);
+  }, [fetchData]);
+
+  return {
+    ...state,
+    filters,
+    updateFilters,
+    refreshData,
+    session,
+  };
+};
+
+export default function VendorsPage() {
+  const {
+    businesses,
+    total,
+    businessTypes,
+    isLoading,
+    error,
+    isFetching,
+    filters,
+    updateFilters,
+    refreshData,
+    session,
+  } = useVendorsData();
+
+  const [viewMode, setViewMode] = useState("grid"); // grid or list
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
     };
 
-    if (session?.token) {
-      getBusinesses();
-    }
-  }, [session?.token, page, limit, activeTab, debouncedSearchText]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const columns = [
-    {
-      title: "Vendor Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text, record) => (
-        <div className="flex items-center">
-          <img
-            className="h-10 w-10 rounded-full object-cover mr-3"
-            src={record.image || "https://via.placeholder.com/40"}
-            alt={text}
-          />
-          <div>
-            <div className="font-medium">{text}</div>
-            <div className="text-gray-500 text-sm">
-              {record.openingTime} - {record.closingTime}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-      render: (address) => (
-        <Tooltip title={address} placement="top">
-          <span className="block truncate w-[200px]">{address}</span>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "Contact",
-      dataIndex: "contactNumber",
-      key: "contactNumber",
-    },
-    {
-      title: "Delivery Options",
-      dataIndex: "deliveryOptions",
-      key: "deliveryOptions",
-      render: (deliveryOptions) => (
-        <Space wrap>
-          {deliveryOptions?.map((option, index) => (
-            <Tag key={index} color="blue">
-              {option}
-            </Tag>
-          ))}
-        </Space>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "isActive",
-      key: "isActive",
-      render: (isActive) => (
-        <Tag color={isActive ? "success" : "error"}>
-          {isActive ? "Active" : "Inactive"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Link to={`/vendors/${record.id}`}>
-            <Button type="link">View</Button>
-          </Link>
-        </Space>
-      ),
-    },
-  ];
+  // Pagination calculations
+  const totalPages = Math.ceil(total / filters.limit);
+  const startItem = (filters.page - 1) * filters.limit + 1;
+  const endItem = Math.min(filters.page * filters.limit, total);
 
   const handleAddBusiness = async (values) => {
     try {
       await createBusiness(values, session?.token);
       message.success("Business created successfully");
       setIsAddModalVisible(false);
-      form.resetFields();
-      setImagePreview(null);
-      // Refresh businesses list with current page, limit, activeTab, and search
-      const businessType = activeTab === "All" ? null : activeTab;
-      const search = debouncedSearchText || null;
-      const data = await fetchBusinesses(
-        session?.token,
-        page,
-        limit,
-        businessType,
-        search
-      );
-      setBusinesses(data);
-      // Refresh business types as well
-      const typesData = await fetchBusinesses(session?.token, 1, 1000);
-      const types = [
-        "All",
-        ...new Set(
-          typesData.businesses
-            .map((business) => business.businessType)
-            .filter(Boolean)
-        ),
-      ];
-      setBusinessTypes(types);
+      refreshData();
     } catch (err) {
       message.error(err.message || "Failed to create business");
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {/* Header Skeleton */}
-        <div className="flex justify-between items-center">
-          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
-        </div>
+  const handlePageChange = (newPage) => {
+    updateFilters({ page: newPage });
+  };
 
-        {/* Search Bar Skeleton */}
-        <div className="max-w-md">
-          <div className="h-10 w-full bg-gray-200 rounded animate-pulse"></div>
-        </div>
+  const handleTabChange = (tab) => {
+    updateFilters({ activeTab: tab, page: 1 });
+  };
 
-        {/* Table Skeleton */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <th key={i} className="px-6 py-3">
-                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {[1, 2, 3, 4, 5].map((row) => (
-                  <tr key={row}>
-                    {[1, 2, 3, 4, 5, 6].map((cell) => (
-                      <td key={cell} className="px-6 py-4">
-                        <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  const handleSearchChange = (e) => {
+    updateFilters({ search: e.target.value, page: 1 });
+  };
+
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg shadow p-4 space-y-3">
+            <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Business card component
+  const BusinessCard = ({ business }) => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="aspect-video bg-gray-100 relative">
+        <img
+          src={business.image || "/placeholder.svg?height=200&width=300"}
+          alt={business.name}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute top-2 right-2">
+          <span
+            className={`px-2 py-1 text-xs rounded-full ${
+              business.isActive
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {business.isActive ? "Active" : "Inactive"}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 mb-2 truncate">
+          {business.name}
+        </h3>
+
+        <div className="space-y-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{business.address}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Phone className="w-4 h-4 flex-shrink-0" />
+            <span>{business.contactNumber}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 flex-shrink-0" />
+            <span>
+              {business.openingTime} - {business.closingTime}
+            </span>
           </div>
         </div>
 
-        {/* Pagination Skeleton */}
-        <div className="flex justify-between items-center">
-          <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+        {business.deliveryOptions && business.deliveryOptions.length > 0 && (
+          <div className="mt-3">
+            <div className="flex flex-wrap gap-1">
+              {business.deliveryOptions.slice(0, 2).map((option, index) => (
+                <span
+                  key={index}
+                  className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                >
+                  {option}
+                </span>
+              ))}
+              {business.deliveryOptions.length > 2 && (
+                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                  +{business.deliveryOptions.length - 2} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <Link
+            to={`/vendors/${business.id}`}
+            className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium"
+          >
+            <Eye className="w-4 h-4" />
+            View Details
+          </Link>
         </div>
       </div>
-    );
+    </div>
+  );
+
+  // Business list item component
+  const BusinessListItem = ({ business }) => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+      <div className="flex gap-4">
+        <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+          <img
+            src={business.image || "/placeholder.svg?height=80&width=80"}
+            alt={business.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <h3 className="font-semibold text-gray-900 truncate">
+              {business.name}
+            </h3>
+            <span
+              className={`px-2 py-1 text-xs rounded-full ml-2 ${
+                business.isActive
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {business.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+
+          <div className="mt-2 space-y-1 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{business.address}</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <span>{business.contactNumber}</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  {business.openingTime} - {business.closingTime}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between">
+            {business.deliveryOptions &&
+              business.deliveryOptions.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {business.deliveryOptions.slice(0, 3).map((option, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                    >
+                      {option}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+            <Link
+              to={`/vendors/${business.id}`}
+              className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium"
+            >
+              <Eye className="w-4 h-4" />
+              View Details
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-red-500">
-          Error loading businesses: {error.message}
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-500 mb-2">Error loading vendors</div>
+          <div className="text-gray-600 text-sm">{error}</div>
+          <button
+            onClick={refreshData}
+            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -266,77 +411,162 @@ export default function VendorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Vendors</h1>
-        <Button
-          type="primary"
-          icon={<Plus size={16} />}
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Vendors</h1>
+          <p className="text-gray-600 mt-1">Manage your business vendors</p>
+        </div>
+        <button
           onClick={() => setIsAddModalVisible(true)}
-          className="bg-gray-900 hover:bg-[#ff6600]"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
         >
-          Add Business
-        </Button>
+          <Plus className="w-4 h-4" />
+          Add Vendor
+        </button>
       </div>
 
-      {/* Search Input */}
-      <div className="max-w-md">
-        <Input
-          placeholder="Search businesses..."
-          prefix={<Search size={16} className="text-gray-400" />}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="rounded-lg"
-        />
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search vendors..."
+            value={filters.search}
+            onChange={handleSearchChange}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+          />
+        </div>
+
+        {!isMobile && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-lg ${
+                viewMode === "grid"
+                  ? "bg-orange-100 text-orange-600"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-lg ${
+                viewMode === "list"
+                  ? "bg-orange-100 text-orange-600"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Business List Table with Tabs */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => {
-            setActiveTab(key);
-            setPage(1); // Reset to page 1 when changing tabs
-          }}
-          className="mb-4"
-          items={businessTypes.map((type) => ({
-            key: type,
-            label: type || "Unknown",
-          }))}
-        />
-        <Table
-          columns={columns}
-          dataSource={businesses.businesses} // No client-side filtering
-          rowKey="id"
-          loading={isLoading}
-          pagination={{
-            current: page,
-            pageSize: limit,
-            total: businesses.total,
-            onChange: (page, pageSize) => {
-              setPage(page);
-              setLimit(pageSize);
-            },
-            showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
-            showTotal: (total, range) =>
-              `Showing ${range[0]}-${range[1]} of ${total} businesses`,
-          }}
-          className="overflow-x-auto"
-        />
+      {/* Business Type Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex overflow-x-auto scrollbar-hide">
+          {businessTypes.map((type) => (
+            <button
+              key={type}
+              onClick={() => handleTabChange(type)}
+              className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                filters.activeTab === type
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Results Info */}
+      <div className="flex items-center justify-between text-sm text-gray-600">
+        <span>
+          Showing {startItem}-{endItem} of {total} vendors
+        </span>
+        {isFetching && <span className="text-orange-600">Loading...</span>}
+      </div>
+
+      {/* Business Grid/List */}
+      {businesses.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-500 mb-2">No vendors found</div>
+          <div className="text-gray-400 text-sm">
+            Try adjusting your search or filters
+          </div>
+        </div>
+      ) : (
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+              : "space-y-4"
+          }
+        >
+          {businesses.map((business) =>
+            viewMode === "grid" ? (
+              <BusinessCard key={business.id} business={business} />
+            ) : (
+              <BusinessListItem key={business.id} business={business} />
+            )
+          )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => handlePageChange(filters.page - 1)}
+            disabled={filters.page === 1}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </button>
+
+          <div className="flex items-center gap-2">
+            {[...Array(Math.min(5, totalPages))].map((_, i) => {
+              const pageNum = Math.max(1, filters.page - 2) + i;
+              if (pageNum > totalPages) return null;
+
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-3 py-2 text-sm rounded-lg ${
+                    pageNum === filters.page
+                      ? "bg-orange-600 text-white"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => handlePageChange(filters.page + 1)}
+            disabled={filters.page === totalPages}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Add Business Modal */}
       <AddBusinessModal
         isVisible={isAddModalVisible}
-        onCancel={() => {
-          setIsAddModalVisible(false);
-          form.resetFields();
-          setImagePreview(null);
-        }}
+        onCancel={() => setIsAddModalVisible(false)}
         onFinish={handleAddBusiness}
-        form={form}
-        imagePreview={imagePreview}
-        setImagePreview={setImagePreview}
       />
     </div>
   );
