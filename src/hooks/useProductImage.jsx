@@ -2,9 +2,6 @@ import { message } from "antd";
 
 export const updateProductImage = async (productId, image, token) => {
   try {
-    // console.log("Starting product image update...");
-    // console.log("Product ID:", productId);
-    // console.log("Image type:", image instanceof File ? "File" : "URL");
 
     let response;
     if (image instanceof File) {
