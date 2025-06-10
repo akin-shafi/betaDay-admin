@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react/prop-types */
 "use client";
 
@@ -8,7 +9,7 @@ import { useSession } from "@/hooks/useSession";
 const ApiContext = createContext();
 
 export function ApiProvider({ children }) {
-  const { session } = useSession();
+  const { session, logout, updateActivity } = useSession();
   const token = session?.token;
 
   const api = axios.create({
@@ -18,10 +19,12 @@ export function ApiProvider({ children }) {
     },
   });
 
-  // Add auth token to requests
+  // Add auth token to requests and update activity
   api.interceptors.request.use((config) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      // Update last activity timestamp on API requests
+      updateActivity();
     }
     return config;
   });
@@ -32,7 +35,10 @@ export function ApiProvider({ children }) {
     (error) => {
       if (error.response?.status === 401) {
         // Handle token expiration
-        window.location.href = "/login";
+        logout();
+        return Promise.reject(
+          new Error("Session expired. Please login again.")
+        );
       }
       return Promise.reject(error);
     }

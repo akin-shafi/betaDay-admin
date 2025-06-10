@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/layout/AuthLayout";
@@ -8,6 +10,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     identifier: "help.betaday@gmail.com",
     password: "Admin@123",
@@ -30,7 +33,11 @@ export function LoginPage() {
     setMessage(null);
 
     try {
-      const result = await login(formData.identifier, formData.password);
+      const result = await login(
+        formData.identifier,
+        formData.password,
+        rememberMe
+      );
       if (result.success === true) {
         const { data } = result;
         const role = data.role;
@@ -65,7 +72,11 @@ export function LoginPage() {
       {message && (
         <div
           className={`text-md font-medium text-center ${
-            message.includes("error") ? "text-red-600" : "text-gray-600"
+            message.includes("error") ||
+            message.includes("expired") ||
+            message.includes("failed")
+              ? "text-red-600"
+              : "text-gray-600"
           }`}
         >
           {message}
@@ -144,6 +155,8 @@ export function LoginPage() {
               id="remember-me"
               name="remember-me"
               type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
               className="h-4 w-4 text-[#ff6600] focus:ring-[#ff6600] border-gray-300 rounded transition-colors duration-200"
               disabled={isLoading}
             />
@@ -151,7 +164,7 @@ export function LoginPage() {
               htmlFor="remember-me"
               className="ml-2 block text-sm text-gray-900"
             >
-              Remember me
+              Remember me for 7 days
             </label>
           </div>
 
