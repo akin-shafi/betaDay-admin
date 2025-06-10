@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 "use client";
 
 /* eslint-disable react/prop-types */
@@ -11,6 +12,7 @@ const TopNav = ({ onMenuClick, isSidebarOpen }) => {
   const { session, logout } = useSession();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(3); // Mock count
   const profileRef = useRef(null);
 
   const profilePicture = session?.user?.profilePicture;
@@ -18,6 +20,10 @@ const TopNav = ({ onMenuClick, isSidebarOpen }) => {
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  const handleNotificationClick = () => {
+    navigate("/notifications");
   };
 
   // Close profile dropdown when clicking outside
@@ -79,11 +85,17 @@ const TopNav = ({ onMenuClick, isSidebarOpen }) => {
 
           {/* Notifications */}
           <div className="relative">
-            <button className="p-2 rounded-md hover:bg-gray-100 transition-colors">
+            <button
+              onClick={handleNotificationClick}
+              className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+              title="View notifications"
+            >
               <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                0
-              </span>
+              {notificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {notificationCount > 9 ? "9+" : notificationCount}
+                </span>
+              )}
             </button>
           </div>
 

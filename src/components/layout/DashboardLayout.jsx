@@ -100,7 +100,7 @@ const DashboardLayout = ({ children }) => {
         >
           <div className="pt-16 min-h-screen">
             <div className="p-4 sm:p-6 lg:p-8">
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-2">
                 {children}
               </div>
             </div>

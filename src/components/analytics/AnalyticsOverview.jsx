@@ -1,7 +1,31 @@
-import { Alert, Spin, Table, Input, Button, message } from "antd";
-import { SearchOutlined, DownloadOutlined } from "@ant-design/icons";
+"use client";
+
+import {
+  Alert,
+  Spin,
+  Table,
+  Input,
+  Button,
+  message,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Typography,
+  Space,
+} from "antd";
+import {
+  SearchOutlined,
+  DownloadOutlined,
+  DollarOutlined,
+  ShoppingOutlined,
+  TruckOutlined,
+  ToolOutlined,
+} from "@ant-design/icons";
 import PropTypes from "prop-types";
 import { useState } from "react";
+
+const { Title, Text } = Typography;
 
 export function AnalyticsOverview({ data, loading, error }) {
   const [searchText, setSearchText] = useState("");
@@ -19,42 +43,47 @@ export function AnalyticsOverview({ data, loading, error }) {
 
   if (error) {
     return (
-      <Alert
-        message="Error"
-        description="Failed to load analytics data. Please try again later."
-        type="error"
-        showIcon
-        className="max-w-2xl mx-auto"
-      />
+      <Card>
+        <Alert
+          message="Error Loading Data"
+          description="Failed to load analytics data. Please try again later."
+          type="error"
+          showIcon
+        />
+      </Card>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-10">
+      <Card style={{ textAlign: "center", padding: "40px" }}>
         <Spin size="large" />
-      </div>
+        <div style={{ marginTop: "16px" }}>
+          <Text>Loading analytics data...</Text>
+        </div>
+      </Card>
     );
   }
 
   if (!data) {
     return (
-      <Alert
-        message="No Data"
-        description="No analytics data available."
-        type="info"
-        showIcon
-        className="max-w-2xl mx-auto"
-      />
+      <Card>
+        <Alert
+          message="No Data Available"
+          description="No analytics data available for the selected period."
+          type="info"
+          showIcon
+        />
+      </Card>
     );
   }
 
-  // Merge data from totalRevenueByBusiness, totalDeliveryFeesByBusiness, and totalServiceFeesByBusiness
+  // Merge data from different sources
   const businesses = data.totalRevenueByBusiness || [];
   const deliveryFees = data.totalDeliveryFeesByBusiness || [];
   const serviceFees = data.totalServiceFeesByBusiness || [];
 
-  // Create a unified data source
+  // Create unified data source
   const businessMap = new Map();
   businesses.forEach((item) => {
     businessMap.set(item.businessId, {
@@ -90,7 +119,6 @@ export function AnalyticsOverview({ data, loading, error }) {
     });
   });
 
-  // Add totalEarnings to tableData
   const tableData = Array.from(businessMap.values()).map((item, index) => ({
     ...item,
     key: item.businessId || index,
@@ -98,26 +126,32 @@ export function AnalyticsOverview({ data, loading, error }) {
       (item.revenue || 0) + (item.deliveryFees || 0) + (item.serviceFees || 0),
   }));
 
-  // Filter table data based on search text
+  // Filter table data
   const filteredData = tableData.filter((item) =>
     item.businessName.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Define table columns
+  // Mobile-optimized table columns
   const columns = [
     {
-      title: "Business Name",
+      title: "Business",
       dataIndex: "businessName",
       key: "businessName",
       sorter: (a, b) => a.businessName.localeCompare(b.businessName),
+      width: 150,
+      fixed: "left",
     },
     {
-      title: "Revenue (without Delivery & Service)",
+      title: "Revenue",
       dataIndex: "revenue",
       key: "revenue",
-      render: (text) => formatCurrency(text || 0),
+      render: (text) => (
+        <div>
+          <div style={{ fontWeight: "bold" }}>{formatCurrency(text || 0)}</div>
+        </div>
+      ),
       sorter: (a, b) => (a.revenue || 0) - (b.revenue || 0),
-      defaultSortOrder: "descend",
+      width: 120,
     },
     {
       title: "Orders",
@@ -125,41 +159,48 @@ export function AnalyticsOverview({ data, loading, error }) {
       key: "orders",
       render: (text) => (text || 0).toLocaleString(),
       sorter: (a, b) => (a.orders || 0) - (b.orders || 0),
+      width: 80,
     },
     {
-      title: "Avg. Order Value",
+      title: "Avg Order",
       dataIndex: "revenueAverage",
       key: "revenueAverage",
       render: (text) => formatCurrency(text || 0),
       sorter: (a, b) => (a.revenueAverage || 0) - (b.revenueAverage || 0),
+      width: 100,
     },
     {
-      title: "Delivery Fees",
+      title: "Delivery",
       dataIndex: "deliveryFees",
       key: "deliveryFees",
       render: (text) => formatCurrency(text || 0),
       sorter: (a, b) => (a.deliveryFees || 0) - (b.deliveryFees || 0),
-      defaultSortOrder: "descend",
+      width: 100,
     },
     {
-      title: "Service Fees",
+      title: "Service",
       dataIndex: "serviceFees",
       key: "serviceFees",
       render: (text) => formatCurrency(text || 0),
       sorter: (a, b) => (a.serviceFees || 0) - (b.serviceFees || 0),
-      defaultSortOrder: "descend",
+      width: 100,
     },
     {
-      title: "Total Earnings",
+      title: "Total",
       dataIndex: "totalEarnings",
       key: "totalEarnings",
-      render: (text) => formatCurrency(text || 0),
+      render: (text) => (
+        <Text strong style={{ color: "#52c41a" }}>
+          {formatCurrency(text || 0)}
+        </Text>
+      ),
       sorter: (a, b) => (a.totalEarnings || 0) - (b.totalEarnings || 0),
-      defaultSortOrder: "descend",
+      width: 120,
+      fixed: "right",
     },
   ];
 
-  // Export table data to CSV
+  // Export to CSV function
   const exportToCSV = () => {
     const headers = [
       "Business Name",
@@ -167,21 +208,17 @@ export function AnalyticsOverview({ data, loading, error }) {
       "Orders",
       "Avg. Order Value",
       "Delivery Fees",
-      "Avg. Delivery Fee",
       "Service Fees",
-      "Avg. Service Fee",
       "Total Earnings",
     ];
     const rows = tableData.map((item) => [
       `"${item.businessName}"`,
-      formatCurrency(item.revenue || 0),
+      item.revenue || 0,
       item.orders || 0,
-      formatCurrency(item.revenueAverage || 0),
-      formatCurrency(item.deliveryFees || 0),
-      formatCurrency(item.deliveryFeesAverage || 0),
-      formatCurrency(item.serviceFees || 0),
-      formatCurrency(item.serviceFeesAverage || 0),
-      formatCurrency(item.totalEarnings || 0),
+      item.revenueAverage || 0,
+      item.deliveryFees || 0,
+      item.serviceFees || 0,
+      item.totalEarnings || 0,
     ]);
 
     const csvContent = [
@@ -193,7 +230,7 @@ export function AnalyticsOverview({ data, loading, error }) {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "business_performance_metrics.csv");
+    link.setAttribute("download", "business_analytics.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -201,82 +238,124 @@ export function AnalyticsOverview({ data, loading, error }) {
   };
 
   return (
-    <div className="space-y-8 p-4">
-      {/* Key Metrics Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border-2 border-blue-500 p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Total Revenue
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(data.totalRevenue || 0)}
-          </p>
-          <p className="text-xs mt-1 text-blue-600">
-            Avg. Order: {formatCurrency(data.averageOrderValue || 0)}
-          </p>
-        </div>
-        <div className="bg-white border-2 border-green-500 p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Total Orders
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {(data.totalOrders || 0).toLocaleString()}
-          </p>
-          <p className="text-xs mt-1 text-green-600">
-            Across {data.totalBusinesses || 0} businesses
-          </p>
-        </div>
-        <div className="bg-white border-2 border-purple-500 p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Total Delivery Fees
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(data.totalDeliveryFees?.total || 0)}
-          </p>
-          <p className="text-xs mt-1 text-purple-600">
-            Avg. Fee: {formatCurrency(data.totalDeliveryFees?.average || 0)}
-          </p>
-        </div>
-        <div className="bg-white border-2 border-yellow-500 p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Total Service Fees
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(data.totalServiceFees?.total || 0)}
-          </p>
-          <p className="text-xs mt-1 text-yellow-600">
-            Avg. Fee: {formatCurrency(data.totalServiceFees?.average || 0)}
-          </p>
-        </div>
-      </div>
+    <div style={{ padding: "0" }}>
+      {/* Key Metrics Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+        <Col xs={12} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Total Revenue"
+              value={data.totalRevenue || 0}
+              formatter={(value) => formatCurrency(value)}
+              prefix={<DollarOutlined style={{ color: "#1890ff" }} />}
+              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
+            />
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Avg: {formatCurrency(data.averageOrderValue || 0)}
+            </Text>
+          </Card>
+        </Col>
 
-      {/* Consolidated Business Metrics Table */}
+        <Col xs={12} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Total Orders"
+              value={data.totalOrders || 0}
+              prefix={<ShoppingOutlined style={{ color: "#52c41a" }} />}
+              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
+            />
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              {data.totalBusinesses || 0} businesses
+            </Text>
+          </Card>
+        </Col>
+
+        <Col xs={12} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Delivery Fees"
+              value={data.totalDeliveryFees?.total || 0}
+              formatter={(value) => formatCurrency(value)}
+              prefix={<TruckOutlined style={{ color: "#722ed1" }} />}
+              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
+            />
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Avg: {formatCurrency(data.totalDeliveryFees?.average || 0)}
+            </Text>
+          </Card>
+        </Col>
+
+        <Col xs={12} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Service Fees"
+              value={data.totalServiceFees?.total || 0}
+              formatter={(value) => formatCurrency(value)}
+              prefix={<ToolOutlined style={{ color: "#fa8c16" }} />}
+              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
+            />
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Avg: {formatCurrency(data.totalServiceFees?.average || 0)}
+            </Text>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Business Performance Table */}
       {tableData.length > 0 && (
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Business Performance Metrics
-            </h3>
-            <div className="flex items-center space-x-4 non-printable">
-              <Input
-                prefix={<SearchOutlined />}
-                placeholder="Search by business name"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 200 }}
-              />
-              <Button icon={<DownloadOutlined />} onClick={exportToCSV}>
-                Export to CSV
-              </Button>
-            </div>
+        <Card>
+          <Row
+            justify="space-between"
+            align="middle"
+            gutter={[16, 16]}
+            style={{ marginBottom: "16px" }}
+          >
+            <Col xs={24} sm={12}>
+              <Title level={4} style={{ margin: 0 }}>
+                Business Performance
+              </Title>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <Input
+                  prefix={<SearchOutlined />}
+                  placeholder="Search businesses..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  size="large"
+                />
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={exportToCSV}
+                  type="primary"
+                  size="large"
+                  style={{ width: "100%" }}
+                  className="non-printable"
+                >
+                  Export CSV
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+
+          <div style={{ overflowX: "auto" }}>
+            <Table
+              dataSource={filteredData}
+              columns={columns}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} businesses`,
+                responsive: true,
+              }}
+              scroll={{ x: 800 }}
+              size="small"
+              className="mobile-table"
+            />
           </div>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            pagination={{ pageSize: 5 }}
-            className="analytics-table"
-          />
-        </div>
+        </Card>
       )}
     </div>
   );

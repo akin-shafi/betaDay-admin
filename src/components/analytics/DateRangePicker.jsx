@@ -1,134 +1,189 @@
-"use client"
+/* eslint-disable react/prop-types */
+"use client";
 
-import { useState } from "react"
-import { FiCalendar } from "react-icons/fi"
+import { useState } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  DatePicker,
+  Button,
+  Space,
+  Typography,
+  Divider,
+} from "antd";
+import { CalendarOutlined } from "@ant-design/icons";
+import moment from "moment";
+
+const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 export function DateRangePicker({ onChange }) {
-  const [startDate, setStartDate] = useState("")
-  const [endDate, setEndDate] = useState("")
+  const [dateRange, setDateRange] = useState([]);
 
-  const handleApply = () => {
-    onChange({
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
-    })
-  }
-
-  const handleReset = () => {
-    setStartDate("")
-    setEndDate("")
-    onChange({})
-  }
+  const handleDateChange = (dates) => {
+    setDateRange(dates);
+    if (dates && dates.length === 2) {
+      onChange({
+        startDate: dates[0]?.toDate(),
+        endDate: dates[1]?.toDate(),
+      });
+    } else {
+      onChange({});
+    }
+  };
 
   const handleQuickSelect = (period) => {
-    const now = new Date()
-    let start, end
+    const now = new Date();
+    let start, end;
 
     switch (period) {
       case "today":
-        start = new Date(now.setHours(0, 0, 0, 0))
-        end = new Date()
-        break
+        start = new Date(now.setHours(0, 0, 0, 0));
+        end = new Date();
+        break;
       case "yesterday":
-        start = new Date(now)
-        start.setDate(start.getDate() - 1)
-        start.setHours(0, 0, 0, 0)
-        end = new Date(now)
-        end.setDate(end.getDate() - 1)
-        end.setHours(23, 59, 59, 999)
-        break
+        start = new Date(now);
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(now);
+        end.setDate(end.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
+        break;
       case "this-week":
-        start = new Date(now)
-        start.setDate(start.getDate() - start.getDay())
-        start.setHours(0, 0, 0, 0)
-        end = new Date()
-        break
+        start = new Date(now);
+        start.setDate(start.getDate() - start.getDay());
+        start.setHours(0, 0, 0, 0);
+        end = new Date();
+        break;
       case "this-month":
-        start = new Date(now.getFullYear(), now.getMonth(), 1)
-        end = new Date()
-        break
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date();
+        break;
       case "last-month":
-        start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
-        break
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        break;
       default:
-        start = undefined
-        end = undefined
+        start = undefined;
+        end = undefined;
     }
 
     if (start && end) {
-      setStartDate(start.toISOString().split("T")[0])
-      setEndDate(end.toISOString().split("T")[0])
-      onChange({ startDate: start, endDate: end })
+      const momentStart = moment(start);
+      const momentEnd = moment(end);
+      setDateRange([momentStart, momentEnd]);
+      onChange({ startDate: start, endDate: end });
     } else {
-      handleReset()
+      setDateRange([]);
+      onChange({});
     }
-  }
+  };
+
+  const handleReset = () => {
+    setDateRange([]);
+    onChange({});
+  };
 
   return (
-    <div className="bg-white p-4 rounded-lg border mb-6">
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <FiCalendar className="text-gray-400" />
-          <span className="text-sm font-medium text-gray-700">Date Range:</span>
-        </div>
+    <Card bodyStyle={{ padding: "16px" }}>
+      <Row gutter={[16, 16]} align="middle">
+        <Col xs={24} sm={24} md={8}>
+          <Space align="center">
+            <CalendarOutlined style={{ color: "#1890ff" }} />
+            <Text strong>Date Range Filter</Text>
+          </Space>
+        </Col>
 
-        <div className="flex flex-wrap gap-3">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-3 py-2 border rounded-md text-sm"
-            placeholder="Start Date"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-3 py-2 border rounded-md text-sm"
-            placeholder="End Date"
-          />
-          <button
-            onClick={handleApply}
-            className="px-4 py-2 bg-primary-500 text-white rounded-md text-sm hover:bg-primary-600 transition-colors"
-          >
-            Apply
-          </button>
-          <button
-            onClick={handleReset}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors"
-          >
-            Reset
-          </button>
-        </div>
+        <Col xs={24} sm={24} md={16}>
+          <Row gutter={[8, 8]} justify="start">
+            <Col xs={24} sm={12} md={8}>
+              <RangePicker
+                value={dateRange}
+                onChange={handleDateChange}
+                style={{ width: "100%" }}
+                size="large"
+                placeholder={["Start Date", "End Date"]}
+              />
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                type="primary"
+                size="large"
+                style={{ width: "100%" }}
+                disabled={!dateRange || dateRange.length !== 2}
+              >
+                Apply
+              </Button>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                size="large"
+                onClick={handleReset}
+                style={{ width: "100%" }}
+              >
+                Reset
+              </Button>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
 
-        <div className="flex flex-wrap gap-2">
-          <button
+      <Divider style={{ margin: "16px 0" }} />
+
+      {/* Quick Select Buttons */}
+      <Row gutter={[8, 8]} justify="start">
+        <Col xs={24}>
+          <Text type="secondary" style={{ fontSize: "12px" }}>
+            Quick Select:
+          </Text>
+        </Col>
+        <Col xs={12} sm={6} md={3}>
+          <Button
+            size="small"
             onClick={() => handleQuickSelect("today")}
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+            style={{ width: "100%" }}
           >
             Today
-          </button>
-          <button
+          </Button>
+        </Col>
+        <Col xs={12} sm={6} md={3}>
+          <Button
+            size="small"
+            onClick={() => handleQuickSelect("yesterday")}
+            style={{ width: "100%" }}
+          >
+            Yesterday
+          </Button>
+        </Col>
+        <Col xs={12} sm={6} md={3}>
+          <Button
+            size="small"
             onClick={() => handleQuickSelect("this-week")}
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+            style={{ width: "100%" }}
           >
             This Week
-          </button>
-          <button
+          </Button>
+        </Col>
+        <Col xs={12} sm={6} md={3}>
+          <Button
+            size="small"
             onClick={() => handleQuickSelect("this-month")}
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+            style={{ width: "100%" }}
           >
             This Month
-          </button>
-          <button
+          </Button>
+        </Col>
+        <Col xs={12} sm={6} md={3}>
+          <Button
+            size="small"
             onClick={() => handleQuickSelect("last-month")}
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+            style={{ width: "100%" }}
           >
             Last Month
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+          </Button>
+        </Col>
+      </Row>
+    </Card>
+  );
 }

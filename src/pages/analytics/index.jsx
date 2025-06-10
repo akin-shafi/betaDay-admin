@@ -1,12 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useState, useEffect } from "react";
-import { message, Button, Space } from "antd";
+import { message, Button, Row, Col, Typography, Card, Spin } from "antd";
 import { ReloadOutlined, PrinterOutlined } from "@ant-design/icons";
 import { useSession } from "@/hooks/useSession";
 import { DateRangePicker } from "@/components/analytics/DateRangePicker";
 import { AnalyticsOverview } from "@/components/analytics/AnalyticsOverview";
 import { fetchAllAnalytics } from "@/services/analyticsService";
+
+const { Title, Text } = Typography;
 
 export default function AnalyticsPage() {
   const { session } = useSession();
@@ -52,30 +55,72 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="non-printable">
-        <h5 className="text-2xl font-semibold text-gray-900">Analytics</h5>
-        <p className="text-gray-600 text-sm">
-          Comprehensive analytics and insights
-        </p>
-      </div>
+    <div
+      style={{
+        // padding: "16px",
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5",
+      }}
+    >
+      {/* Header Section */}
+      <Card
+        className="non-printable"
+        style={{ marginBottom: "16px" }}
+        bodyStyle={{ padding: "16px" }}
+      >
+        <Row justify="space-between" align="middle" gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <Title level={3} style={{ margin: 0, fontSize: "20px" }}>
+              Analytics Dashboard
+            </Title>
+            <Text type="secondary" style={{ fontSize: "14px" }}>
+              Comprehensive analytics and insights
+            </Text>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Row justify="end" gutter={[8, 8]}>
+              <Col>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={handleRefresh}
+                  loading={loading}
+                  size="large"
+                  style={{ minWidth: "100px" }}
+                >
+                  Refresh
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  icon={<PrinterOutlined />}
+                  onClick={handlePrint}
+                  size="large"
+                  style={{ minWidth: "100px" }}
+                >
+                  Print
+                </Button>
+              </Col>
+            </Row>
+          </Col>
+        </Row>
+      </Card>
 
-      <div className="flex justify-between items-center non-printable">
+      {/* Date Range Picker */}
+      <div className="non-printable" style={{ marginBottom: "16px" }}>
         <DateRangePicker onChange={setDateRange} />
-        <Space>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={handleRefresh}
-            loading={loading}
-          >
-            Refresh
-          </Button>
-          <Button icon={<PrinterOutlined />} onClick={handlePrint}>
-            Print
-          </Button>
-        </Space>
       </div>
 
+      {/* Loading Overlay */}
+      {loading && (
+        <Card style={{ textAlign: "center", marginBottom: "16px" }}>
+          <Spin size="large" />
+          <div style={{ marginTop: "16px" }}>
+            <Text>Loading analytics data...</Text>
+          </div>
+        </Card>
+      )}
+
+      {/* Analytics Content */}
       <div className="printable-content">
         <AnalyticsOverview
           data={analyticsData?.dashboardData}

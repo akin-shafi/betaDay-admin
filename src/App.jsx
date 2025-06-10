@@ -21,6 +21,7 @@ import VendorDetailsPage from "./pages/vendors/[id]/index";
 
 import OrdersPageMgt from "@/pages/orders-mgt";
 import RatePageMgt from "@/pages/rate-mgt";
+import NotificationsPage from "@/pages/notifications";
 
 // Import Orders Pages
 import OrdersPage from "@/pages/orders";
@@ -188,6 +189,15 @@ function App() {
           element={
             <ProtectedRoute>
               <RatePageMgt />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />

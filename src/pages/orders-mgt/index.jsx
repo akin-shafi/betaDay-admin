@@ -3,13 +3,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { message } from "antd";
+import { message, Typography } from "antd";
 import { PerformanceOverviewComponent } from "@/components/orders/performance-overview";
 import { OrderFiltersComponent } from "@/components/orders/order-filters";
 import { OrderTable } from "@/components/orders/order-table";
 import { useSession } from "@/hooks/useSession";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import moment from "moment";
+
+const { Title, Text } = Typography;
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
@@ -45,7 +47,7 @@ export default function OrderManagement() {
       customerEmail: order.user?.email || "N/A",
       customerPhone: order.user?.phoneNumber || "N/A",
       items: order.orderItems || [],
-      finalAmount: parseFloat(order.totalAmount) || 0,
+      finalAmount: Number.parseFloat(order.totalAmount) || 0,
       paymentMethod: order.paymentMethod || "N/A",
       paymentStatus: order.paymentStatus || "N/A",
       orderStatus: order.status || "N/A",
@@ -53,9 +55,9 @@ export default function OrderManagement() {
       deliveryAddress: order.deliveryAddress || {},
       deliveryInstructions: order.deliveryInstructions || "",
       estimatedDeliveryTime: order.estimatedDeliveryTime || "",
-      totalAmount: parseFloat(order.totalAmount) || 0,
-      deliveryFee: parseFloat(order.deliveryFee) || 0,
-      serviceFee: parseFloat(order.serviceFee) || 0,
+      totalAmount: Number.parseFloat(order.totalAmount) || 0,
+      deliveryFee: Number.parseFloat(order.deliveryFee) || 0,
+      serviceFee: Number.parseFloat(order.serviceFee) || 0,
     };
   };
 
@@ -365,35 +367,36 @@ export default function OrderManagement() {
   };
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div style={{ marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0" }}>
+    <div className="space-y-4">
+      <div className="mb-4">
+        <Title level={3} className="text-xl font-semibold m-0">
           Order Management
-        </h1>
-        <p style={{ color: "#666", margin: "8px 0 0" }}>
+        </Title>
+        <Text type="secondary" className="text-sm">
           Manage and track all customer orders from one place
-        </p>
+        </Text>
       </div>
 
-      <PerformanceOverviewComponent
-        analytics={analytics}
-        loading={analyticsLoading}
-        error={error}
-        dateFilter={dateFilter}
-        setDateFilter={setDateFilter}
-        customDateRange={customDateRange}
-        setCustomDateRange={setCustomDateRange} // Added missing prop
-      />
-
-      <OrderFiltersComponent
-        filters={filters}
-        onFiltersChange={setFilters}
-        onExport={() => handleExport()}
-        onRefresh={handleRefresh}
-        totalOrders={orders.length}
-        filteredOrders={filteredOrders.length}
-      />
       <ErrorBoundary>
+        <PerformanceOverviewComponent
+          analytics={analytics}
+          loading={analyticsLoading}
+          error={error}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          customDateRange={customDateRange}
+          setCustomDateRange={setCustomDateRange}
+        />
+
+        <OrderFiltersComponent
+          filters={filters}
+          onFiltersChange={setFilters}
+          onExport={() => handleExport()}
+          onRefresh={handleRefresh}
+          totalOrders={orders.length}
+          filteredOrders={filteredOrders.length}
+        />
+
         <OrderTable
           orders={filteredOrders}
           onUpdateStatus={handleUpdateStatus}

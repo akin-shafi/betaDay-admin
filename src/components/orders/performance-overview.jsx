@@ -4,26 +4,28 @@
 "use client";
 
 import {
-  Card,
-  Row,
-  Col,
   Statistic,
   Alert,
   Spin,
   Radio,
   DatePicker,
+  Typography,
+  Space,
+  Tabs,
 } from "antd";
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
   WalletOutlined,
-  CreditCardOutlined,
   ShopOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import PropTypes from "prop-types";
-import moment from "moment";
 import { debounce } from "lodash";
+
+const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
 
 export function PerformanceOverviewComponent({
   analytics,
@@ -92,206 +94,277 @@ export function PerformanceOverviewComponent({
 
   if (error) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <Alert
-          message="Error"
-          description="Failed to load performance data. Please try again later."
-          type="error"
-          showIcon
-        />
-      </div>
+      <Alert
+        message="Error"
+        description="Failed to load performance data. Please try again later."
+        type="error"
+        showIcon
+        className="mb-4"
+      />
     );
   }
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="text-center py-8 mb-4">
         <Spin size="large" />
+        <div className="mt-4">
+          <Text>Loading analytics data...</Text>
+        </div>
       </div>
     );
   }
 
+  // Mobile date filter tabs
+  const renderMobileDateFilter = () => (
+    <div className="lg:hidden mb-4">
+      <Tabs
+        activeKey={dateFilter}
+        onChange={(key) => setDateFilter(key)}
+        size="small"
+        centered
+        items={[
+          { key: "today", label: "Today" },
+          { key: "last7Days", label: "7 Days" },
+          { key: "last3Months", label: "3 Months" },
+          { key: "custom", label: "Custom" },
+        ]}
+      />
+
+      {dateFilter === "custom" && (
+        <div className="mt-3 px-2">
+          <RangePicker
+            value={customDateRange}
+            onChange={debouncedHandleCustomRangeChange}
+            format="YYYY-MM-DD"
+            className="w-full"
+            size="middle"
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  // Desktop date filter
+  const renderDesktopDateFilter = () => (
+    <div className="hidden lg:block mb-4">
+      <div className="flex items-center justify-between">
+        <Space align="center">
+          <CalendarOutlined />
+          <Text strong>Date Range:</Text>
+          <Radio.Group
+            value={dateFilter}
+            onChange={handleDateFilterChange}
+            optionType="button"
+            buttonStyle="solid"
+          >
+            <Radio.Button value="today">Today</Radio.Button>
+            <Radio.Button value="last7Days">Last 7 Days</Radio.Button>
+            <Radio.Button value="last3Months">Last 3 Months</Radio.Button>
+            <Radio.Button value="custom">Custom Range</Radio.Button>
+          </Radio.Group>
+        </Space>
+        {dateFilter === "custom" && (
+          <RangePicker
+            value={customDateRange}
+            onChange={debouncedHandleCustomRangeChange}
+            format="YYYY-MM-DD"
+            className="w-80"
+          />
+        )}
+      </div>
+    </div>
+  );
+
   if (!analytics?.data) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <>
+        {renderMobileDateFilter()}
+        {renderDesktopDateFilter()}
         <Alert
           message="No Data"
           description="No performance data available."
           type="info"
           showIcon
+          className="mb-4"
         />
-      </div>
+      </>
     );
   }
 
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <div style={{ marginBottom: "16px" }}>
-        <Radio.Group
-          value={dateFilter}
-          onChange={handleDateFilterChange}
-          style={{ marginRight: "16px" }}
-        >
-          <Radio.Button value="today">Today</Radio.Button>
-          <Radio.Button value="last7Days">Last 7 Days</Radio.Button>
-          <Radio.Button value="last3Months">Last 3 Months</Radio.Button>
-          <Radio.Button value="custom">Custom Range</Radio.Button>
-        </Radio.Group>
-        {dateFilter === "custom" && (
-          <DatePicker.RangePicker
-            value={customDateRange}
-            onChange={debouncedHandleCustomRangeChange}
-            format="YYYY-MM-DD"
-            style={{ width: "300px" }}
-          />
-        )}
-      </div>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <Card
-            title={
-              dateFilter === "today"
-                ? "Today's Performance"
-                : dateFilter === "last7Days"
-                ? "Last 7 Days Performance"
-                : dateFilter === "last3Months"
-                ? "Last 3 Months Performance"
-                : "Custom Range Performance"
-            }
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Statistic
-                  title="Orders"
-                  value={normalizedAnalytics.todayOrders}
-                  valueStyle={{ fontSize: "24px" }}
-                />
-              </Col>
-              <Col span={12}>
-                <Statistic
-                  title="Revenue"
-                  value={normalizedAnalytics.todayRevenue}
-                  formatter={(value) => formatCurrency(value)}
-                  valueStyle={{ fontSize: "24px" }}
-                />
-              </Col>
-            </Row>
-            <div style={{ marginTop: "24px" }}>
-              <h3>
-                {dateFilter === "today"
-                  ? "Today"
-                  : dateFilter === "last7Days"
-                  ? "Last 7 Days"
-                  : dateFilter === "last3Months"
-                  ? "Last 3 Months"
-                  : "Custom Range"}
-                :
-              </h3>
-              <Row gutter={16}>
-                <Col span={8} style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      color: "#52c41a",
-                    }}
-                  >
-                    {normalizedAnalytics.completedOrders}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#666" }}>
-                    <CheckCircleOutlined /> Completed
-                  </div>
-                </Col>
-                <Col span={8} style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      color: "#faad14",
-                    }}
-                  >
-                    {normalizedAnalytics.pendingOrders}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#666" }}>
-                    <ClockCircleOutlined /> Pending
-                  </div>
-                </Col>
-                <Col span={8} style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      color: "#ff4d4f",
-                    }}
-                  >
-                    {normalizedAnalytics.cancelledOrders}
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#666" }}>
-                    <CloseCircleOutlined /> Cancelled
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          </Card>
-        </Col>
+    <>
+      {renderMobileDateFilter()}
+      {renderDesktopDateFilter()}
 
-        <Col xs={24} lg={12}>
-          <Card title="Order Status Overview">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Statistic
-                  title="Payment Methods"
-                  value={`${normalizedAnalytics.ordersByPaymentMethod.wallet} Wallet, ${normalizedAnalytics.ordersByPaymentMethod.paystack} Paystack, ${normalizedAnalytics.ordersByPaymentMethod.opay} Opay, ${normalizedAnalytics.ordersByPaymentMethod.cash} Cash`}
-                  prefix={<WalletOutlined />}
-                  valueStyle={{ fontSize: "14px" }}
-                />
-              </Col>
-              <Col span={12}>
-                <Statistic
-                  title="Payment Status"
-                  value={`${normalizedAnalytics.ordersByPaymentStatus.paid} Paid, ${normalizedAnalytics.ordersByPaymentStatus.pending} Pending, ${normalizedAnalytics.ordersByPaymentStatus.failed} Failed, ${normalizedAnalytics.ordersByPaymentStatus.refunded} Refunded`}
-                  prefix={<CreditCardOutlined />}
-                  valueStyle={{ fontSize: "14px" }}
-                />
-              </Col>
-            </Row>
-            <div style={{ marginTop: "24px" }}>
-              <h3>Top Businesses:</h3>
-              {normalizedAnalytics.topBusinesses.length > 0 ? (
-                normalizedAnalytics.topBusinesses.map((business) => (
-                  <div
-                    key={business.businessId}
-                    style={{ marginBottom: "8px" }}
-                  >
-                    <Row>
-                      <Col span={12}>
-                        <div style={{ fontSize: "14px", fontWeight: "bold" }}>
-                          <ShopOutlined /> {business.businessName}
-                        </div>
-                      </Col>
-                      <Col span={6}>
-                        <div style={{ fontSize: "14px" }}>
-                          {business.orderCount} Orders
-                        </div>
-                      </Col>
-                      <Col span={6}>
-                        <div style={{ fontSize: "14px" }}>
-                          {formatCurrency(business.revenue)}
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                ))
-              ) : (
-                <div style={{ fontSize: "14px", color: "#666" }}>
-                  No top businesses available
-                </div>
-              )}
+      {/* Key Metrics Cards - Mobile Optimized */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+        <div className="col-span-1 lg:col-span-1 bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <Statistic
+            title={
+              <Text className="text-xs font-medium text-gray-600">Orders</Text>
+            }
+            value={normalizedAnalytics.todayOrders}
+            valueStyle={{
+              color: "#1890ff",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+            prefix={<ShopOutlined />}
+          />
+        </div>
+
+        <div className="col-span-1 lg:col-span-1 bg-green-50 p-3 rounded-lg border border-green-200">
+          <Statistic
+            title={
+              <Text className="text-xs font-medium text-gray-600">Revenue</Text>
+            }
+            value={normalizedAnalytics.todayRevenue}
+            formatter={(value) => formatCurrency(value)}
+            valueStyle={{
+              color: "#52c41a",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+            prefix={<WalletOutlined />}
+          />
+        </div>
+
+        <div className="col-span-1 bg-green-50 p-3 rounded-lg border border-green-200">
+          <Statistic
+            title={
+              <Text className="text-xs font-medium text-gray-600">
+                Completed
+              </Text>
+            }
+            value={normalizedAnalytics.completedOrders}
+            valueStyle={{
+              color: "#52c41a",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+            prefix={<CheckCircleOutlined />}
+          />
+        </div>
+
+        <div className="col-span-1 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+          <Statistic
+            title={
+              <Text className="text-xs font-medium text-gray-600">Pending</Text>
+            }
+            value={normalizedAnalytics.pendingOrders}
+            valueStyle={{
+              color: "#faad14",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+            prefix={<ClockCircleOutlined />}
+          />
+        </div>
+
+        <div className="col-span-2 lg:col-span-1 bg-red-50 p-3 rounded-lg border border-red-200">
+          <Statistic
+            title={
+              <Text className="text-xs font-medium text-gray-600">
+                Cancelled
+              </Text>
+            }
+            value={normalizedAnalytics.cancelledOrders}
+            valueStyle={{
+              color: "#ff4d4f",
+              fontSize: "18px",
+              fontWeight: "bold",
+            }}
+            prefix={<CloseCircleOutlined />}
+          />
+        </div>
+      </div>
+
+      {/* Payment Methods & Top Businesses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <Text strong className="block mb-3">
+            Payment Methods
+          </Text>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Statistic
+                title="Wallet"
+                value={normalizedAnalytics.ordersByPaymentMethod.wallet || 0}
+                valueStyle={{ fontSize: "14px" }}
+              />
             </div>
-          </Card>
-        </Col>
-      </Row>
-    </div>
+            <div>
+              <Statistic
+                title="Cash"
+                value={normalizedAnalytics.ordersByPaymentMethod.cash || 0}
+                valueStyle={{ fontSize: "14px" }}
+              />
+            </div>
+            <div>
+              <Statistic
+                title="Paystack"
+                value={
+                  (normalizedAnalytics.ordersByPaymentMethod.paystack_card ||
+                    0) +
+                  (normalizedAnalytics.ordersByPaymentMethod.paystack_bank ||
+                    0) +
+                  (normalizedAnalytics.ordersByPaymentMethod.paystack_ussd || 0)
+                }
+                valueStyle={{ fontSize: "14px" }}
+              />
+            </div>
+            <div>
+              <Statistic
+                title="Opay"
+                value={
+                  (normalizedAnalytics.ordersByPaymentMethod.opay_card || 0) +
+                  (normalizedAnalytics.ordersByPaymentMethod.opay_bank || 0) +
+                  (normalizedAnalytics.ordersByPaymentMethod.opay_wallet || 0) +
+                  (normalizedAnalytics.ordersByPaymentMethod.opay_ussd || 0)
+                }
+                valueStyle={{ fontSize: "14px" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <Text strong className="block mb-3">
+            Top Businesses
+          </Text>
+          {normalizedAnalytics.topBusinesses.length > 0 ? (
+            <div className="space-y-2">
+              {normalizedAnalytics.topBusinesses
+                .slice(0, 3)
+                .map((business, index) => (
+                  <div
+                    key={business.businessId || index}
+                    className="flex justify-between items-center"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <ShopOutlined />
+                      <Text className="text-sm truncate max-w-32">
+                        {business.businessName}
+                      </Text>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">
+                        {business.orderCount} orders
+                      </div>
+                      <Text strong className="text-sm">
+                        {formatCurrency(business.revenue)}
+                      </Text>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <Text type="secondary">No top businesses available</Text>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 

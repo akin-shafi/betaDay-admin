@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import {
   FiDollarSign,
@@ -19,28 +21,28 @@ export function TransactionsSection() {
       title: "Total Revenue",
       amount: "₦18.7M",
       trend: "+23% from last week",
-      icon: <FiDollarSign className="text-2xl text-green-600" />,
+      icon: <FiDollarSign className="text-xl text-green-600" />,
       bgColor: "bg-green-50",
     },
     {
       title: "Vendor Payouts",
       amount: "₦12.4M",
       trend: "85% of revenue",
-      icon: <FiArrowUpRight className="text-2xl text-orange-600" />,
+      icon: <FiArrowUpRight className="text-xl text-orange-600" />,
       bgColor: "bg-orange-50",
     },
     {
       title: "Platform Fees",
       amount: "₦2.8M",
       trend: "15% of revenue",
-      icon: <FiArrowDownLeft className="text-2xl text-blue-600" />,
+      icon: <FiArrowDownLeft className="text-xl text-blue-600" />,
       bgColor: "bg-blue-50",
     },
     {
       title: "Pending Settlements",
       amount: "₦950K",
       trend: "Processing time: 24hrs",
-      icon: <FiRefreshCw className="text-2xl text-yellow-600" />,
+      icon: <FiRefreshCw className="text-xl text-yellow-600" />,
       bgColor: "bg-yellow-50",
     },
   ];
@@ -109,16 +111,18 @@ export function TransactionsSection() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">
+    <div className="space-y-4">
+      {/* Header and Filters */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h2 className="text-lg font-semibold text-gray-900">
           Transactions Overview
         </h2>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border">
+
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-1 bg-white px-2 py-1.5 rounded-lg border text-xs">
             <FiCalendar className="text-gray-500" />
             <select
-              className="border-none text-sm focus:outline-none"
+              className="border-none focus:outline-none bg-transparent"
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
             >
@@ -129,10 +133,10 @@ export function TransactionsSection() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border">
+          <div className="flex items-center gap-1 bg-white px-2 py-1.5 rounded-lg border text-xs">
             <FiFilter className="text-gray-500" />
             <select
-              className="border-none text-sm focus:outline-none"
+              className="border-none focus:outline-none bg-transparent"
               value={transactionType}
               onChange={(e) => setTransactionType(e.target.value)}
             >
@@ -143,10 +147,10 @@ export function TransactionsSection() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border">
+          <div className="flex items-center gap-1 bg-white px-2 py-1.5 rounded-lg border text-xs">
             <FiCreditCard className="text-gray-500" />
             <select
-              className="border-none text-sm focus:outline-none"
+              className="border-none focus:outline-none bg-transparent"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
@@ -160,19 +164,20 @@ export function TransactionsSection() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-4">
+      {/* Transaction Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {transactionStats.map((stat, index) => (
           <div
             key={index}
-            className={`${stat.bgColor} p-4 rounded-xl cursor-pointer hover:shadow-lg transition-all`}
+            className={`${stat.bgColor} p-3 rounded-xl cursor-pointer hover:shadow-md transition-all`}
           >
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-600 text-sm">{stat.title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                <p className="text-gray-600 text-xs">{stat.title}</p>
+                <h3 className="text-lg font-bold text-gray-900 mt-1">
                   {stat.amount}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">{stat.trend}</p>
+                <p className="text-xs text-gray-500 mt-1">{stat.trend}</p>
               </div>
               {stat.icon}
             </div>
@@ -180,26 +185,29 @@ export function TransactionsSection() {
         ))}
       </div>
 
-      <div className="grid md:grid-cols-4 gap-4">
+      {/* Payment Methods */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {paymentMethods.map((method, index) => (
           <div
             key={index}
-            className="bg-white p-4 rounded-xl border hover:shadow-lg transition-all"
+            className="bg-white p-3 rounded-xl border hover:shadow-md transition-all"
           >
-            <h4 className="font-medium text-gray-900">{method.method}</h4>
-            <div className="mt-4 space-y-2">
+            <h4 className="font-medium text-sm text-gray-900">
+              {method.method}
+            </h4>
+            <div className="mt-3 space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Transactions</span>
-                <span className="text-sm font-medium">{method.count}</span>
+                <span className="text-xs text-gray-600">Transactions</span>
+                <span className="text-xs font-medium">{method.count}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Volume</span>
-                <span className="text-sm font-medium">{method.volume}</span>
+                <span className="text-xs text-gray-600">Volume</span>
+                <span className="text-xs font-medium">{method.volume}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Growth</span>
+                <span className="text-xs text-gray-600">Growth</span>
                 <span
-                  className={`text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     method.trend.startsWith("+")
                       ? "text-green-600"
                       : "text-red-600"
@@ -213,21 +221,58 @@ export function TransactionsSection() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border">
-        <div className="p-4 border-b">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Recent Transactions</h3>
-            <button className="text-[#ff6600] text-sm hover:underline">
-              View All Transactions
-            </button>
+      {/* Recent Transactions */}
+      <div className="bg-white rounded-xl border overflow-hidden">
+        <div className="p-3 border-b flex justify-between items-center">
+          <h3 className="text-base font-semibold">Recent Transactions</h3>
+          <button className="text-[#ff6600] text-xs hover:underline">
+            View All
+          </button>
+        </div>
+
+        {/* Mobile View - Cards */}
+        <div className="lg:hidden">
+          <div className="divide-y">
+            {recentTransactions.map((transaction, index) => (
+              <div key={index} className="p-3 hover:bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-medium">{transaction.id}</p>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-gray-100">
+                        {transaction.type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {transaction.vendor}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-medium">{transaction.amount}</p>
+                    <p className="text-xs text-gray-600">
+                      {transaction.status}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-2 border-t text-xs">
+                  <div className="text-gray-500">
+                    {transaction.paymentMethod}
+                  </div>
+                  <div className="text-gray-500">{transaction.time}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="p-4">
-          <div className="space-y-4">
+
+        {/* Desktop View - Cards with more details */}
+        <div className="hidden lg:block p-3">
+          <div className="space-y-3">
             {recentTransactions.map((transaction, index) => (
               <div
                 key={index}
-                className="p-4 hover:bg-gray-50 rounded-lg cursor-pointer border"
+                className="p-3 hover:bg-gray-50 rounded-lg border"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
