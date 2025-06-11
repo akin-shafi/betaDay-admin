@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { Modal, Form, Input, InputNumber, Select, message } from "antd";
@@ -16,7 +18,7 @@ export default function AddSingleProductModal({
 }) {
   const [productCategories, setProductCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false); // Add submitting state
+  const [submitting, setSubmitting] = useState(false);
   const { session } = useSession();
 
   // Fetch product categories when the modal is opened
@@ -67,15 +69,19 @@ export default function AddSingleProductModal({
       onOk={() => form.submit()}
       okText="Create"
       cancelText="Cancel"
+      width={window.innerWidth < 768 ? "95%" : 600}
       okButtonProps={{
-        className: "bg-gray-900 hover:bg-[#ff6600] !text-base md:!text-sm",
-        disabled: submitting, // Disable OK button when submitting
-        loading: submitting, // Show loading state
+        className: "bg-gray-900 hover:bg-[#ff6600] text-base",
+        disabled: submitting,
+        loading: submitting,
+        style: { fontSize: "16px" },
       }}
       cancelButtonProps={{
-        className: "!text-base md:!text-sm",
-        disabled: submitting, // Disable Cancel button when submitting
+        className: "text-base",
+        disabled: submitting,
+        style: { fontSize: "16px" },
       }}
+      className="mobile-optimized-modal"
     >
       <Form
         form={form}
@@ -88,7 +94,11 @@ export default function AddSingleProductModal({
         {/* Product Name & Price side by side */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
-            label="Product Name"
+            label={
+              <span className="text-sm font-medium text-gray-700">
+                Product Name
+              </span>
+            }
             name="name"
             rules={[
               { required: true, message: "Please enter the product name" },
@@ -96,14 +106,20 @@ export default function AddSingleProductModal({
           >
             <Input
               placeholder="Enter product name"
-              className="!text-base md:!text-sm"
-              style={{ fontSize: "16px" }}
+              className="text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              style={{
+                fontSize: "16px",
+                padding: "8px 12px",
+                height: "auto",
+              }}
               disabled={submitting}
             />
           </Form.Item>
 
           <Form.Item
-            label="Price"
+            label={
+              <span className="text-sm font-medium text-gray-700">Price</span>
+            }
             name="price"
             rules={[
               { required: true, message: "Please enter the product price" },
@@ -112,8 +128,13 @@ export default function AddSingleProductModal({
             <InputNumber
               min={0}
               step={0.01}
-              className="w-full !text-base md:!text-sm"
-              style={{ fontSize: "16px" }}
+              className="w-full text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              style={{
+                fontSize: "16px",
+                padding: "8px 12px",
+                height: "auto",
+              }}
+              controls={false}
               disabled={submitting}
               formatter={(value) => {
                 const currencySymbol =
@@ -140,7 +161,11 @@ export default function AddSingleProductModal({
         </div>
 
         <Form.Item
-          label="Categories"
+          label={
+            <span className="text-sm font-medium text-gray-700">
+              Categories
+            </span>
+          }
           name="categories"
           rules={[
             {
@@ -159,8 +184,13 @@ export default function AddSingleProductModal({
             }))}
             showSearch
             optionFilterProp="label"
-            className="!text-base md:!text-sm"
-            style={{ fontSize: "16px" }}
+            className="text-base mobile-select"
+            style={{
+              fontSize: "16px",
+            }}
+            dropdownStyle={{
+              fontSize: "16px",
+            }}
             disabled={submitting}
             onChange={(value) => {
               form.setFieldsValue({ categories: value });
@@ -168,12 +198,22 @@ export default function AddSingleProductModal({
           />
         </Form.Item>
 
-        <Form.Item label="Description" name="description">
+        <Form.Item
+          label={
+            <span className="text-sm font-medium text-gray-700">
+              Description
+            </span>
+          }
+          name="description"
+        >
           <TextArea
             placeholder="Enter product description"
             rows={4}
-            className="!text-base md:!text-sm"
-            style={{ fontSize: "16px" }}
+            className="text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 resize-none"
+            style={{
+              fontSize: "16px",
+              padding: "8px 12px",
+            }}
             disabled={submitting}
           />
         </Form.Item>

@@ -1,3 +1,53 @@
 .bg-smokewhite{
     background-color: whitesmoke;
 }
+
+.mobile-optimized-modal .ant-input,
+.mobile-optimized-modal .ant-input-number,
+.mobile-optimized-modal .ant-select-selector,
+.mobile-optimized-modal .ant-input-number-input {
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    border-color: #d1d5db !important;
+}
+
+.mobile-optimized-modal .ant-input:focus,
+.mobile-optimized-modal .ant-input-number:focus,
+.mobile-optimized-modal .ant-select-focused .ant-select-selector {
+    border-color: #f97316 !important;
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important;
+}
+
+.mobile-optimized-modal .ant-select-selection-item {
+    font-size: 16px !important;
+}
+
+.mobile-optimized-modal .ant-select-selection-placeholder {
+    font-size: 16px !important;
+}
+
+.mobile-optimized-modal .ant-input-number-handler-wrap {
+    display: none !important;
+}
+
+.mobile-optimized-modal .ant-form-item-label > label {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+}
+
+@media (max-width: 768px) {
+    .mobile-optimized-modal .ant-modal-content {
+    margin: 0 !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    }
+    
+    .mobile-optimized-modal .ant-modal-body {
+    max-height: calc(100vh - 120px) !important;
+    overflow-y: auto !important;
+    }
+}
+
+

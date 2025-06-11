@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { Modal, Form, Input, InputNumber, Button, Select, message } from "antd";
@@ -58,6 +60,7 @@ export default function AddMultipleProductsModal({
       setSubmitting(false);
     }
   };
+
   return (
     <Modal
       title="Add Multiple Products"
@@ -66,15 +69,19 @@ export default function AddMultipleProductsModal({
       onOk={() => form.submit()}
       okText="Create"
       cancelText="Cancel"
+      width={window.innerWidth < 768 ? "95%" : 800}
       okButtonProps={{
-        className: "bg-gray-900 hover:bg-[#ff6600] !text-base md:!text-sm",
+        className: "bg-gray-900 hover:bg-[#ff6600] text-base",
         disabled: submitting,
         loading: submitting,
+        style: { fontSize: "16px" },
       }}
       cancelButtonProps={{
-        className: "!text-base md:!text-sm",
+        className: "text-base",
         disabled: submitting,
+        style: { fontSize: "16px" },
       }}
+      className="mobile-optimized-modal"
     >
       <Form
         form={form}
@@ -88,12 +95,25 @@ export default function AddMultipleProductsModal({
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <div key={key} className="border p-4 mb-4 rounded">
+                <div
+                  key={key}
+                  className="border border-gray-200 p-4 mb-4 rounded-lg bg-gray-50"
+                >
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-gray-700">
+                      Product {name + 1}
+                    </h4>
+                  </div>
+
                   {/* Two-column grid for Product Name and Price */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                       {...restField}
-                      label="Product Name"
+                      label={
+                        <span className="text-sm font-medium text-gray-700">
+                          Product Name
+                        </span>
+                      }
                       name={[name, "name"]}
                       rules={[
                         {
@@ -104,13 +124,21 @@ export default function AddMultipleProductsModal({
                     >
                       <Input
                         placeholder="Enter product name"
-                        className="!text-base md:!text-sm"
-                        style={{ fontSize: "16px" }}
+                        className="text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        style={{
+                          fontSize: "16px",
+                          padding: "8px 12px",
+                          height: "auto",
+                        }}
                       />
                     </Form.Item>
                     <Form.Item
                       {...restField}
-                      label="Price"
+                      label={
+                        <span className="text-sm font-medium text-gray-700">
+                          Price
+                        </span>
+                      }
                       name={[name, "price"]}
                       rules={[
                         {
@@ -122,8 +150,13 @@ export default function AddMultipleProductsModal({
                       <InputNumber
                         min={0}
                         step={0.01}
-                        className="w-full !text-base md:!text-sm"
-                        style={{ fontSize: "16px" }}
+                        className="w-full text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        style={{
+                          fontSize: "16px",
+                          padding: "8px 12px",
+                          height: "auto",
+                        }}
+                        controls={false}
                         formatter={(value) => {
                           const currencySymbol =
                             CURRENCY_OPTIONS.find(
@@ -148,10 +181,14 @@ export default function AddMultipleProductsModal({
                     </Form.Item>
                   </div>
 
-                  {/* Remaining Fields */}
+                  {/* Categories Field */}
                   <Form.Item
                     {...restField}
-                    label="Categories"
+                    label={
+                      <span className="text-sm font-medium text-gray-700">
+                        Categories
+                      </span>
+                    }
                     name={[name, "categories"]}
                     rules={[
                       {
@@ -170,8 +207,13 @@ export default function AddMultipleProductsModal({
                       }))}
                       showSearch
                       optionFilterProp="label"
-                      className="!text-base md:!text-sm"
-                      style={{ fontSize: "16px" }}
+                      className="text-base mobile-select"
+                      style={{
+                        fontSize: "16px",
+                      }}
+                      dropdownStyle={{
+                        fontSize: "16px",
+                      }}
                       onChange={(value) => {
                         form.setFieldsValue({
                           products: {
@@ -182,38 +224,60 @@ export default function AddMultipleProductsModal({
                     />
                   </Form.Item>
 
-                  <Form.Item label="Description" name="description">
+                  {/* Description Field */}
+                  <Form.Item
+                    {...restField}
+                    label={
+                      <span className="text-sm font-medium text-gray-700">
+                        Description
+                      </span>
+                    }
+                    name={[name, "description"]}
+                  >
                     <TextArea
                       placeholder="Enter product description"
-                      rows={2}
-                      className="!text-base md:!text-sm"
-                      style={{ fontSize: "16px" }}
+                      rows={3}
+                      className="text-base border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 resize-none"
+                      style={{
+                        fontSize: "16px",
+                        padding: "8px 12px",
+                      }}
                       disabled={submitting}
                     />
                   </Form.Item>
 
+                  {/* Remove Product Button */}
                   {fields.length > 1 && (
-                    <Button
-                      type="link"
-                      icon={<MinusCircle size={16} />}
-                      onClick={() => remove(name)}
-                      className="text-red-500"
-                      disabled={submitting}
-                      style={{ fontSize: "16px" }}
-                    >
-                      Remove Product
-                    </Button>
+                    <div className="flex justify-end">
+                      <Button
+                        type="link"
+                        icon={<MinusCircle size={16} />}
+                        onClick={() => remove(name)}
+                        className="text-red-500 hover:text-red-600 text-base p-0 h-auto"
+                        disabled={submitting}
+                        style={{ fontSize: "16px" }}
+                      >
+                        Remove Product
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}
 
+              {/* Add Another Product Button */}
               <Button
                 type="dashed"
                 onClick={() => add()}
                 block
                 icon={<Plus size={16} />}
-                className="mt-2 !text-base md:!text-sm"
-                style={{ fontSize: "16px" }}
+                className="mt-4 text-base border-gray-300 hover:border-orange-500 hover:text-orange-500 rounded-lg"
+                style={{
+                  fontSize: "16px",
+                  height: "48px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
                 disabled={submitting}
               >
                 Add Another Product

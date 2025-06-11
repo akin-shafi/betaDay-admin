@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
@@ -262,7 +264,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
       open={isVisible}
       onCancel={onCancel}
       footer={null}
-      width={800}
+      width={window.innerWidth < 768 ? "95%" : 800}
     >
       <form onSubmit={handleSubmit}>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -281,7 +283,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. Ola Mummy"
               required
             />
@@ -299,7 +301,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="businessType"
               value={formData.businessType}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none appearance-none bg-white"
               disabled={loading}
               required
             >
@@ -347,7 +349,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               value={formData.description}
               onChange={handleInputChange}
               rows={4}
-              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none"
               placeholder="Brief description of your business"
               required
             />
@@ -366,7 +368,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="contactNumber"
               value={formData.contactNumber}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. 08145380866"
               required
             />
@@ -385,7 +387,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="website"
               value={formData.website}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. https://example.com"
             />
           </div>
@@ -404,7 +406,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               value={formData.address}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. 123 Main Street"
               required
             />
@@ -456,7 +458,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="city"
               value={formData.city}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -474,7 +476,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="state"
               value={formData.state}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -492,7 +494,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="localGovernment"
               value={formData.localGovernment}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="Local Government Area"
             />
           </div>
@@ -510,7 +512,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="openingTime"
               value={formData.openingTime}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -528,7 +530,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="closingTime"
               value={formData.closingTime}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -546,7 +548,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="businessDays"
               value={formData.businessDays}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. Mon - Fri"
             />
           </div>
@@ -563,7 +565,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="deliveryOptions"
               value={formData.deliveryOptions[0] || ""}
               onChange={handleDeliveryOptionsChange}
-              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none appearance-none bg-white"
               required
             >
               <option value="">Select Delivery Option</option>
@@ -586,7 +588,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="accountNumber"
               value={formData.accountNumber}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. 1234567890"
             />
           </div>
@@ -604,7 +606,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="bankName"
               value={formData.bankName}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. First Bank"
             />
           </div>
@@ -622,7 +624,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="accountName"
               value={formData.accountName}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full px-3 py-2 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none"
               placeholder="e.g. John Doe Enterprises"
             />
           </div>
@@ -640,7 +642,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
               name="isActive"
               checked={formData.isActive}
               onChange={handleInputChange}
-              className="h-4 w-4 text-[#FF6B00] border-gray-300 rounded focus:ring-[#FF6B00]/20"
+              className="h-5 w-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
             />
             <span className="ml-2 text-sm text-gray-700">
               {formData.isActive ? "Active" : "Inactive"}
