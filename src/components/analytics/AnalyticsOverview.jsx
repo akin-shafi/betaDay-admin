@@ -1,31 +1,15 @@
 "use client";
 
-import {
-  Alert,
-  Spin,
-  Table,
-  Input,
-  Button,
-  message,
-  Card,
-  Row,
-  Col,
-  Statistic,
-  Typography,
-  Space,
-} from "antd";
-import {
-  SearchOutlined,
-  DownloadOutlined,
-  DollarOutlined,
-  ShoppingOutlined,
-  TruckOutlined,
-  ToolOutlined,
-} from "@ant-design/icons";
-import PropTypes from "prop-types";
 import { useState } from "react";
-
-const { Title, Text } = Typography;
+import {
+  Search,
+  Download,
+  ShoppingBag,
+  DollarSign,
+  Truck,
+  Settings,
+} from "lucide-react";
+import PropTypes from "prop-types";
 
 export function AnalyticsOverview({ data, loading, error }) {
   const [searchText, setSearchText] = useState("");
@@ -43,47 +27,78 @@ export function AnalyticsOverview({ data, loading, error }) {
 
   if (error) {
     return (
-      <Card>
-        <Alert
-          message="Error Loading Data"
-          description="Failed to load analytics data. Please try again later."
-          type="error"
-          showIcon
-        />
-      </Card>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2">
+          <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">!</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-red-800">
+              Error Loading Data
+            </h3>
+            <p className="text-sm text-red-600 mt-1">
+              Failed to load analytics data. Please try again later.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (loading) {
     return (
-      <Card style={{ textAlign: "center", padding: "40px" }}>
-        <Spin size="large" />
-        <div style={{ marginTop: "16px" }}>
-          <Text>Loading analytics data...</Text>
+      <div className="space-y-4">
+        {/* Loading skeleton for metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse"
+            >
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/2 mb-1"></div>
+              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          ))}
         </div>
-      </Card>
+        {/* Loading skeleton for table */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-4 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!data) {
     return (
-      <Card>
-        <Alert
-          message="No Data Available"
-          description="No analytics data available for the selected period."
-          type="info"
-          showIcon
-        />
-      </Card>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2">
+          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">i</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-blue-800">
+              No Data Available
+            </h3>
+            <p className="text-sm text-blue-600 mt-1">
+              No analytics data available for the selected period.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // Merge data from different sources
+  // Process business data
   const businesses = data.totalRevenueByBusiness || [];
   const deliveryFees = data.totalDeliveryFeesByBusiness || [];
   const serviceFees = data.totalServiceFeesByBusiness || [];
 
-  // Create unified data source
   const businessMap = new Map();
   businesses.forEach((item) => {
     businessMap.set(item.businessId, {
@@ -126,81 +141,10 @@ export function AnalyticsOverview({ data, loading, error }) {
       (item.revenue || 0) + (item.deliveryFees || 0) + (item.serviceFees || 0),
   }));
 
-  // Filter table data
   const filteredData = tableData.filter((item) =>
     item.businessName.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Mobile-optimized table columns
-  const columns = [
-    {
-      title: "Business",
-      dataIndex: "businessName",
-      key: "businessName",
-      sorter: (a, b) => a.businessName.localeCompare(b.businessName),
-      width: 150,
-      fixed: "left",
-    },
-    {
-      title: "Revenue",
-      dataIndex: "revenue",
-      key: "revenue",
-      render: (text) => (
-        <div>
-          <div style={{ fontWeight: "bold" }}>{formatCurrency(text || 0)}</div>
-        </div>
-      ),
-      sorter: (a, b) => (a.revenue || 0) - (b.revenue || 0),
-      width: 120,
-    },
-    {
-      title: "Orders",
-      dataIndex: "orders",
-      key: "orders",
-      render: (text) => (text || 0).toLocaleString(),
-      sorter: (a, b) => (a.orders || 0) - (b.orders || 0),
-      width: 80,
-    },
-    {
-      title: "Avg Order",
-      dataIndex: "revenueAverage",
-      key: "revenueAverage",
-      render: (text) => formatCurrency(text || 0),
-      sorter: (a, b) => (a.revenueAverage || 0) - (b.revenueAverage || 0),
-      width: 100,
-    },
-    {
-      title: "Delivery",
-      dataIndex: "deliveryFees",
-      key: "deliveryFees",
-      render: (text) => formatCurrency(text || 0),
-      sorter: (a, b) => (a.deliveryFees || 0) - (b.deliveryFees || 0),
-      width: 100,
-    },
-    {
-      title: "Service",
-      dataIndex: "serviceFees",
-      key: "serviceFees",
-      render: (text) => formatCurrency(text || 0),
-      sorter: (a, b) => (a.serviceFees || 0) - (b.serviceFees || 0),
-      width: 100,
-    },
-    {
-      title: "Total",
-      dataIndex: "totalEarnings",
-      key: "totalEarnings",
-      render: (text) => (
-        <Text strong style={{ color: "#52c41a" }}>
-          {formatCurrency(text || 0)}
-        </Text>
-      ),
-      sorter: (a, b) => (a.totalEarnings || 0) - (b.totalEarnings || 0),
-      width: 120,
-      fixed: "right",
-    },
-  ];
-
-  // Export to CSV function
   const exportToCSV = () => {
     const headers = [
       "Business Name",
@@ -225,7 +169,6 @@ export function AnalyticsOverview({ data, loading, error }) {
       headers.join(","),
       ...rows.map((row) => row.join(",")),
     ].join("\n");
-
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -234,128 +177,230 @@ export function AnalyticsOverview({ data, loading, error }) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    message.success("CSV exported successfully");
   };
 
   return (
-    <div style={{ padding: "0" }}>
+    <div className="space-y-4">
       {/* Key Metrics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-        <Col xs={12} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Revenue"
-              value={data.totalRevenue || 0}
-              formatter={(value) => formatCurrency(value)}
-              prefix={<DollarOutlined style={{ color: "#1890ff" }} />}
-              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
-            />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Avg: {formatCurrency(data.averageOrderValue || 0)}
-            </Text>
-          </Card>
-        </Col>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Total Revenue
+              </p>
+              <p className="text-lg lg:text-xl font-bold text-gray-900 mt-1">
+                {formatCurrency(data.totalRevenue || 0)}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Avg: {formatCurrency(data.averageOrderValue || 0)}
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-blue-600" />
+            </div>
+          </div>
+        </div>
 
-        <Col xs={12} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Total Orders"
-              value={data.totalOrders || 0}
-              prefix={<ShoppingOutlined style={{ color: "#52c41a" }} />}
-              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
-            />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              {data.totalBusinesses || 0} businesses
-            </Text>
-          </Card>
-        </Col>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Total Orders
+              </p>
+              <p className="text-lg lg:text-xl font-bold text-gray-900 mt-1">
+                {(data.totalOrders || 0).toLocaleString()}
+              </p>
+              <p className="text-xs text-green-600 mt-1">
+                {data.totalBusinesses || 0} businesses
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-green-600" />
+            </div>
+          </div>
+        </div>
 
-        <Col xs={12} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Delivery Fees"
-              value={data.totalDeliveryFees?.total || 0}
-              formatter={(value) => formatCurrency(value)}
-              prefix={<TruckOutlined style={{ color: "#722ed1" }} />}
-              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
-            />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Avg: {formatCurrency(data.totalDeliveryFees?.average || 0)}
-            </Text>
-          </Card>
-        </Col>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Delivery Fees
+              </p>
+              <p className="text-lg lg:text-xl font-bold text-gray-900 mt-1">
+                {formatCurrency(data.totalDeliveryFees?.total || 0)}
+              </p>
+              <p className="text-xs text-purple-600 mt-1">
+                Avg: {formatCurrency(data.totalDeliveryFees?.average || 0)}
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Truck className="w-4 h-4 text-purple-600" />
+            </div>
+          </div>
+        </div>
 
-        <Col xs={12} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="Service Fees"
-              value={data.totalServiceFees?.total || 0}
-              formatter={(value) => formatCurrency(value)}
-              prefix={<ToolOutlined style={{ color: "#fa8c16" }} />}
-              valueStyle={{ fontSize: "18px", fontWeight: "bold" }}
-            />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              Avg: {formatCurrency(data.totalServiceFees?.average || 0)}
-            </Text>
-          </Card>
-        </Col>
-      </Row>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Service Fees
+              </p>
+              <p className="text-lg lg:text-xl font-bold text-gray-900 mt-1">
+                {formatCurrency(data.totalServiceFees?.total || 0)}
+              </p>
+              <p className="text-xs text-orange-600 mt-1">
+                Avg: {formatCurrency(data.totalServiceFees?.average || 0)}
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+              <Settings className="w-4 h-4 text-orange-600" />
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Business Performance Table */}
       {tableData.length > 0 && (
-        <Card>
-          <Row
-            justify="space-between"
-            align="middle"
-            gutter={[16, 16]}
-            style={{ marginBottom: "16px" }}
-          >
-            <Col xs={24} sm={12}>
-              <Title level={4} style={{ margin: 0 }}>
+        <div className="bg-white border border-gray-200 rounded-lg">
+          {/* Table Header */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <h3 className="text-lg font-semibold text-gray-900">
                 Business Performance
-              </Title>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Space direction="vertical" style={{ width: "100%" }}>
-                <Input
-                  prefix={<SearchOutlined />}
-                  placeholder="Search businesses..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  size="large"
-                />
-                <Button
-                  icon={<DownloadOutlined />}
+              </h3>
+              <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search businesses..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 w-full sm:w-64"
+                  />
+                </div>
+                <button
                   onClick={exportToCSV}
-                  type="primary"
-                  size="large"
-                  style={{ width: "100%" }}
-                  className="non-printable"
+                  className="flex items-center justify-center px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors print:hidden"
                 >
+                  <Download className="w-4 h-4 mr-2" />
                   Export CSV
-                </Button>
-              </Space>
-            </Col>
-          </Row>
-
-          <div style={{ overflowX: "auto" }}>
-            <Table
-              dataSource={filteredData}
-              columns={columns}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total} businesses`,
-                responsive: true,
-              }}
-              scroll={{ x: 800 }}
-              size="small"
-              className="mobile-table"
-            />
+                </button>
+              </div>
+            </div>
           </div>
-        </Card>
+
+          {/* Mobile View */}
+          <div className="lg:hidden">
+            <div className="divide-y divide-gray-200">
+              {filteredData.slice(0, 10).map((business) => (
+                <div key={business.key} className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900 text-sm">
+                      {business.businessName}
+                    </h4>
+                    <span className="text-sm font-semibold text-green-600">
+                      {formatCurrency(business.totalEarnings || 0)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-500">Revenue:</span>
+                      <span className="ml-1 font-medium">
+                        {formatCurrency(business.revenue || 0)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Orders:</span>
+                      <span className="ml-1 font-medium">
+                        {(business.orders || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Delivery:</span>
+                      <span className="ml-1 font-medium">
+                        {formatCurrency(business.deliveryFees || 0)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Service:</span>
+                      <span className="ml-1 font-medium">
+                        {formatCurrency(business.serviceFees || 0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Business
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Revenue
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Orders
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Avg Order
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Delivery
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Service
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredData.slice(0, 10).map((business) => (
+                  <tr key={business.key} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {business.businessName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(business.revenue || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {(business.orders || 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatCurrency(business.revenueAverage || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatCurrency(business.deliveryFees || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatCurrency(business.serviceFees || 0)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                      {formatCurrency(business.totalEarnings || 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Info */}
+          <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+            <p className="text-sm text-gray-700">
+              Showing {Math.min(10, filteredData.length)} of{" "}
+              {filteredData.length} businesses
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );

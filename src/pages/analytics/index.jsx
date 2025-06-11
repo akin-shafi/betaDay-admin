@@ -2,14 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { message, Button, Row, Col, Typography, Card, Spin } from "antd";
-import { ReloadOutlined, PrinterOutlined } from "@ant-design/icons";
+import { message } from "antd";
+import { RefreshCw, Printer } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { DateRangePicker } from "@/components/analytics/DateRangePicker";
 import { AnalyticsOverview } from "@/components/analytics/AnalyticsOverview";
 import { fetchAllAnalytics } from "@/services/analyticsService";
-
-const { Title, Text } = Typography;
 
 export default function AnalyticsPage() {
   const { session } = useSession();
@@ -55,79 +53,65 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div
-      style={{
-        // padding: "16px",
-        minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
-    >
+    <div className="space-y-4">
       {/* Header Section */}
-      <Card
-        className="non-printable"
-        style={{ marginBottom: "16px" }}
-        bodyStyle={{ padding: "16px" }}
-      >
-        <Row justify="space-between" align="middle" gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Title level={3} style={{ margin: 0, fontSize: "20px" }}>
-              Analytics Dashboard
-            </Title>
-            <Text type="secondary" style={{ fontSize: "14px" }}>
-              Comprehensive analytics and insights
-            </Text>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Row justify="end" gutter={[8, 8]}>
-              <Col>
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={handleRefresh}
-                  loading={loading}
-                  size="large"
-                  style={{ minWidth: "100px" }}
-                >
-                  Refresh
-                </Button>
-              </Col>
-              <Col>
-                <Button
-                  icon={<PrinterOutlined />}
-                  onClick={handlePrint}
-                  size="large"
-                  style={{ minWidth: "100px" }}
-                >
-                  Print
-                </Button>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      </Card>
+      <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-semibold text-gray-900">
+            Analytics Dashboard
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Comprehensive analytics and insights
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors print:hidden"
+          >
+            <Printer className="w-4 h-4 mr-2" />
+            Print
+          </button>
+        </div>
+      </div>
 
       {/* Date Range Picker */}
-      <div className="non-printable" style={{ marginBottom: "16px" }}>
+      <div className="print:hidden">
         <DateRangePicker onChange={setDateRange} />
       </div>
 
-      {/* Loading Overlay */}
+      {/* Loading State */}
       {loading && (
-        <Card style={{ textAlign: "center", marginBottom: "16px" }}>
-          <Spin size="large" />
-          <div style={{ marginTop: "16px" }}>
-            <Text>Loading analytics data...</Text>
+        <div className="flex items-center justify-center py-12">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+            <p className="text-sm text-gray-600">Loading analytics data...</p>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Analytics Content */}
-      <div className="printable-content">
-        <AnalyticsOverview
-          data={analyticsData?.dashboardData}
-          loading={loading}
-          error={error}
-        />
-      </div>
+      {!loading && (
+        <div className="print:block">
+          <AnalyticsOverview
+            data={analyticsData?.dashboardData}
+            loading={loading}
+            error={error}
+          />
+        </div>
+      )}
     </div>
   );
 }

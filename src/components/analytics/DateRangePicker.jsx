@@ -2,35 +2,26 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  DatePicker,
-  Button,
-  Space,
-  Typography,
-  Divider,
-} from "antd";
-import { CalendarOutlined } from "@ant-design/icons";
-import moment from "moment";
-
-const { RangePicker } = DatePicker;
-const { Text } = Typography;
+import { Calendar } from "lucide-react";
 
 export function DateRangePicker({ onChange }) {
-  const [dateRange, setDateRange] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleDateChange = (dates) => {
-    setDateRange(dates);
-    if (dates && dates.length === 2) {
-      onChange({
-        startDate: dates[0]?.toDate(),
-        endDate: dates[1]?.toDate(),
-      });
-    } else {
-      onChange({});
-    }
+  const handleApply = () => {
+    onChange({
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+    });
+    setIsExpanded(false);
+  };
+
+  const handleReset = () => {
+    setStartDate("");
+    setEndDate("");
+    onChange({});
+    setIsExpanded(false);
   };
 
   const handleQuickSelect = (period) => {
@@ -70,120 +61,109 @@ export function DateRangePicker({ onChange }) {
     }
 
     if (start && end) {
-      const momentStart = moment(start);
-      const momentEnd = moment(end);
-      setDateRange([momentStart, momentEnd]);
+      setStartDate(start.toISOString().split("T")[0]);
+      setEndDate(end.toISOString().split("T")[0]);
       onChange({ startDate: start, endDate: end });
     } else {
-      setDateRange([]);
-      onChange({});
+      handleReset();
     }
-  };
-
-  const handleReset = () => {
-    setDateRange([]);
-    onChange({});
+    setIsExpanded(false);
   };
 
   return (
-    <Card bodyStyle={{ padding: "16px" }}>
-      <Row gutter={[16, 16]} align="middle">
-        <Col xs={24} sm={24} md={8}>
-          <Space align="center">
-            <CalendarOutlined style={{ color: "#1890ff" }} />
-            <Text strong>Date Range Filter</Text>
-          </Space>
-        </Col>
+    <div className="bg-white border border-gray-200 rounded-lg">
+      {/* Mobile Header */}
+      <div className="flex items-center justify-between p-3 lg:hidden">
+        <div className="flex items-center space-x-2">
+          <Calendar className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Date Filter</span>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-orange-500 text-sm font-medium"
+        >
+          {isExpanded ? "Close" : "Open"}
+        </button>
+      </div>
 
-        <Col xs={24} sm={24} md={16}>
-          <Row gutter={[8, 8]} justify="start">
-            <Col xs={24} sm={12} md={8}>
-              <RangePicker
-                value={dateRange}
-                onChange={handleDateChange}
-                style={{ width: "100%" }}
-                size="large"
-                placeholder={["Start Date", "End Date"]}
-              />
-            </Col>
-            <Col xs={12} sm={6} md={4}>
-              <Button
-                type="primary"
-                size="large"
-                style={{ width: "100%" }}
-                disabled={!dateRange || dateRange.length !== 2}
-              >
-                Apply
-              </Button>
-            </Col>
-            <Col xs={12} sm={6} md={4}>
-              <Button
-                size="large"
-                onClick={handleReset}
-                style={{ width: "100%" }}
-              >
-                Reset
-              </Button>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+      {/* Desktop Header */}
+      <div className="hidden lg:flex items-center space-x-2 p-3 border-b border-gray-100">
+        <Calendar className="w-4 h-4 text-gray-500" />
+        <span className="text-sm font-medium text-gray-700">
+          Date Range Filter
+        </span>
+      </div>
 
-      <Divider style={{ margin: "16px 0" }} />
+      {/* Content */}
+      <div
+        className={`${isExpanded ? "block" : "hidden"} lg:block p-3 space-y-4`}
+      >
+        {/* Date Inputs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Start Date
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              End Date
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            />
+          </div>
+        </div>
 
-      {/* Quick Select Buttons */}
-      <Row gutter={[8, 8]} justify="start">
-        <Col xs={24}>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            onClick={handleApply}
+            className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-md text-sm font-medium hover:bg-orange-600 transition-colors"
+          >
+            Apply Filter
+          </button>
+          <button
+            onClick={handleReset}
+            className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            Reset
+          </button>
+        </div>
+
+        {/* Quick Select */}
+        <div className="border-t border-gray-100 pt-3">
+          <p className="text-xs font-medium text-gray-700 mb-2">
             Quick Select:
-          </Text>
-        </Col>
-        <Col xs={12} sm={6} md={3}>
-          <Button
-            size="small"
-            onClick={() => handleQuickSelect("today")}
-            style={{ width: "100%" }}
-          >
-            Today
-          </Button>
-        </Col>
-        <Col xs={12} sm={6} md={3}>
-          <Button
-            size="small"
-            onClick={() => handleQuickSelect("yesterday")}
-            style={{ width: "100%" }}
-          >
-            Yesterday
-          </Button>
-        </Col>
-        <Col xs={12} sm={6} md={3}>
-          <Button
-            size="small"
-            onClick={() => handleQuickSelect("this-week")}
-            style={{ width: "100%" }}
-          >
-            This Week
-          </Button>
-        </Col>
-        <Col xs={12} sm={6} md={3}>
-          <Button
-            size="small"
-            onClick={() => handleQuickSelect("this-month")}
-            style={{ width: "100%" }}
-          >
-            This Month
-          </Button>
-        </Col>
-        <Col xs={12} sm={6} md={3}>
-          <Button
-            size="small"
-            onClick={() => handleQuickSelect("last-month")}
-            style={{ width: "100%" }}
-          >
-            Last Month
-          </Button>
-        </Col>
-      </Row>
-    </Card>
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {[
+              { key: "today", label: "Today" },
+              { key: "yesterday", label: "Yesterday" },
+              { key: "this-week", label: "This Week" },
+              { key: "this-month", label: "This Month" },
+              { key: "last-month", label: "Last Month" },
+            ].map((period) => (
+              <button
+                key={period.key}
+                onClick={() => handleQuickSelect(period.key)}
+                className="px-3 py-1 bg-gray-50 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors"
+              >
+                {period.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
