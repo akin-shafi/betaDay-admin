@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 // component/modals/UserModal.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, Button, message, Upload } from "antd";
 import { updateUser, deleteUser } from "../../hooks/useAction";
 import { UploadOutlined } from "@ant-design/icons";
@@ -12,13 +12,12 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
 
-  // Determine if we're in "add" mode (no user provided) or "view/edit" mode
   const isAddMode = !user;
 
-  // Pre-fill form with user data in edit mode; empty in add mode
   const initialValues = isAddMode
-    ? { role: "user" } // Default role for new users
+    ? { role: "user" }
     : {
         fullName: user?.fullName,
         email: user?.email,
@@ -26,9 +25,31 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
         address: user?.address || "",
         profileImage: user?.profileImage || "",
         role: user?.role,
+        business: user?.business?.id || undefined,
       };
 
-  // Handle file upload for profile image
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/businesses/names`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch businesses");
+        const data = await response.json();
+        setBusinesses(data);
+      } catch (error) {
+        message.error(error.message || "Could not load businesses");
+      }
+    };
+
+    if (visible) fetchBusinesses();
+  }, [visible, token]);
+
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
   };
@@ -38,7 +59,6 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       setLoading(true);
       const newUserData = { ...values };
 
-      // If a profile image is uploaded, include it
       if (fileList.length > 0 && fileList[0].originFileObj) {
         const formData = new FormData();
         Object.keys(newUserData).forEach((key) => {
@@ -81,10 +101,10 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       }
 
       message.success("User added successfully");
-      onUserUpdated(); // Trigger refresh in parent component
+      onUserUpdated();
       form.resetFields();
       setFileList([]);
-      onClose(); // Close modal after adding
+      onClose();
     } catch (error) {
       message.error(error.message || "Failed to add user");
     } finally {
@@ -97,7 +117,6 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       setLoading(true);
       const updatedValues = { ...values };
 
-      // If a new profile image is uploaded, include it
       if (fileList.length > 0 && fileList[0].originFileObj) {
         const formData = new FormData();
         formData.append("profileImage", fileList[0].originFileObj);
@@ -106,9 +125,9 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
 
       await updateUser(user.id, updatedValues, token);
       message.success("User updated successfully");
-      onUserUpdated(); // Trigger refresh in parent component
+      onUserUpdated();
       setIsEditing(false);
-      setFileList([]); // Clear file list after successful update
+      setFileList([]);
     } catch (error) {
       message.error(error.message || "Failed to update user");
     } finally {
@@ -121,8 +140,8 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       setLoading(true);
       await deleteUser(user.id, token);
       message.success("User deleted successfully");
-      onUserUpdated(); // Trigger refresh in parent component
-      onClose(); // Close modal after deletion
+      onUserUpdated();
+      onClose();
     } catch (error) {
       message.error(error.message || "Failed to delete user");
     } finally {
@@ -271,7 +290,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
             <Upload
               fileList={fileList}
               onChange={handleUploadChange}
-              beforeUpload={() => false} // Prevent auto-upload
+              beforeUpload={() => false}
               maxCount={1}
               accept="image/*"
             >
@@ -296,6 +315,19 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
               <Option value="user">User</Option>
               <Option value="admin">Admin</Option>
               <Option value="vendor">Vendor</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="business"
+            label="Business"
+            rules={[{ required: true, message: "Please select a business" }]}
+          >
+            <Select placeholder="Select a business">
+              {businesses.map((biz) => (
+                <Option key={biz.id} value={biz.id}>
+                  {biz.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>
@@ -327,6 +359,9 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
           </p>
           <p>
             <strong>Role:</strong> {user?.role}
+          </p>
+          <p>
+            <strong>Business:</strong> {user?.business?.name || "N/A"}
           </p>
         </div>
       )}
