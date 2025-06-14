@@ -159,8 +159,16 @@ export function OrderTable({
       title: "Order ID",
       dataIndex: "id",
       key: "id",
-      render: (id) => (
-        <span className="font-mono text-sm">#{id.slice(-8)}</span>
+      render: (id, record) => (
+        <div>
+          <div className="font-medium text-sm">
+            <span className="font-mono text-sm">#{id.slice(-8)}</span>
+          </div>
+          <div className="text-xs text-gray-500 truncate max-w-32">
+            {record.businessName}
+          </div>
+        </div>
+        // <span className="font-mono text-sm">#{id.slice(-8)}</span>
       ),
       width: 100,
     },
@@ -364,7 +372,7 @@ export function OrderTable({
             <List
               size="small"
               dataSource={activeOrder.items}
-              renderItem={(item, ) => (
+              renderItem={(item) => (
                 <List.Item className="px-0">
                   <List.Item.Meta
                     avatar={<Avatar size="small" icon={<ShoppingOutlined />} />}

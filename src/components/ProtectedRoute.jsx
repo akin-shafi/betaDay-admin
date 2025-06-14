@@ -9,7 +9,7 @@ import DashboardLayout from "./layout/DashboardLayout";
 import { message } from "antd";
 
 // 5 minutes in milliseconds
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+const INACTIVITY_TIMEOUT = 20 * 60 * 1000;
 
 export function ProtectedRoute({ children }) {
   const { session, logout } = useSession();
@@ -22,7 +22,7 @@ export function ProtectedRoute({ children }) {
       clearTimeout(inactivityTimer.current);
     }
     inactivityTimer.current = setTimeout(() => {
-      message.info("You have been logged out due to 5 minutes of inactivity.");
+      message.info("You have been logged out due to 20 minutes of inactivity.");
       logout();
     }, INACTIVITY_TIMEOUT);
   };

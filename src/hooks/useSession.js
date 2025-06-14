@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  getSession,
-  setSession,
-  clearSession,
-  updateLastActivity,
-  checkInactivity,
-} from "../utils/session";
+import { getSession, setSession, clearSession } from "../utils/session";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
-const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 export function useSession() {
   const [session, setSessionState] = useState(getSession());
@@ -28,34 +21,6 @@ export function useSession() {
       navigate("/auth/login");
     }
   }, [navigate, location.pathname]);
-
-  // Set up inactivity checker
-  useEffect(() => {
-    if (!session) return;
-
-    // Update activity on user interactions
-    const handleActivity = () => updateLastActivity();
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("click", handleActivity);
-
-    // Check for inactivity periodically
-    const inactivityChecker = setInterval(() => {
-      if (checkInactivity(INACTIVITY_TIMEOUT)) {
-        clearSession();
-        setSessionState(null);
-        localStorage.setItem("message", "Session expired due to inactivity");
-        navigate("/auth/login");
-      }
-    }, 60000); // Check every minute
-
-    return () => {
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("click", handleActivity);
-      clearInterval(inactivityChecker);
-    };
-  }, [session, navigate]);
 
   const login = async (identifier, password, rememberMe = false) => {
     try {
@@ -103,6 +68,5 @@ export function useSession() {
       return sessionWithExpiry;
     },
     clearSession: logout,
-    updateActivity: updateLastActivity,
   };
 }

@@ -37,12 +37,15 @@ export default function OrderManagement() {
 
   // Normalize order data to match OrderTable expectations
   const normalizeOrder = (order) => {
+    // console.error("normalizeOrder receieved:", order);
+
     if (!order) {
       console.error("normalizeOrder received invalid order:", order);
       return {};
     }
     return {
       id: order.id || "",
+      businessName: order.business?.name || "N/A",
       customerName: order.user?.fullName || "N/A",
       customerEmail: order.user?.email || "N/A",
       customerPhone: order.user?.phoneNumber || "N/A",
