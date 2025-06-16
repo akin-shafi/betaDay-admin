@@ -269,7 +269,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
       <form onSubmit={handleSubmit}>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <label
               htmlFor="name"
@@ -319,7 +319,7 @@ export default function AddBusinessModal({ isVisible, onCancel, onFinish }) {
             )}
           </div>
 
-          <div className="space-y-2 col-span-2">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="description"
