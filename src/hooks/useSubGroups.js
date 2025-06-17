@@ -61,17 +61,41 @@ export const createSubGroup = async (groupId, values, token) => {
   }
 };
 
+
+
 export const updateSubGroup = async (subGroupId, values, token) => {
   try {
-    const formData = new FormData();
-    if (values.name) formData.append("name", values.name);
-    if (values.image) formData.append("image", values.image);
+    const hasImageFile = values.image && values.image instanceof File;
+    let response;
 
-    const response = await fetch(`${API_URL}/subgroups/${subGroupId}`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
+    if (hasImageFile) {
+      // Use FormData for image uploads
+      const formData = new FormData();
+      if (values.name) formData.append("name", values.name);
+      if (values.isActive !== undefined)
+        formData.append("isActive", values.isActive.toString());
+      formData.append("image", values.image);
+
+      response = await fetch(`${API_URL}/subgroups/${subGroupId}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+    } else {
+      // Use JSON for non-image updates
+      const updateData = {};
+      if (values.name) updateData.name = values.name;
+      if (values.isActive !== undefined) updateData.isActive = values.isActive;
+
+      response = await fetch(`${API_URL}/subgroups/${subGroupId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      });
+    }
 
     if (!response.ok) {
       const errorData = await response.json();

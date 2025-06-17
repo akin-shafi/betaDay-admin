@@ -21,6 +21,7 @@ import {
   Image,
   Tooltip,
   Upload,
+  Switch,
 } from "antd";
 import {
   Plus,
@@ -82,7 +83,7 @@ export default function SubGroupsPage() {
     try {
       const updatedSubGroup = await updateSubGroup(
         selectedSubGroup.id,
-        { name: values.name, image: values.image },
+        { name: values.name, image: values.image, isActive: values.isActive },
         session?.token
       );
       message.success("Subgroup updated successfully");
@@ -111,7 +112,11 @@ export default function SubGroupsPage() {
 
   const openEditModal = (subGroup) => {
     setSelectedSubGroup(subGroup);
-    form.setFieldsValue({ name: subGroup.name, image: subGroup.image });
+    form.setFieldsValue({
+      name: subGroup.name,
+      image: subGroup.image,
+      isActive: subGroup.isActive,
+    });
     setImagePreview(subGroup.image);
     setIsEditModalVisible(true);
   };
@@ -375,6 +380,13 @@ export default function SubGroupsPage() {
                 <Button icon={<UploadIcon size={16} />}>Upload Image</Button>
               )}
             </Upload>
+          </Form.Item>
+          <Form.Item name="isActive" label="Status" valuePropName="checked">
+            <Switch
+              checkedChildren="Active"
+              unCheckedChildren="Inactive"
+              className="bg-gray-200"
+            />
           </Form.Item>
           <Form.Item>
             <Button
