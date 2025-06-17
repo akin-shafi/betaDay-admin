@@ -149,10 +149,7 @@ export function UsersPage() {
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [
-    ,/*showFilters*/
-    /*setShowFilters*/
-  ] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   // Get user counts by role
   const getUserCounts = () => {
@@ -205,6 +202,10 @@ export function UsersPage() {
   const handleViewUser = (user) => {
     setSelectedUser(user);
     setModalVisible(true);
+  };
+
+  const handleAddUser = () => {
+    setAddModalVisible(true);
   };
 
   // Loading skeleton component
@@ -423,7 +424,10 @@ export function UsersPage() {
             />
             <span className="hidden sm:inline">Refresh</span>
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+          <button
+            onClick={handleAddUser}
+            className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
+          >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add User</span>
           </button>
@@ -630,11 +634,19 @@ export function UsersPage() {
         </>
       )}
 
-      {/* User Modal */}
+      {/* View/Edit User Modal */}
       <UserModal
         visible={modalVisible}
         user={selectedUser}
         onClose={() => setModalVisible(false)}
+        token={session?.token}
+        onUserUpdated={refreshData}
+      />
+
+      {/* Add User Modal */}
+      <UserModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
         token={session?.token}
         onUserUpdated={refreshData}
       />
