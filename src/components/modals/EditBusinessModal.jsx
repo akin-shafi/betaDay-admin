@@ -1,10 +1,14 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
-import { Modal } from "antd";
+import { Modal, Select } from "antd";
 import { useFetchBusinessGroups } from "@/hooks/useBusiness";
 import { useSession } from "@/hooks/useSession";
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import { useDescriptionSuggestion } from "@/hooks/useDescriptionSuggestion";
+import PropTypes from "prop-types";
+
+const { Option } = Select;
 
 export default function EditBusinessModal({
   isVisible,
@@ -13,8 +17,12 @@ export default function EditBusinessModal({
   business,
 }) {
   const [businessTypes, setBusinessTypes] = useState([]);
+  const [banks, setBanks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isFetchingBanks, setIsFetchingBanks] = useState(false);
+  const [isResolvingAccount, setIsResolvingAccount] = useState(false);
   const [suggestionError, setSuggestionError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const { session } = useSession();
   const addressInputRef = useRef(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -46,6 +54,7 @@ export default function EditBusinessModal({
     businessType: business?.businessType || "",
     accountNumber: business?.accountNumber || "",
     bankName: business?.bankName || "",
+    bankCode: business?.bankCode || "",
     accountName: business?.accountName || "",
     isActive: business?.isActive ?? true,
   });
@@ -74,6 +83,43 @@ export default function EditBusinessModal({
     loading: groupsLoading,
     error: groupsError,
   } = useFetchBusinessGroups(session?.token, isVisible);
+
+  // Fetch banks when modal is opened
+  useEffect(() => {
+    const fetchBanks = async () => {
+      setIsFetchingBanks(true);
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL || "https://betapadi.onrender.com"
+          }/api/banks`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch banks");
+        }
+
+        const data = await response.json();
+        setBanks(data.data);
+      } catch (error) {
+        setFormErrors((prev) => ({
+          ...prev,
+          bankName: "Failed to load banks. Please try again.",
+        }));
+      } finally {
+        setIsFetchingBanks(false);
+      }
+    };
+
+    if (isVisible) {
+      fetchBanks();
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     setBusinessTypes(fetchedGroups);
@@ -115,6 +161,7 @@ export default function EditBusinessModal({
         businessType: business.businessType || "",
         accountNumber: business.accountNumber || "",
         bankName: business.bankName || "",
+        bankCode: business.bankCode || "",
         accountName: business.accountName || "",
         isActive: business.isActive ?? true,
       });
@@ -157,6 +204,23 @@ export default function EditBusinessModal({
       setShowSuggestions(value.trim().length > 0);
       setActiveSuggestionIndex(-1);
     }
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  // Handle bank selection
+  const handleBankChange = (value) => {
+    const selectedBank = banks.find((bank) => bank.name === value);
+    setFormData((prev) => ({
+      ...prev,
+      bankName: value,
+      bankCode: selectedBank ? selectedBank.code : "",
+      accountName: "", // Reset account name when bank changes
+    }));
+    if (formErrors.bankName) {
+      setFormErrors((prev) => ({ ...prev, bankName: "" }));
+    }
   };
 
   // Handle delivery options
@@ -170,7 +234,6 @@ export default function EditBusinessModal({
 
   // Handle address suggestion
   const handleSuggestionSelect = (suggestion) => {
-    console.log("Suggestion Details:", suggestion.details);
     const formatLocalGovernment = (localGov) => {
       if (!localGov) return "";
       return localGov.replace(/\/|\s+/g, "-");
@@ -235,41 +298,103 @@ export default function EditBusinessModal({
     setFetchSuggestion(true);
   };
 
+  // Handle account resolution on blur
+  const handleResolveAccount = async () => {
+    if (
+      formData.accountNumber.length !== 10 ||
+      !formData.bankCode ||
+      isResolvingAccount
+    ) {
+      return;
+    }
+
+    setIsResolvingAccount(true);
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_BASE_URL || "https://betapadi.onrender.com"
+        }/api/banks/resolve-account?account_number=${
+          formData.accountNumber
+        }&bank_code=${formData.bankCode}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to resolve account");
+      }
+
+      const data = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        accountName: data.data.account_name,
+      }));
+      setFormErrors((prev) => ({ ...prev, accountNumber: "" }));
+    } catch (error) {
+      setFormErrors((prev) => ({
+        ...prev,
+        accountNumber: "Invalid account number or bank code",
+      }));
+      setFormData((prev) => ({ ...prev, accountName: "" }));
+    } finally {
+      setIsResolvingAccount(false);
+    }
+  };
+
   // Validate coordinates
   const isValidCoordinate = (coord) =>
     typeof coord === "number" && !isNaN(coord);
+
+  // Validate form
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name) newErrors.name = "Business name is required";
+    if (!formData.description)
+      newErrors.description = "Description is required";
+    if (!formData.contactNumber)
+      newErrors.contactNumber = "Contact number is required";
+    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.state) newErrors.state = "State is required";
+    if (!formData.openingTime)
+      newErrors.openingTime = "Opening time is required";
+    if (!formData.closingTime)
+      newErrors.closingTime = "Closing time is required";
+    if (!formData.deliveryOptions[0])
+      newErrors.deliveryOptions = "Delivery option is required";
+    if (!formData.businessType)
+      newErrors.businessType = "Business group is required";
+    if (
+      !isValidCoordinate(formData.latitude) ||
+      !isValidCoordinate(formData.longitude)
+    ) {
+      newErrors.address =
+        "Please select a valid address from the dropdown to set coordinates";
+    }
+    if (formData.accountNumber && formData.accountNumber.length !== 10) {
+      newErrors.accountNumber = "Account number must be 10 digits";
+    }
+    if (formData.accountNumber && !formData.bankCode) {
+      newErrors.bankName = "Please select a bank";
+    }
+    if (formData.accountNumber && !formData.accountName) {
+      newErrors.accountNumber = "Please resolve account name";
+    }
+
+    setFormErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    // Basic validation
-    if (
-      !formData.name ||
-      !formData.description ||
-      !formData.contactNumber ||
-      !formData.address ||
-      !formData.city ||
-      !formData.state ||
-      !formData.openingTime ||
-      !formData.closingTime ||
-      !formData.deliveryOptions[0] ||
-      !formData.businessType
-    ) {
-      setError("Please fill in all required fields.");
-      addressInputRef.current?.focus();
-      return;
-    }
-
-    // Validate coordinates
-    if (
-      !isValidCoordinate(formData.latitude) ||
-      !isValidCoordinate(formData.longitude)
-    ) {
-      setError(
-        "Please select a valid address from the dropdown to set coordinates."
-      );
+    if (!validateForm()) {
       addressInputRef.current?.focus();
       return;
     }
@@ -284,6 +409,7 @@ export default function EditBusinessModal({
         businessDays: formData.businessDays || null,
         accountNumber: formData.accountNumber || null,
         bankName: formData.bankName || null,
+        bankCode: formData.bankCode || null,
         accountName: formData.accountName || null,
       });
       onCancel();
@@ -317,10 +443,15 @@ export default function EditBusinessModal({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.name ? "border-red-500" : ""
+              }`}
               placeholder="e.g. Ola Mummy"
               required
             />
+            {formErrors.name && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -335,7 +466,9 @@ export default function EditBusinessModal({
               name="businessType"
               value={formData.businessType}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
+              className={`w-full p-2 border border-gray-300 rounded appearance-none bg-white ${
+                formErrors.businessType ? "border-red-500" : ""
+              }`}
               disabled={loading}
               required
             >
@@ -346,6 +479,11 @@ export default function EditBusinessModal({
                 </option>
               ))}
             </select>
+            {formErrors.businessType && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.businessType}
+              </p>
+            )}
             {loading && (
               <p className="text-gray-500 text-xs mt-1">
                 Loading business groups...
@@ -383,10 +521,17 @@ export default function EditBusinessModal({
               value={formData.description}
               onChange={handleInputChange}
               rows={4}
-              className="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]"
+              className={`w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 ${
+                formErrors.description ? "border-red-500" : ""
+              }`}
               placeholder="Brief description of your business"
               required
             />
+            {formErrors.description && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.description}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -402,10 +547,17 @@ export default function EditBusinessModal({
               name="contactNumber"
               value={formData.contactNumber}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.contactNumber ? "border-red-500" : ""
+              }`}
               placeholder="e.g. 08145380866"
               required
             />
+            {formErrors.contactNumber && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.contactNumber}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -440,7 +592,9 @@ export default function EditBusinessModal({
               value={formData.address}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.address ? "border-red-500" : ""
+              }`}
               placeholder="e.g. 123 Main Street"
               required
             />
@@ -450,7 +604,7 @@ export default function EditBusinessModal({
                   <span className="text-xs text-gray-400 mr-2">Typing...</span>
                 )}
                 {addressLoading && (
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-[#FF6B00]"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-orange-500"></div>
                 )}
               </div>
             )}
@@ -474,8 +628,10 @@ export default function EditBusinessModal({
                 ))}
               </ul>
             )}
-            {addressError && (
-              <p className="text-red-500 text-xs mt-1">{addressError}</p>
+            {(formErrors.address || addressError) && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.address || addressError}
+              </p>
             )}
           </div>
 
@@ -492,9 +648,14 @@ export default function EditBusinessModal({
               name="city"
               value={formData.city}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.city ? "border-red-500" : ""
+              }`}
               required
             />
+            {formErrors.city && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.city}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -510,9 +671,14 @@ export default function EditBusinessModal({
               name="state"
               value={formData.state}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.state ? "border-red-500" : ""
+              }`}
               required
             />
+            {formErrors.state && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.state}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -546,9 +712,16 @@ export default function EditBusinessModal({
               name="openingTime"
               value={formData.openingTime}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.openingTime ? "border-red-500" : ""
+              }`}
               required
             />
+            {formErrors.openingTime && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.openingTime}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -564,9 +737,16 @@ export default function EditBusinessModal({
               name="closingTime"
               value={formData.closingTime}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
+              className={`w-full p-2 border border-gray-300 rounded ${
+                formErrors.closingTime ? "border-red-500" : ""
+              }`}
               required
             />
+            {formErrors.closingTime && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.closingTime}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -599,7 +779,9 @@ export default function EditBusinessModal({
               name="deliveryOptions"
               value={formData.deliveryOptions[0] || ""}
               onChange={handleDeliveryOptionsChange}
-              className="w-full p-2 border border-gray-300 rounded appearance-none bg-white"
+              className={`w-full p-2 border border-gray-300 rounded appearance-none bg-white ${
+                formErrors.deliveryOptions ? "border-red-500" : ""
+              }`}
               required
             >
               <option value="">Select Delivery Option</option>
@@ -607,24 +789,11 @@ export default function EditBusinessModal({
               <option value="pickup">Pickup</option>
               <option value="delivery">Delivery</option>
             </select>
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="accountNumber"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Account Number
-            </label>
-            <input
-              type="text"
-              id="accountNumber"
-              name="accountNumber"
-              value={formData.accountNumber}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="e.g. 1234567890"
-            />
+            {formErrors.deliveryOptions && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.deliveryOptions}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -634,15 +803,68 @@ export default function EditBusinessModal({
             >
               Bank Name
             </label>
-            <input
-              type="text"
+            <Select
               id="bankName"
-              name="bankName"
-              value={formData.bankName}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="e.g. First Bank"
-            />
+              value={formData.bankName || undefined}
+              onChange={handleBankChange}
+              disabled={isFetchingBanks || loading}
+              showSearch
+              placeholder="Search and select a bank"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+              className={`w-full ${
+                formErrors.bankName ? "border-red-500" : ""
+              }`}
+              suffixIcon={
+                isFetchingBanks ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-orange-500"></div>
+                ) : null
+              }
+            >
+              {banks.map((bank) => (
+                <Option key={bank.code} value={bank.name}>
+                  {bank.name}
+                </Option>
+              ))}
+            </Select>
+            {formErrors.bankName && (
+              <p className="text-red-500 text-xs mt-1">{formErrors.bankName}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="accountNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Account Number
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                id="accountNumber"
+                name="accountNumber"
+                value={formData.accountNumber}
+                onChange={handleInputChange}
+                onBlur={handleResolveAccount}
+                className={`w-full p-2 border border-gray-300 rounded ${
+                  formErrors.accountNumber ? "border-red-500" : ""
+                }`}
+                placeholder="e.g. 1234567890"
+              />
+              {isResolvingAccount && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-orange-500"></div>
+                </div>
+              )}
+            </div>
+            {formErrors.accountNumber && (
+              <p className="text-red-500 text-xs mt-1">
+                {formErrors.accountNumber}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -657,9 +879,9 @@ export default function EditBusinessModal({
               id="accountName"
               name="accountName"
               value={formData.accountName}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="e.g. John Doe Enterprises"
+              readOnly
+              className="w-full p-2 border border-gray-300 rounded bg-gray-100 text-gray-600 cursor-not-allowed"
+              placeholder="Account name will appear here"
             />
           </div>
 
@@ -676,7 +898,7 @@ export default function EditBusinessModal({
               name="isActive"
               checked={formData.isActive}
               onChange={handleInputChange}
-              className="h-4 w-4 text-[#FF6B00] border-gray-300 rounded focus:ring-[#FF6B00]/20"
+              className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500/20"
             />
             <span className="ml-2 text-sm text-gray-700">
               {formData.isActive ? "Active" : "Inactive"}
@@ -706,9 +928,11 @@ export default function EditBusinessModal({
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isResolvingAccount}
             className={`px-4 py-2 bg-orange-500 text-white rounded font-medium hover:bg-orange-600 transition-colors ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
+              loading || isResolvingAccount
+                ? "opacity-50 cursor-not-allowed"
+                : ""
             }`}
           >
             {loading ? "Updating..." : "Update Business"}
@@ -718,3 +942,10 @@ export default function EditBusinessModal({
     </Modal>
   );
 }
+
+EditBusinessModal.propTypes = {
+  isVisible: PropTypes.bool.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onFinish: PropTypes.func.isRequired,
+  business: PropTypes.object,
+};
