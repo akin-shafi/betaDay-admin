@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-// component/modals/UserModal.jsx
 import { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, Button, message, Upload } from "antd";
 import { updateUser, deleteUser } from "../../hooks/useAction";
@@ -13,6 +12,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [businesses, setBusinesses] = useState([]);
+  const [selectedRole, setSelectedRole] = useState(user?.role || "user");
 
   const isAddMode = !user;
 
@@ -25,7 +25,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
         address: user?.address || "",
         profileImage: user?.profileImage || "",
         role: user?.role,
-        business: user?.business?.id || undefined,
+        business: user?.business?.id,
       };
 
   useEffect(() => {
@@ -47,8 +47,12 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       }
     };
 
-    if (visible) fetchBusinesses();
-  }, [visible, token]);
+    if (visible) {
+      fetchBusinesses();
+      form.setFieldsValue(initialValues);
+      setSelectedRole(user?.role || "user");
+    }
+  }, [visible, token, form, user]);
 
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
@@ -179,6 +183,13 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
     }
   };
 
+  const handleRoleChange = (value) => {
+    setSelectedRole(value);
+    if (value !== "vendor") {
+      form.setFieldsValue({ business: undefined });
+    }
+  };
+
   return (
     <Modal
       title={isAddMode ? "Add New User" : isEditing ? "Edit User" : "View User"}
@@ -187,6 +198,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
         setIsEditing(false);
         setFileList([]);
         form.resetFields();
+        setSelectedRole("user");
         onClose();
       }}
       footer={
@@ -243,6 +255,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
               </Button>,
             ]
       }
+      className="user-modal"
     >
       {isAddMode || isEditing ? (
         <Form
@@ -274,7 +287,10 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
               label="Password"
               rules={[
                 { required: true, message: "Please enter a password" },
-                { min: 6, message: "Password must be at least 6 characters" },
+                {
+                  min: 6,
+                  message: "Password must be at least 6 characters long",
+                },
               ]}
             >
               <Input.Password />
@@ -311,33 +327,35 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
             label="Role"
             rules={[{ required: true, message: "Please select a role" }]}
           >
-            <Select>
+            <Select onChange={handleRoleChange}>
               <Option value="user">User</Option>
               <Option value="admin">Admin</Option>
               <Option value="vendor">Vendor</Option>
             </Select>
           </Form.Item>
-          <Form.Item
-            name="business"
-            label="Business"
-            rules={[{ required: true, message: "Please select a business" }]}
-          >
-            <Select placeholder="Select a business">
-              {businesses.map((biz) => (
-                <Option key={biz.id} value={biz.id}>
-                  {biz.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          {selectedRole === "vendor" && (
+            <Form.Item
+              name="business"
+              label="Business"
+              rules={[{ required: true, message: "Please select a business" }]}
+            >
+              <Select placeholder="Select a business">
+                {businesses.map((biz) => (
+                  <Option key={biz.id} value={biz.id}>
+                    {biz.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
         </Form>
       ) : (
         <div>
           <p>
-            <strong>Full Name:</strong> {user?.fullName}
+            <strong>Full Name:</strong> {user?.fullName || "N/A"}
           </p>
           <p>
-            <strong>Email:</strong> {user?.email}
+            <strong>Email:</strong> {user?.email || "N/A"}
           </p>
           <p>
             <strong>Phone Number:</strong> {user?.phoneNumber || "N/A"}
@@ -358,7 +376,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
             )}
           </p>
           <p>
-            <strong>Role:</strong> {user?.role}
+            <strong>Role:</strong> {user?.role || "N/A"}
           </p>
           <p>
             <strong>Business:</strong> {user?.business?.name || "N/A"}
