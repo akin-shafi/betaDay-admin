@@ -1,11 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, Button, message, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-
-// Assuming these are defined in a file like '../../hooks/useAction'
-// You might need to adjust the import path if different
 import { updateUser, deleteUser } from "../../hooks/useAction";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -19,50 +16,43 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
 
   const isAddMode = !user;
 
-  // Initial values for the form are now computed inside useEffect for existing user,
-  // or directly for add mode to avoid recreating the object on every render.
-  // We'll set the form fields directly in useEffect.
-
-  useEffect(() => {
-    // Fetch businesses only when the modal becomes visible
-    if (visible) {
-      const fetchBusinesses = async () => {
-        try {
-          const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/businesses/names`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (!response.ok) throw new Error("Failed to fetch businesses");
-          const data = await response.json();
-          setBusinesses(data);
-        } catch (error) {
-          message.error(error.message || "Could not load businesses");
-        }
-      };
-      fetchBusinesses();
-
-      // Set form fields based on the user prop when the modal becomes visible or user changes
-      form.setFieldsValue({
+  const initialValues = isAddMode
+    ? { role: "user" }
+    : {
         fullName: user?.fullName,
         email: user?.email,
         phoneNumber: user?.phoneNumber || "",
         address: user?.address || "",
         profileImage: user?.profileImage || "",
-        role: user?.role || "user", // Default to 'user' for new users
+        role: user?.role,
         business: user?.business?.id,
-      });
+      };
+
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/businesses/names`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch businesses");
+        const data = await response.json();
+        setBusinesses(data);
+      } catch (error) {
+        message.error(error.message || "Could not load businesses");
+      }
+    };
+
+    if (visible) {
+      fetchBusinesses();
+      form.setFieldsValue(initialValues);
       setSelectedRole(user?.role || "user");
-      setIsEditing(false); // Always start in view mode when opening for an existing user
-      setFileList([]); // Clear file list
-    } else {
-      // Reset form fields when the modal closes
-      form.resetFields();
     }
-  }, [visible, token, user, form]); // Dependencies: visible, token, user (for re-populating form), form (stable reference)
+  }, [visible, token, form, user]);
 
   const handleUploadChange = ({ fileList: newFileList }) => {
     setFileList(newFileList);
@@ -132,9 +122,9 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
       const updatedValues = { ...values };
 
       if (fileList.length > 0 && fileList[0].originFileObj) {
-        // Remove the file object from JSON payload as `updateUser` expects JSON.
-        // Image updates would typically go through a separate endpoint or a FormData PUT.
-        delete updatedValues.profileImage;
+        const formData = new FormData();
+        formData.append("profileImage", fileList[0].originFileObj);
+        updatedValues.profileImage = formData.get("profileImage");
       }
 
       await updateUser(user.id, updatedValues, token);
@@ -163,115 +153,34 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
     }
   };
 
-  const handleAdminResetPassword = () => {
-    let newPassword = '';
-    Modal.confirm({
-      title: 'Admin Reset User Password',
-      content: (
-        <div>
-          <p>Enter the new password for {user?.fullName || user?.email}:</p>
-          <Input.Password
-            placeholder="Enter new password"
-            onChange={(e) => (newPassword = e.target.value)}
-          />
-        </div>
-      ),
-      okText: 'Reset Password',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        if (!newPassword) {
-          message.error('New password cannot be empty.');
-          return Promise.reject('New password required'); // Prevent modal from closing on empty password
+  const handleForgetPassword = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/users/forget-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ email: user.email }),
         }
-        try {
-          setLoading(true);
-          const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/auth/admin/reset-user-password`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ userId: user.id, newPassword }),
-            }
-          );
+      );
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              errorData.message || "Failed to reset password via admin."
-            );
-          }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to initiate password reset"
+        );
+      }
 
-          message.success("User password reset successfully by admin. Notification email sent.");
-          onUserUpdated();
-        } catch (error) {
-          message.error(error.message || "Failed to reset password.");
-        } finally {
-          setLoading(false);
-        }
-      },
-      onCancel() {
-        // Do nothing on cancel
-      },
-    });
-  };
-
-  const handleSendWelcomeEmail = () => {
-    let newPassword = '';
-    Modal.confirm({
-      title: 'Send Welcome Email with Credentials',
-      content: (
-        <div>
-          <p>Optionally, enter a temporary password for {user?.fullName || user?.email}. If left empty, a 6-digit alphanumeric password will be generated by the system.</p>
-          <Input.Password
-            placeholder="Enter temporary password (optional)"
-            onChange={(e) => (newPassword = e.target.value)}
-          />
-        </div>
-      ),
-      okText: 'Send Welcome Email',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          setLoading(true);
-          const payload = { userId: user.id };
-          if (newPassword) {
-            payload.newPassword = newPassword;
-          }
-
-          const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/auth/admin/welcome-user-set-password`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(payload),
-            }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              errorData.message || "Failed to send welcome email."
-            );
-          }
-
-          message.success("Welcome email with credentials sent successfully.");
-          onUserUpdated();
-        } catch (error) {
-          message.error(error.message || "Failed to send welcome email.");
-        } finally {
-          setLoading(false);
-        }
-      },
-      onCancel() {
-        // Do nothing on cancel
-      },
-    });
+      message.success("Password reset email sent successfully");
+    } catch (error) {
+      message.error(error.message || "Failed to send password reset email");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRoleChange = (value) => {
@@ -326,20 +235,12 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
                 Edit
               </Button>,
               <Button
-                key="admin-reset"
+                key="reset"
                 type="default"
                 loading={loading}
-                onClick={handleAdminResetPassword}
+                onClick={handleForgetPassword}
               >
-                Admin Reset Password
-              </Button>,
-              <Button
-                key="send-welcome"
-                type="default"
-                loading={loading}
-                onClick={handleSendWelcomeEmail}
-              >
-                Send Welcome Email
+                Reset Password
               </Button>,
               <Button
                 key="delete"
@@ -360,20 +261,7 @@ export const UserModal = ({ visible, user, onClose, token, onUserUpdated }) => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={
-            isAddMode
-              ? { role: "user" }
-              : {
-                  // Initial values for editing mode are set directly
-                  fullName: user?.fullName,
-                  email: user?.email,
-                  phoneNumber: user?.phoneNumber || "",
-                  address: user?.address || "",
-                  profileImage: user?.profileImage || "",
-                  role: user?.role,
-                  business: user?.business?.id,
-                }
-          }
+          initialValues={initialValues}
           onFinish={isAddMode ? handleAdd : handleUpdate}
         >
           <Form.Item
